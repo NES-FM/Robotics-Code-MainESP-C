@@ -8,8 +8,9 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "D:/Develop/Robotics/Robotics-Code-MainESP-C/template/include",
-                "D:/Develop/Robotics/Robotics-Code-MainESP-C/template/src",
+                "D:/Develop/Robotics/Robotics-Code-MainESP-C/MainESP/include",
+                "D:/Develop/Robotics/Robotics-Code-MainESP-C/MainESP/src",
+                "D:/Develop/Robotics/Robotics-Code-MainESP-C/MainESP/lib/cuart",
                 "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/config",
                 "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/app_trace",
                 "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/app_update",
@@ -100,8 +101,9 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "D:/Develop/Robotics/Robotics-Code-MainESP-C/template/include",
-                    "D:/Develop/Robotics/Robotics-Code-MainESP-C/template/src",
+                    "D:/Develop/Robotics/Robotics-Code-MainESP-C/MainESP/include",
+                    "D:/Develop/Robotics/Robotics-Code-MainESP-C/MainESP/src",
+                    "D:/Develop/Robotics/Robotics-Code-MainESP-C/MainESP/lib/cuart",
                     "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/config",
                     "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/app_trace",
                     "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/app_update",
