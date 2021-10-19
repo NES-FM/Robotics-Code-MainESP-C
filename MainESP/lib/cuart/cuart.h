@@ -42,24 +42,12 @@ void CUART_green_handler()
 
 void CUART_sensor_array_handler()
 {
-    unsigned char b3 = _received_bytes[0];
-    unsigned char b2 = _received_bytes[1];
-    unsigned char b1 = _received_bytes[2];
-
-
-    //--> Richtige Bytereihenfolge einordnen
-
-    for (int x = 0; x < 8; x++)
+    for (int y = 0; y < 3; y++)
     {
-        CUART_sensor_array[x] = (b1 >> x) & 0b00000001;
-    }
-    for (int x = 0; x < 8; x++)
-    {
-        CUART_sensor_array[8 + x] = (b2 >> x) & 0b00000001;
-    }
-    for (int x = 0; x < 8; x++)
-    {
-        CUART_sensor_array[16 + x] = (b3 >> x) & 0b00000001;
+        for (int x = 0; x < 8; x++)
+        {
+            CUART_sensor_array[(y * 8) + x] = (_received_bytes[y] << x) & 0b10000000;
+        }
     }
 }
 
@@ -68,6 +56,8 @@ void CUART_tick()
     while (_cuart_hwserial.available() > 0)
     {
         char rec_char = _cuart_hwserial.read();
+        // Serial.print(int(rec_char));
+        // Serial.print(" ");
 
         if (rec_char == 0xff)
         {
@@ -90,8 +80,10 @@ void CUART_tick()
                 for (int i = 0; i < 16; i++) {
                     _received_bytes[i] = 0x01;
                 }
+
+                // Serial.println("");
+                return;
             }
-            return;
         }
 
         if (_currently_receiving == ' ')
