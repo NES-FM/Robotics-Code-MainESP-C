@@ -99,4 +99,4 @@ void CUART_tick()
     }
 }
 
-#endif
+#endif /* CUART_H */
