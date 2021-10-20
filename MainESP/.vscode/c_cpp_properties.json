@@ -10,7 +10,9 @@
             "includePath": [
                 "D:/Develop/Robotics/Robotics-Code-MainESP-C/MainESP/include",
                 "D:/Develop/Robotics/Robotics-Code-MainESP-C/MainESP/src",
+                "D:/Develop/Robotics/Robotics-Code-MainESP-C/MainESP/lib/motor",
                 "D:/Develop/Robotics/Robotics-Code-MainESP-C/MainESP/lib/cuart",
+                "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                 "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/config",
                 "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/app_trace",
                 "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/app_update",
@@ -94,7 +96,6 @@
                 "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
                 "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                 "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
-                "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                 "C:/Users/flori/.platformio/packages/tool-unity",
                 ""
             ],
@@ -103,7 +104,9 @@
                 "path": [
                     "D:/Develop/Robotics/Robotics-Code-MainESP-C/MainESP/include",
                     "D:/Develop/Robotics/Robotics-Code-MainESP-C/MainESP/src",
+                    "D:/Develop/Robotics/Robotics-Code-MainESP-C/MainESP/lib/motor",
                     "D:/Develop/Robotics/Robotics-Code-MainESP-C/MainESP/lib/cuart",
+                    "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                     "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/config",
                     "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/app_trace",
                     "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/app_update",
@@ -187,7 +190,6 @@
                     "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
                     "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                     "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
-                    "C:/Users/flori/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                     "C:/Users/flori/.platformio/packages/tool-unity",
                     ""
                 ]
