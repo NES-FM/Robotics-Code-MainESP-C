@@ -46,7 +46,11 @@ void CUART_sensor_array_handler()
     {
         for (int x = 0; x < 8; x++)
         {
-            CUART_sensor_array[(y * 8) + x] = (_received_bytes[y] << x) & 0b10000000;
+            // Saving one byte after the other into the array, while flipping 1s to 0s
+            if (((_received_bytes[y] << x) & 0b10000000) == 0)
+                CUART_sensor_array[(y * 8) + x] = true;
+            else
+                CUART_sensor_array[(y * 8) + x] = false;
         }
     }
 }
@@ -97,6 +101,30 @@ void CUART_tick()
             _received_bytes_next_index++;
         }   	
     }
+}
+
+void CUART_debugPrintLine()
+{
+    Serial.println("~");
+    Serial.print(CUART_line_type); Serial.print(CUART_line_angle); Serial.println(CUART_line_midfactor);
+}
+
+void CUART_debugPrintArray()
+{
+    for (int i = 0; i < 24; i++)
+    {
+        if (CUART_sensor_array[i])
+            Serial.print("1 ");
+        else
+            Serial.print("0 ");
+    }
+    Serial.println("");
+}
+
+void CUART_debugPrint()
+{
+    CUART_debugPrintLine();
+    CUART_debugPrintArray();
 }
 
 #endif /* CUART_H */
