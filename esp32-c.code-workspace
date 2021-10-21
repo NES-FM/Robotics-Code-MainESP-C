@@ -8,10 +8,6 @@
 			"path": "blink"
 		},
 		{
-			"name": "template",
-			"path": "template"
-		},
-		{
 			"name": "MainESP",
 			"path": "MainESP"
 		}
