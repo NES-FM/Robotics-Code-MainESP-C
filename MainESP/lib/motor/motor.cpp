@@ -2,16 +2,21 @@
 
 motor::motor() {};
 
-void writeto_mem(char addr, char reg, char data)
+void motor::writeto_mem(char addr, char reg, char data)
 {
-    Wire.beginTransmission(addr);
-    Wire.write(reg);
-    Wire.write(data);
-    Wire.endTransmission();
+    if (_motor_i2c_enabled == true) 
+    {
+        Wire.beginTransmission(addr);
+        Wire.write(reg);
+        Wire.write(data);
+        Wire.endTransmission();
+    }
 }
 
 void motor::init(char mnum) 
 {
+    
+
     motor_num = mnum;
     if (motor_num == 1)
         current_i2c_offset = _i2c_offset_motor_1;
@@ -65,3 +70,8 @@ void motor::move_direction(int speed, int direction)
 void motor::stop() { this->move_direction(0, MOTOR_DIREC_STOP); }
 
 void motor::off() { this->move_direction(0, MOTOR_DIREC_OFF); }
+
+void motor::enable(bool enabled) 
+{
+    _motor_i2c_enabled = enabled;
+}

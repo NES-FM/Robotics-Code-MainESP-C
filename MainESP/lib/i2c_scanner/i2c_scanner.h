@@ -2,13 +2,16 @@
 #define I2C_SCANNER_H
 
 #include <Wire.h>
+#include <HardwareSerial.h>
+#include "../../include/i2c_addresses.h"
 
-unsigned char I2C_Addresses[32];
-unsigned char I2C_Addresses_len = 0;
+uint8_t I2C_Addresses[32];
+uint8_t I2C_Addresses_len = 0;
+
 
 void scan_i2c_addresses()
 {
-    unsigned char error, address;
+    uint8_t error, address;
     for (address = 0x01; address < 0x7f; address++)
     {
         Wire.beginTransmission(address);
@@ -37,6 +40,20 @@ void print_i2c_addresses()
         Serial.print(" ");
     }
     Serial.println("");
+}
+
+bool check_device_enabled(uint8_t address, String name)
+{
+    for (uint8_t i = 0; i < I2C_Addresses_len; i++) 
+    {
+        if (I2C_Addresses[i] == address)
+        {
+            Serial.println(name + " enabled");
+            return true;
+        }
+    }
+    Serial.println("ERROR: " + name + "! DEVICE NOT FOUND!");
+    return false;
 }
 
 #endif /* I2C_SCANNER_H */
