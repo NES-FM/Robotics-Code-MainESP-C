@@ -15,6 +15,9 @@ void setup() {
     motor_left.init(1);
     motor_right.init(2);
 
+    scan_i2c_addresses();
+    print_i2c_addresses();
+
     CUART_init();
 }
 
