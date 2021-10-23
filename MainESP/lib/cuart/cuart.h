@@ -9,12 +9,13 @@ char _received_bytes[16] = {0x01};
 int _received_bytes_next_index = 0;
 char _currently_receiving = ' ';
 
-bool CUART_green_dots[4] = {false};
+bool CUART_green_dots[4] = {false, false, false, false};
 unsigned char CUART_line_type = 0;
 signed char CUART_line_angle = 0;
 signed char CUART_line_midfactor = 0;
-bool CUART_sensor_array[24] = {false};
+bool CUART_sensor_array[24] = {};
 
+int CUART_array_left_sensor = 0, CUART_array_mid_sensor = 0, CUART_array_right_sensor = 0;
 
 void CUART_init()
 {
@@ -52,6 +53,23 @@ void CUART_sensor_array_handler()
             else
                 CUART_sensor_array[(y * 8) + x] = false;
         }
+    }
+
+    // Calculating the Sensors used for driving
+    // (0 1 2) 3 4 5 6 7 8 9 | 10 11 12 13 14 15 | 16 17 18 19 20 21 22 (23)
+    // (0 0 0) 0 0 0 0 0 0 0 |  0 1  1  1  1  0  | 0 0 0 0 0 0 0 (0)
+    CUART_array_left_sensor = 0;
+    CUART_array_mid_sensor = 0;
+    CUART_array_right_sensor = 0;
+    for (int i = 0; i < 24; i++)
+    {
+        if (3 <= i && i <= 9)
+            CUART_array_left_sensor += CUART_sensor_array[i];
+        else if (10 <= i && i <= 15)
+        	CUART_array_mid_sensor += CUART_sensor_array[i];
+        else if (16 <= i && i <= 22)
+            CUART_array_right_sensor += CUART_sensor_array[i];
+        
     }
 }
 

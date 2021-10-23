@@ -5,31 +5,18 @@
 
 void drive(int speed_left, int speed_right)
 {
+    //display.draw_star();
     motor_left.move(speed_left);
     motor_right.move(speed_right);
 }
 
 void drive_sensor_array()
 {
-    // (0 1 2) 3 4 5 6 7 8 9 | 10 11 12 13 14 15 | 16 17 18 19 20 21 22 (23)
-    // (0 0 0) 0 0 0 0 0 0 0 |  0 1  1  1  1  0  | 0 0 0 0 0 0 0 (0)
-    int left_sensor = 0, mid_sensor = 0, right_sensor = 0;
-    for (int i = 0; i < 24; i++)
-    {
-        if (3 <= i && i <= 9)
-            left_sensor += CUART_sensor_array[i];
-        else if (10 <= i && i <= 15)
-        	mid_sensor += CUART_sensor_array[i];
-        else if (16 <= i && i <= 22)
-            right_sensor += CUART_sensor_array[i];
-        
-    }
-
     // Line is left...
-    if (2 < left_sensor && left_sensor < 6 && right_sensor < 2)
+    if (2 < CUART_array_left_sensor && CUART_array_left_sensor < 6 && CUART_array_right_sensor < 2)
     {
         // ... and not in the middle...
-        if (mid_sensor <= 2)
+        if (CUART_array_mid_sensor <= 2)
         {
             // ... but not too far left
             if (CUART_sensor_array[5] == 0)
@@ -41,20 +28,20 @@ void drive_sensor_array()
         // ... and wide (crossing)
         else
         {
-            // Serial.printf("Crossing (initiated from left): L: %d M: %d R: %d\r\n", left_sensor, mid_sensor, right_sensor);
+            // Serial.printf("Crossing (initiated from left): L: %d M: %d R: %d\r\n", CUART_array_left_sensor, CUART_array_mid_sensor, CUART_array_right_sensor);
             // drive(20, 20);
-            // while(mid_sensor > 2) {}
+            // while(CUART_array_mid_sensor > 2) {}
             // drive(-30, 30);
-            // while(mid_sensor <= 2) {}
+            // while(CUART_array_mid_sensor <= 2) {}
             // drive(20, 20);
         }
     }
 
     // Line is right...
-    if (2 < right_sensor && right_sensor < 6 && left_sensor < 2)
+    if (2 < CUART_array_right_sensor && CUART_array_right_sensor < 6 && CUART_array_left_sensor < 2)
     {
         // ... and not in the middle...
-        if (mid_sensor <= 2)
+        if (CUART_array_mid_sensor <= 2)
         {
             // ... but not too far right
             if (CUART_sensor_array[20] == 0)
@@ -66,24 +53,24 @@ void drive_sensor_array()
         // ... and wide (crossing)
         else
         {
-            Serial.printf("Crossing (initiated from right): L: %d M: %d R: %d\r\n", left_sensor, mid_sensor, right_sensor);
+            Serial.printf("Crossing (initiated from right): L: %d M: %d R: %d\r\n", CUART_array_left_sensor, CUART_array_mid_sensor, CUART_array_right_sensor);
             drive(20, 20);
-            while(mid_sensor > 2) {}
+            while(CUART_array_mid_sensor > 2) {}
             drive(30, -30);
-            while(mid_sensor <= 2) {}
+            while(CUART_array_mid_sensor <= 2) {}
             drive(20, 20);
         }
     }
 
     // Line is only in the middle
-    if (left_sensor < 2 && mid_sensor > 2 && right_sensor < 2)
+    if (CUART_array_left_sensor < 2 && CUART_array_mid_sensor > 2 && CUART_array_right_sensor < 2)
     {
         drive(20, 20);
     }
     
     if (DEBUG_MOTOR_VALUES == 1)
     {
-        Serial.printf("L: %d, M: %d, R: %d\r\n", left_sensor, mid_sensor, right_sensor);
+        Serial.printf("L: %d, M: %d, R: %d\r\n", CUART_array_left_sensor, CUART_array_mid_sensor, CUART_array_right_sensor);
     }
 }
 

@@ -38,21 +38,13 @@ void motor::move(int speed)
     else if (speed > 0)
         direction = MOTOR_DIREC_FORWARD;
     
-    speed = abs(speed);
-
-    if (current_direc != direction)
-        writeto_mem(_i2c_address, current_i2c_offset + _i2c_set_direc, direction);
-    if (current_speed != speed)
-        writeto_mem(_i2c_address, current_i2c_offset + _i2c_set_speed, speed);
-
-    current_direc = direction;
-    current_speed = speed;
+    this->move_direction(speed, direction);
 }
 
 void motor::move_direction(int speed, int direction)
 {
     if (direction == MOTOR_DIREC_STOP)
-        speed = 255;
+        speed = 0;
     else if (direction == MOTOR_DIREC_OFF)
         speed = 0;
     
@@ -65,6 +57,11 @@ void motor::move_direction(int speed, int direction)
 
     current_direc = direction;
     current_speed = speed;
+
+    // Calculating the speed to a nice value for the display (includes negative values etc.)
+    if (direction == MOTOR_DIREC_BACK)
+        speed *= -1;
+    motor_speed = speed;
 }
 
 void motor::stop() { this->move_direction(0, MOTOR_DIREC_STOP); }
