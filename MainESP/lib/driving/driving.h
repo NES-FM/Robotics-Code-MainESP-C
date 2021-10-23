@@ -1,6 +1,8 @@
 #ifndef DRIVING_H
 #define DRIVING_H
 
+#define DEBUG_MOTOR_VALUES 1
+
 void drive(int speed_left, int speed_right)
 {
     motor_left.move(speed_left);
@@ -27,7 +29,7 @@ void drive_sensor_array()
     if (2 < left_sensor && left_sensor < 6 && right_sensor < 2)
     {
         // ... and not in the middle...
-        if (mid_sensor < 2)
+        if (mid_sensor <= 2)
         {
             // ... but not too far left
             if (CUART_sensor_array[5] == 0)
@@ -39,7 +41,12 @@ void drive_sensor_array()
         // ... and wide (crossing)
         else
         {
-            Serial.printf("Crossing (initiated from left): L: %d M: %d R: %d\r\n", left_sensor, mid_sensor, right_sensor);
+            // Serial.printf("Crossing (initiated from left): L: %d M: %d R: %d\r\n", left_sensor, mid_sensor, right_sensor);
+            // drive(20, 20);
+            // while(mid_sensor > 2) {}
+            // drive(-30, 30);
+            // while(mid_sensor <= 2) {}
+            // drive(20, 20);
         }
     }
 
@@ -47,7 +54,7 @@ void drive_sensor_array()
     if (2 < right_sensor && right_sensor < 6 && left_sensor < 2)
     {
         // ... and not in the middle...
-        if (mid_sensor < 2)
+        if (mid_sensor <= 2)
         {
             // ... but not too far right
             if (CUART_sensor_array[20] == 0)
@@ -60,6 +67,11 @@ void drive_sensor_array()
         else
         {
             Serial.printf("Crossing (initiated from right): L: %d M: %d R: %d\r\n", left_sensor, mid_sensor, right_sensor);
+            drive(20, 20);
+            while(mid_sensor > 2) {}
+            drive(30, -30);
+            while(mid_sensor <= 2) {}
+            drive(20, 20);
         }
     }
 
@@ -67,6 +79,11 @@ void drive_sensor_array()
     if (left_sensor < 2 && mid_sensor > 2 && right_sensor < 2)
     {
         drive(20, 20);
+    }
+    
+    if (DEBUG_MOTOR_VALUES == 1)
+    {
+        Serial.printf("L: %d, M: %d, R: %d\r\n", left_sensor, mid_sensor, right_sensor);
     }
 }
 
