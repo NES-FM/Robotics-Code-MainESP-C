@@ -21,9 +21,9 @@ void setup() {
 void loop() {
     CUART_tick();
 
-    CUART_debugPrintArray();
+    // CUART_debugPrintArray();
 
-    // drive_sensor_array();
+    drive_sensor_array();
 
     // CUART_debugPrint();
 }
