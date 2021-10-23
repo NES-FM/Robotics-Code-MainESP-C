@@ -17,6 +17,11 @@ motor motor_right;
 display display;
 
 void setup() {
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(500);
+    digitalWrite(LED_BUILTIN, LOW);
+
     Serial.begin(115200); 
     Wire.begin(PIN_SDA, PIN_SCL, 400000);
 

@@ -13,6 +13,9 @@ void setup()
 {
   // initialize LED digital pin as an output.
   pinMode(LED_BUILTIN, OUTPUT);
+
+  pinMode(21, INPUT);
+  pinMode(22, INPUT);
 }
 
 void loop()
