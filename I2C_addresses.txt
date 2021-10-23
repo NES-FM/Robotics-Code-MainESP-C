@@ -1,0 +1,9 @@
+Fix:
+- display:              0x3c - 0b0111100 - 60  / 0x3d - 0b0111101 - 61 (Selectable)
+- PCA9537 IO-extender:  0x49 - 0b1001001 - 73  / 0x41 - 0b1000001 - 65 (1st is datasheet, 2nd is library (don't know which is right))
+- QMC5883l compass:     0x0d - 0b0001101 - 13
+- MPU-6050 Accel.:      0x68 - 0b1101000 - 104 / 0x69 - 0b1101001 - 105 (Selectable)
+
+Changeable:
+- Atmega 328p:          0x08 - 0b0001000 - 8
+

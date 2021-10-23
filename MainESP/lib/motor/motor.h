@@ -4,6 +4,7 @@
 #include <Wire.h>
 #include "../../include/pin_definitions.h"
 #include "../../include/motor_directions.h"
+#include "../../include/i2c_addresses.h"
 
 class motor 
 {
@@ -19,7 +20,7 @@ class motor
         const char _i2c_set_direc = 0x01;
         const char _i2c_offset_motor_1 = 0x30;
         const char _i2c_offset_motor_2 = 0x35;
-        const char _i2c_address = 0x08;
+        const char _i2c_address = I2C_ADDRESSS_MOTOR_CONTROLLER;
 
         signed char motor_num = -1;
         char current_i2c_offset = 0;
