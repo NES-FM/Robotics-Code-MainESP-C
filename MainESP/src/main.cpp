@@ -7,14 +7,16 @@
 #include "cuart.h"
 
 #include "motor.h"
-#include "display.h"
+#include "debug_disp.h"
 #include "i2c_scanner.h"
 
 motor motor_left;
 motor motor_right;
 #include "driving.h"
 
-display display;
+debug_disp display;
+
+#include "multithreaded_loop.h"
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
@@ -46,12 +48,10 @@ void setup() {
 
     display.init(CUART_sensor_array, CUART_green_dots, &CUART_line_type, &CUART_line_angle, &CUART_line_midfactor, &CUART_array_left_sensor, &CUART_array_mid_sensor, &CUART_array_right_sensor, &motor_left.motor_speed, &motor_right.motor_speed);
 
-    // display.draw_rect();
+    init_multithreaded_loop();
 }
 
 void loop() {
-    CUART_tick();
-
     display.tick();
 
     // CUART_debugPrintArray();

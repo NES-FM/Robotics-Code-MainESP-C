@@ -1,5 +1,5 @@
-#ifndef DISPLAY_H
-#define DISPLAY_H
+#ifndef DEBUG_DISP_H
+#define DEBUG_DISP_H
 
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -32,9 +32,9 @@ static const unsigned char PROGMEM star_bmp[] =
             B01110000,B01110000,
             B00000000,B00110000 };
 
-class display {
+class debug_disp {
     public:
-        display();
+        debug_disp();
         void init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val) ;
         void tick();
         void enable(bool enabled);
@@ -65,4 +65,4 @@ class display {
         bool heartbeat_state = false;
 };
 
-#endif /* DISPLAY_H */
+#endif /* DEBUG_DISP_H */

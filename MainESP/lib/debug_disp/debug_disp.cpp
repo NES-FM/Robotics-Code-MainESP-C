@@ -1,8 +1,8 @@
-#include "display.h"
+#include "debug_disp.h"
 
-display::display() {};
+debug_disp::debug_disp() {};
 
-void display::init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val)
+void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val)
 {
     // Getting references to all variables to be shown on the screen
     _local_cuart_sensor_array = sensor_array;
@@ -29,7 +29,7 @@ void display::init(bool* sensor_array, bool* green_dots, unsigned char* type, si
     }
 }
 
-void display::draw_sensor_array(int x, int y, int element_width, int element_height)
+void debug_disp::draw_sensor_array(int x, int y, int element_width, int element_height)
 {
     // Outline
     oled->drawRect(x, y, 2+element_width*24, element_height+2, SSD1306_WHITE);
@@ -60,7 +60,7 @@ void display::draw_sensor_array(int x, int y, int element_width, int element_hei
     oled->print(*_r_sensor);
 }
 
-void display::draw_green_dots(int x, int y, int width, int height)
+void debug_disp::draw_green_dots(int x, int y, int width, int height)
 {
     oled->drawLine(x + (width/2), y, x + (width/2), y + height, SSD1306_WHITE);
     oled->drawLine(x, y + (height/2), x + width, y + (height/2), SSD1306_WHITE);
@@ -78,7 +78,7 @@ void display::draw_green_dots(int x, int y, int width, int height)
         oled->fillRect(x+width-single_width, y+height-single_height, single_width, single_height, SSD1306_WHITE);
 }
 
-void display::draw_ltype(int x, int y)
+void debug_disp::draw_ltype(int x, int y)
 {
     oled->setCursor(x, y);
     oled->setTextSize(2);
@@ -128,7 +128,7 @@ void display::draw_ltype(int x, int y)
     }        
 }
 
-void display::tick()
+void debug_disp::tick()
 {
     if (_display_i2c_enabled)
     {
@@ -155,12 +155,12 @@ void display::tick()
     }
 }
 
-void display::enable(bool enabled)
+void debug_disp::enable(bool enabled)
 {
     _display_i2c_enabled = enabled;
 }
 
-void display::draw_star()
+void debug_disp::draw_star()
 {
     if (_display_i2c_enabled)
     {
