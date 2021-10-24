@@ -46,7 +46,7 @@ void setup() {
 
     CUART_init();
 
-    display.init(CUART_sensor_array, CUART_green_dots, &CUART_line_type, &CUART_line_angle, &CUART_line_midfactor, &CUART_array_left_sensor, &CUART_array_mid_sensor, &CUART_array_right_sensor, &motor_left.motor_speed, &motor_right.motor_speed);
+    display.init(CUART_sensor_array, CUART_green_dots, &CUART_line_type, &CUART_line_angle, &CUART_line_midfactor, &CUART_array_left_sensor, &CUART_array_mid_sensor, &CUART_array_right_sensor, &motor_left.motor_speed, &motor_right.motor_speed, &driving_interesting_situation, &driving_interesting_bias_left, &driving_interesting_bias_right, &driving_interesting_bias_both);
 
     init_multithreaded_loop();
 }
@@ -56,7 +56,7 @@ void loop() {
 
     // CUART_debugPrintArray();
 
-    // drive_sensor_array();
+    drive_sensor_array();
 
     // CUART_debugPrint();
 }

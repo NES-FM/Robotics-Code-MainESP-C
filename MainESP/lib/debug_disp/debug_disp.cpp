@@ -2,7 +2,7 @@
 
 debug_disp::debug_disp() {};
 
-void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val)
+void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both)
 {
     // Getting references to all variables to be shown on the screen
     _local_cuart_sensor_array = sensor_array;
@@ -15,6 +15,10 @@ void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type,
     _r_sensor = r_sens;
     _l_motor_value = lm_val;
     _r_motor_value = rm_val;
+    _interesting_situation = int_sit;
+    _int_bias_left = int_bi_left;
+    _int_bias_right = int_bi_right;
+    _int_bias_both = int_bi_both;
     if (!oled->begin(SSD1306_SWITCHCAPVCC, _i2c_address))
     {
         Serial.println(F("SSD1306 allocation failed"));
@@ -80,6 +84,11 @@ void debug_disp::draw_green_dots(int x, int y, int width, int height)
 
 void debug_disp::draw_ltype(int x, int y)
 {
+    if (*_interesting_situation) oled->drawLine(x, y, x+14, y, SSD1306_WHITE);
+    if (*_int_bias_left || *_int_bias_both) oled->drawLine(x, y+1, x+3, y+1, SSD1306_WHITE);
+    if (*_int_bias_right || *_int_bias_both) oled->drawLine(x+11, y+1, x+14, y+1, SSD1306_WHITE);
+
+    y += 4;
     oled->setCursor(x, y);
     oled->setTextSize(2);
     oled->setTextColor(SSD1306_WHITE);
@@ -139,12 +148,12 @@ void debug_disp::tick()
 
             // Sensor array and numbers down below. 
             this->draw_sensor_array(0, 0, 3, 5); // W: 2+element_width*24  H: element_height+18
+            
+            // Ltype
+            this->draw_ltype(80, 0);
 
             // Green Dots
-            this->draw_green_dots(80, 0, 22, 22);
-
-            // Ltype
-            this->draw_ltype(110, 4);
+            this->draw_green_dots(100, 0, 22, 22);
 
             // Flashing Pixel in lower right corner
             heartbeat_state = !heartbeat_state;

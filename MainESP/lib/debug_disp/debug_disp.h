@@ -35,7 +35,7 @@ static const unsigned char PROGMEM star_bmp[] =
 class debug_disp {
     public:
         debug_disp();
-        void init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val) ;
+        void init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both) ;
         void tick();
         void enable(bool enabled);
         void draw_star();
@@ -63,6 +63,8 @@ class debug_disp {
         void draw_ltype(int x, int y);
 
         bool heartbeat_state = false;
+
+        bool* _interesting_situation, *_int_bias_left, *_int_bias_right, *_int_bias_both;
 };
 
 #endif /* DEBUG_DISP_H */
