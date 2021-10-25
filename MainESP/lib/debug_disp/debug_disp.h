@@ -61,6 +61,7 @@ class debug_disp {
         void draw_sensor_array(int x, int y, int element_width, int element_height);
         void draw_green_dots(int x, int y, int width, int height);
         void draw_ltype(int x, int y);
+        void draw_motor_values(int x, int y);
 
         bool heartbeat_state = false;
 

@@ -137,6 +137,17 @@ void debug_disp::draw_ltype(int x, int y)
     }        
 }
 
+void debug_disp::draw_motor_values(int x, int y)
+{
+    oled->setCursor(x, y);
+    oled->setTextSize(2);
+    oled->setTextColor(SSD1306_WHITE);
+
+    oled->print(*_l_motor_value);
+    oled->print(" ");
+    oled->print(*_r_motor_value);
+}
+
 void debug_disp::tick()
 {
     if (_display_i2c_enabled)
@@ -154,6 +165,9 @@ void debug_disp::tick()
 
             // Green Dots
             this->draw_green_dots(100, 0, 22, 22);
+
+            // Motor Values
+            this-> draw_motor_values(0, 24);
 
             // Flashing Pixel in lower right corner
             heartbeat_state = !heartbeat_state;
