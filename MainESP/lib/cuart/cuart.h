@@ -38,7 +38,10 @@ void CUART_line_handler()
 
 void CUART_green_handler()
 {
-    Serial.println("Cuart Green --- To Be Done!");
+    CUART_green_dots[0] = (_received_bytes[0] >> 3) & 0b00000001;
+    CUART_green_dots[1] = (_received_bytes[0] >> 2) & 0b00000001;
+    CUART_green_dots[2] = (_received_bytes[0] >> 1) & 0b00000001;
+    CUART_green_dots[3] = (_received_bytes[0] >> 0) & 0b00000001;
 }
 
 void CUART_sensor_array_handler()

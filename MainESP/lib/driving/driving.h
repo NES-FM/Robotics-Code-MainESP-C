@@ -103,6 +103,40 @@ void drive_sensor_array()
         driving_interesting_bias_left = false;
         driving_interesting_bias_right = false;
         driving_interesting_bias_both = false;
+
+        // Actual driving
+
+        // Turn left
+        if ((driving_interesting_actual_ltype == CUART_LTYPE_90l) || 
+              ((driving_interesting_actual_ltype == CUART_LTYPE_tl || 
+                driving_interesting_actual_ltype == CUART_LTYPE_t || 
+                driving_interesting_actual_ltype == CUART_LTYPE_X) && CUART_green_dots[2]))
+        {
+            drive(-20, 20);
+            while(CUART_array_mid_sensor > 2) {}
+            while(CUART_sensor_array[15]) {}
+            delay(100);
+            while(!CUART_sensor_array[15]) {}
+            drive(20, 20);
+        }
+        // Turn right
+        else if ((driving_interesting_actual_ltype == CUART_LTYPE_90r) || 
+                  ((driving_interesting_actual_ltype == CUART_LTYPE_tr || 
+                    driving_interesting_actual_ltype == CUART_LTYPE_t || 
+                    driving_interesting_actual_ltype == CUART_LTYPE_X) && CUART_green_dots[3]))
+        {
+            drive(20, -20);
+            while(CUART_array_mid_sensor > 2) {}
+            while(CUART_sensor_array[10]) {}
+            delay(100);
+            while(!CUART_sensor_array[10]) {}
+            drive(20, 20);
+        }
+        // Keep Straight
+        else
+        {
+            drive(20, 20);
+        }
     }
     
     if (DEBUG_MOTOR_VALUES == 1)
