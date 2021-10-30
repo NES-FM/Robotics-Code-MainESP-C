@@ -6,6 +6,8 @@
 #include <Adafruit_SSD1306.h>
 #include "../../include/i2c_addresses.h"
 #include "../../include/cuart_line_types.h"
+#include "compass.h"
+#include "accel.h"
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -35,9 +37,10 @@ static const unsigned char PROGMEM star_bmp[] =
 class debug_disp {
     public:
         debug_disp();
-        void init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both) ;
+        void init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc) ;
         void tick();
         void enable(bool enabled);
+        bool is_enabled() { return _display_i2c_enabled; }
         void draw_star();
     private:
         uint8_t _i2c_address = I2C_ADDRESS_DISPLAY;
@@ -62,10 +65,15 @@ class debug_disp {
         void draw_green_dots(int x, int y, int width, int height);
         void draw_ltype(int x, int y);
         void draw_motor_values(int x, int y);
+        void draw_comp_accel(int x, int y);
+
 
         bool heartbeat_state = false;
 
         bool* _interesting_situation, *_int_bias_left, *_int_bias_right, *_int_bias_both;
+
+        compass_hmc* _compass;
+        accel* _accelerometer;
 };
 
 #endif /* DEBUG_DISP_H */

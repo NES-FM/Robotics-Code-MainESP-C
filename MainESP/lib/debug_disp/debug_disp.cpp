@@ -2,7 +2,7 @@
 
 debug_disp::debug_disp() {};
 
-void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both)
+void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc)
 {
     // Getting references to all variables to be shown on the screen
     _local_cuart_sensor_array = sensor_array;
@@ -19,6 +19,9 @@ void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type,
     _int_bias_left = int_bi_left;
     _int_bias_right = int_bi_right;
     _int_bias_both = int_bi_both;
+    _compass = comp;
+    _accelerometer = acc;
+
     if (!oled->begin(SSD1306_SWITCHCAPVCC, _i2c_address))
     {
         Serial.println(F("SSD1306 allocation failed"));
@@ -142,10 +145,25 @@ void debug_disp::draw_motor_values(int x, int y)
     oled->setCursor(x, y);
     oled->setTextSize(2);
     oled->setTextColor(SSD1306_WHITE);
+    
+    oled->printf("%+03d %+03d", *_l_motor_value, *_r_motor_value);
+}
 
-    oled->print(*_l_motor_value);
-    oled->print(" ");
-    oled->print(*_r_motor_value);
+void debug_disp::draw_comp_accel(int x, int y)
+{
+    oled->setCursor(x, y);
+    oled->setTextSize(1);
+    oled->setTextColor(SSD1306_WHITE);
+
+    oled->printf("%5.1f", _accelerometer->get_roll_degrees());
+    // oled->print(0xF8);
+
+    oled->setCursor(x, y+8);
+
+    oled->printf("  %03d", int(_compass->get_angle()));
+    // oled->print(0xF8);
+
+    // Serial.printf("%f  %5.1f\t\t%f %03d\r\n", _accelerometer->get_roll_degrees(), _accelerometer->get_roll_degrees(), _compass->get_angle(), int(_compass->get_angle()));
 }
 
 void debug_disp::tick()
@@ -167,7 +185,10 @@ void debug_disp::tick()
             this->draw_green_dots(100, 0, 22, 22);
 
             // Motor Values
-            this-> draw_motor_values(0, 24);
+            this->draw_motor_values(0, 24); // W: 108px
+
+            // Accelerometer and Compass
+            this->draw_comp_accel(90, 24);
 
             // Flashing Pixel in lower right corner
             heartbeat_state = !heartbeat_state;

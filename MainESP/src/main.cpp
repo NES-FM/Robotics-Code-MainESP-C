@@ -5,16 +5,21 @@
 #include "cuart_line_types.h"
 
 #include "cuart.h"
-
 #include "motor.h"
 #include "debug_disp.h"
 #include "i2c_scanner.h"
+#include "accel.h"
+#include "compass.h"
+
+
+debug_disp display;
+
+accel accel_sensor;
+compass_hmc compass;
 
 motor motor_left;
 motor motor_right;
 #include "driving.h"
-
-debug_disp display;
 
 #include "multithreaded_loop.h"
 
@@ -37,8 +42,8 @@ void setup() {
     display.enable(check_device_enabled(I2C_ADDRESS_DISPLAY, "display"));
     check_device_enabled(I2C_ADDRESS_IO_EXTENDER, "io-extender");
 
-    check_device_enabled(I2C_ADDRESS_COMPASS, "compass");
-    check_device_enabled(I2C_ADDRESS_ACCELEROMETER, "accelerometer");
+    compass.enable(check_device_enabled(I2C_ADDRESS_COMPASS, "compass"));
+    accel_sensor.enable(check_device_enabled(I2C_ADDRESS_ACCELEROMETER, "accelerometer"));
 
     // Initialization of lib
     motor_left.init(1);
@@ -46,7 +51,10 @@ void setup() {
 
     CUART_init();
 
-    display.init(CUART_sensor_array, CUART_green_dots, &CUART_line_type, &CUART_line_angle, &CUART_line_midfactor, &CUART_array_left_sensor, &CUART_array_mid_sensor, &CUART_array_right_sensor, &motor_left.motor_speed, &motor_right.motor_speed, &driving_interesting_situation, &driving_interesting_bias_left, &driving_interesting_bias_right, &driving_interesting_bias_both);
+    display.init(CUART_sensor_array, CUART_green_dots, &CUART_line_type, &CUART_line_angle, &CUART_line_midfactor, &CUART_array_left_sensor, &CUART_array_mid_sensor, &CUART_array_right_sensor, &motor_left.motor_speed, &motor_right.motor_speed, &driving_interesting_situation, &driving_interesting_bias_left, &driving_interesting_bias_right, &driving_interesting_bias_both, &compass, &accel_sensor);
+
+    accel_sensor.init();
+    compass.init(&accel_sensor);
 
     init_multithreaded_loop();
 }
@@ -56,7 +64,8 @@ void loop() {
 
     // CUART_debugPrintArray();
 
-    drive_sensor_array();
+    if (motor_left.is_enabled() && motor_right.is_enabled())
+        drive_sensor_array();
 
     // CUART_debugPrint();
 }
