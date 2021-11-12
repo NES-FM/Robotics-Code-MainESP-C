@@ -69,40 +69,40 @@ void drive_sensor_array()
     if (CUART_array_left_sensor < 2 && CUART_array_right_sensor < 2 && CUART_sensor_array[0] && driving_interesting_situation_locked)
     {
         driving_interesting_actual_ltype = CUART_line_type;
-        if (driving_interesting_bias_left)
-        {
-            if (CUART_line_type == CUART_LTYPE_90r)
-                driving_interesting_actual_ltype = CUART_LTYPE_t;
-            else if (CUART_line_type == CUART_LTYPE_tr)
-                driving_interesting_actual_ltype = CUART_LTYPE_X;
-            else if (CUART_line_type == CUART_LTYPE_STRAIGHT || CUART_line_type == CUART_LTYPE_UNKNOWN || CUART_line_type == CUART_LTYPE_SPACE)
-                driving_interesting_actual_ltype = CUART_LTYPE_90l;
-        }
-        else if (driving_interesting_bias_right)
-        {
-            if (CUART_line_type == CUART_LTYPE_90l)
-                driving_interesting_actual_ltype = CUART_LTYPE_t;
-            else if (CUART_line_type == CUART_LTYPE_tl)
-                driving_interesting_actual_ltype = CUART_LTYPE_X;
-            else if (CUART_line_type == CUART_LTYPE_STRAIGHT || CUART_line_type == CUART_LTYPE_UNKNOWN || CUART_line_type == CUART_LTYPE_SPACE)
-                driving_interesting_actual_ltype = CUART_LTYPE_90r;
-        }
-        else if (driving_interesting_bias_both)
-        {
-            if (CUART_line_type == CUART_LTYPE_90r || CUART_line_type == CUART_LTYPE_90l)
-                driving_interesting_actual_ltype = CUART_LTYPE_t;
-            else if (CUART_line_type == CUART_LTYPE_tr || CUART_line_type == CUART_LTYPE_tl)
-                driving_interesting_actual_ltype = CUART_LTYPE_X;
-            else if (CUART_line_type != CUART_LTYPE_t && CUART_line_type != CUART_LTYPE_X)
-                driving_interesting_actual_ltype = CUART_LTYPE_X;
-        }
+        // if (driving_interesting_bias_left)
+        // {
+        //     if (CUART_line_type == CUART_LTYPE_90r)
+        //         driving_interesting_actual_ltype = CUART_LTYPE_t;
+        //     else if (CUART_line_type == CUART_LTYPE_tr)
+        //         driving_interesting_actual_ltype = CUART_LTYPE_X;
+        //     else if (CUART_line_type == CUART_LTYPE_STRAIGHT || CUART_line_type == CUART_LTYPE_UNKNOWN || CUART_line_type == CUART_LTYPE_SPACE)
+        //         driving_interesting_actual_ltype = CUART_LTYPE_90l;
+        // }
+        // else if (driving_interesting_bias_right)
+        // {
+        //     if (CUART_line_type == CUART_LTYPE_90l)
+        //         driving_interesting_actual_ltype = CUART_LTYPE_t;
+        //     else if (CUART_line_type == CUART_LTYPE_tl)
+        //         driving_interesting_actual_ltype = CUART_LTYPE_X;
+        //     else if (CUART_line_type == CUART_LTYPE_STRAIGHT || CUART_line_type == CUART_LTYPE_UNKNOWN || CUART_line_type == CUART_LTYPE_SPACE)
+        //         driving_interesting_actual_ltype = CUART_LTYPE_90r;
+        // }
+        // else if (driving_interesting_bias_both)
+        // {
+        //     if (CUART_line_type == CUART_LTYPE_90r || CUART_line_type == CUART_LTYPE_90l)
+        //         driving_interesting_actual_ltype = CUART_LTYPE_t;
+        //     else if (CUART_line_type == CUART_LTYPE_tr || CUART_line_type == CUART_LTYPE_tl)
+        //         driving_interesting_actual_ltype = CUART_LTYPE_X;
+        //     else if (CUART_line_type != CUART_LTYPE_t && CUART_line_type != CUART_LTYPE_X)
+        //         driving_interesting_actual_ltype = CUART_LTYPE_X;
+        // }
 
-        Serial.printf("Driving interesting situation with ltype: %d, Bias: L: %s, R: %s, B: %s\r\n", driving_interesting_actual_ltype, driving_interesting_bias_left ? "T" : "F", driving_interesting_bias_right ? "T" : "F", driving_interesting_bias_both ? "T" : "F");
-        driving_interesting_situation_locked = false;
-        driving_interesting_situation = false;
-        driving_interesting_bias_left = false;
-        driving_interesting_bias_right = false;
-        driving_interesting_bias_both = false;
+        // Serial.printf("Driving interesting situation with ltype: %d, Bias: L: %s, R: %s, B: %s\r\n", driving_interesting_actual_ltype, driving_interesting_bias_left ? "T" : "F", driving_interesting_bias_right ? "T" : "F", driving_interesting_bias_both ? "T" : "F");
+        // driving_interesting_situation_locked = false;
+        // driving_interesting_situation = false;
+        // driving_interesting_bias_left = false;
+        // driving_interesting_bias_right = false;
+        // driving_interesting_bias_both = false;
 
         // Actual driving
 
@@ -112,12 +112,13 @@ void drive_sensor_array()
                 driving_interesting_actual_ltype == CUART_LTYPE_t || 
                 driving_interesting_actual_ltype == CUART_LTYPE_X) && CUART_green_dots[2]))
         {
-            drive(-20, 20);
-            while(CUART_array_mid_sensor > 2) {}
-            while(CUART_sensor_array[15]) {}
-            delay(100);
-            while(!CUART_sensor_array[15]) {}
-            drive(20, 20);
+            // drive(-20, 20);
+            // while(CUART_array_mid_sensor > 2) {}
+            // while(CUART_sensor_array[15]) {}
+            // delay(100);
+            // while(!CUART_sensor_array[15]) {}
+            // drive(20, 20);
+            Serial.printf("Interesting: Turning left with ltype %d and dl green dot %s\r\n", driving_interesting_actual_ltype, CUART_green_dots[2] ? "True" : "False");
         }
         // Turn right
         else if ((driving_interesting_actual_ltype == CUART_LTYPE_90r) || 
@@ -125,18 +126,23 @@ void drive_sensor_array()
                     driving_interesting_actual_ltype == CUART_LTYPE_t || 
                     driving_interesting_actual_ltype == CUART_LTYPE_X) && CUART_green_dots[3]))
         {
-            drive(20, -20);
-            while(CUART_array_mid_sensor > 2) {}
-            while(CUART_sensor_array[10]) {}
-            delay(100);
-            while(!CUART_sensor_array[10]) {}
-            drive(20, 20);
+            // drive(20, -20);
+            // while(CUART_array_mid_sensor > 2) {}
+            // while(CUART_sensor_array[10]) {}
+            // delay(100);
+            // while(!CUART_sensor_array[10]) {}
+            // drive(20, 20);
+            Serial.printf("Interesting: Turning right with ltype %d and dr green dot %s\r\n", driving_interesting_actual_ltype, CUART_green_dots[3] ? "True" : "False");
         }
         // Keep Straight
         else
         {
-            drive(20, 20);
+            // drive(20, 20);
+            Serial.printf("Interesting: Keeping Straight with ltype %d and dl green dot %s and dr green dot %s\r\n", driving_interesting_actual_ltype, CUART_green_dots[2] ? "True" : "False", CUART_green_dots[3] ? "True" : "False");
         }
+
+        driving_interesting_situation = false;
+        driving_interesting_situation_locked = false;
     }
     
     if (DEBUG_MOTOR_VALUES == 1)

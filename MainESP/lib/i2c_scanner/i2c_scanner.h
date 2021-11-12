@@ -42,18 +42,25 @@ void print_i2c_addresses()
     Serial.println("");
 }
 
-bool check_device_enabled(uint8_t address, String name)
+bool check_device_enabled(uint8_t address, String name, String short_name)
 {
+    bool ret = false;
     for (uint8_t i = 0; i < I2C_Addresses_len; i++) 
     {
         if (I2C_Addresses[i] == address)
         {
             Serial.println(name + " enabled");
-            return true;
+            ret = true;
+            break;
         }
     }
-    Serial.println("ERROR: " + name + "! DEVICE NOT FOUND!");
-    return false;
+
+    if (!ret)
+    {
+        display.disable_i2c_device(short_name);
+        Serial.println("ERROR: " + name + "! DEVICE NOT FOUND!");
+    }
+    return ret;
 }
 
 #endif /* I2C_SCANNER_H */

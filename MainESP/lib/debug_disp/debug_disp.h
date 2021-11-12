@@ -42,6 +42,7 @@ class debug_disp {
         void enable(bool enabled);
         bool is_enabled() { return _display_i2c_enabled; }
         void draw_star();
+        void disable_i2c_device(String dev);
     private:
         uint8_t _i2c_address = I2C_ADDRESS_DISPLAY;
         bool _display_i2c_enabled = false;
@@ -66,7 +67,7 @@ class debug_disp {
         void draw_ltype(int x, int y);
         void draw_motor_values(int x, int y);
         void draw_comp_accel(int x, int y);
-
+        void draw_disabled_i2c_devices(int x, int y);
 
         bool heartbeat_state = false;
 
@@ -74,6 +75,8 @@ class debug_disp {
 
         compass_hmc* _compass;
         accel* _accelerometer;
+
+        String i2c_disabled_devices = "";
 };
 
 #endif /* DEBUG_DISP_H */

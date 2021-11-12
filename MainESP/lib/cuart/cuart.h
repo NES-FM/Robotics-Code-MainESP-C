@@ -31,9 +31,16 @@ signed char CUART_unsigned_to_signed(unsigned char s)
 
 void CUART_line_handler()
 {
-    CUART_line_type = _received_bytes[0];
-    CUART_line_angle = CUART_unsigned_to_signed(_received_bytes[1]);
-    CUART_line_midfactor = CUART_unsigned_to_signed(_received_bytes[2]);
+    if (_received_bytes_next_index >= 3)
+    {
+        CUART_line_type = _received_bytes[0];
+        CUART_line_angle = CUART_unsigned_to_signed(_received_bytes[1]);
+        CUART_line_midfactor = CUART_unsigned_to_signed(_received_bytes[2]);
+    }
+    else
+    {
+        Serial.printf("CUART_line_handler: Too few bytes received (%d/%d) ~ %d %d %d\r\n", _received_bytes_next_index, 3, CUART_sensor_array[0], CUART_sensor_array[1], CUART_sensor_array[2]);
+    }
 }
 
 void CUART_green_handler()
@@ -46,16 +53,23 @@ void CUART_green_handler()
 
 void CUART_sensor_array_handler()
 {
-    for (int y = 0; y < 3; y++)
+    if (_received_bytes_next_index >= 3)
     {
-        for (int x = 0; x < 8; x++)
+        for (int y = 0; y < 3; y++)
         {
-            // Saving one byte after the other into the array, while flipping 1s to 0s
-            if (((_received_bytes[y] << x) & 0b10000000) == 0)
-                CUART_sensor_array[(y * 8) + x] = true;
-            else
-                CUART_sensor_array[(y * 8) + x] = false;
+            for (int x = 0; x < 8; x++)
+            {
+                // Saving one byte after the other into the array, while flipping 1s to 0s
+                if (((_received_bytes[y] << x) & 0b10000000) == 0)
+                    CUART_sensor_array[(y * 8) + x] = true;
+                else
+                    CUART_sensor_array[(y * 8) + x] = false;
+            }
         }
+    }
+    else
+    {
+        Serial.printf("CUART_sensor_array_handler: Too few bytes received (%d/%d) ~ %d %d %d\r\n", _received_bytes_next_index, 3, CUART_sensor_array[0], CUART_sensor_array[1], CUART_sensor_array[2]);
     }
 
     // Calculating the Sensors used for driving

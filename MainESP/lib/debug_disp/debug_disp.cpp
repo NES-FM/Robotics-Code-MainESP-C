@@ -88,8 +88,8 @@ void debug_disp::draw_green_dots(int x, int y, int width, int height)
 void debug_disp::draw_ltype(int x, int y)
 {
     if (*_interesting_situation) oled->drawLine(x, y, x+14, y, SSD1306_WHITE);
-    if (*_int_bias_left || *_int_bias_both) oled->drawLine(x, y+1, x+3, y+1, SSD1306_WHITE);
-    if (*_int_bias_right || *_int_bias_both) oled->drawLine(x+11, y+1, x+14, y+1, SSD1306_WHITE);
+    // if (*_int_bias_left || *_int_bias_both) oled->drawLine(x, y+1, x+3, y+1, SSD1306_WHITE);
+    // if (*_int_bias_right || *_int_bias_both) oled->drawLine(x+11, y+1, x+14, y+1, SSD1306_WHITE);
 
     y += 4;
     oled->setCursor(x, y);
@@ -166,6 +166,16 @@ void debug_disp::draw_comp_accel(int x, int y)
     // Serial.printf("%f  %5.1f\t\t%f %03d\r\n", _accelerometer->get_roll_degrees(), _accelerometer->get_roll_degrees(), _compass->get_angle(), int(_compass->get_angle()));
 }
 
+void debug_disp::draw_disabled_i2c_devices(int x, int y)
+{
+    oled->setCursor(x, y);
+    oled->setTextSize(1);
+    oled->setTextColor(SSD1306_WHITE);
+
+    oled->print("I2C-D: ");
+    oled->print(i2c_disabled_devices);
+}
+
 void debug_disp::tick()
 {
     if (_display_i2c_enabled)
@@ -189,6 +199,9 @@ void debug_disp::tick()
 
             // Accelerometer and Compass
             this->draw_comp_accel(90, 24);
+
+            // Disabled I2C Devices
+            this->draw_disabled_i2c_devices(0, 40);
 
             // Flashing Pixel in lower right corner
             heartbeat_state = !heartbeat_state;
@@ -216,4 +229,10 @@ void debug_disp::draw_star()
         star_bmp, star_width, star_height, 1);
         oled->display();
     }
+}
+
+void debug_disp::disable_i2c_device(String dev)
+{
+    i2c_disabled_devices += dev;
+    i2c_disabled_devices += " ";
 }
