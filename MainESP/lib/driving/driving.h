@@ -112,12 +112,21 @@ void drive_sensor_array()
                 driving_interesting_actual_ltype == CUART_LTYPE_t || 
                 driving_interesting_actual_ltype == CUART_LTYPE_X) && CUART_green_dots[2]))
         {
-            // drive(-20, 20);
-            // while(CUART_array_mid_sensor > 2) {}
-            // while(CUART_sensor_array[15]) {}
-            // delay(100);
-            // while(!CUART_sensor_array[15]) {}
-            // drive(20, 20);
+            drive(-23, 20);
+            while(CUART_array_mid_sensor > 2) {
+                display.tick();
+                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+            }
+            while(CUART_sensor_array[15]) {
+                display.tick();
+                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+            }
+            delay(100);
+            while(!CUART_sensor_array[15]) {
+                display.tick();
+                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+            }
+            drive(20, 20);
             Serial.printf("Interesting: Turning left with ltype %d and dl green dot %s\r\n", driving_interesting_actual_ltype, CUART_green_dots[2] ? "True" : "False");
         }
         // Turn right
@@ -126,18 +135,27 @@ void drive_sensor_array()
                     driving_interesting_actual_ltype == CUART_LTYPE_t || 
                     driving_interesting_actual_ltype == CUART_LTYPE_X) && CUART_green_dots[3]))
         {
-            // drive(20, -20);
-            // while(CUART_array_mid_sensor > 2) {}
-            // while(CUART_sensor_array[10]) {}
-            // delay(100);
-            // while(!CUART_sensor_array[10]) {}
-            // drive(20, 20);
+            drive(20, -23);
+            while(CUART_array_mid_sensor > 2) {
+                display.tick();
+                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+            }
+            while(CUART_sensor_array[10]) {
+                display.tick();
+                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+            }
+            delay(100);
+            while(!CUART_sensor_array[10]) {
+                display.tick();
+                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+            }
+            drive(20, 20);
             Serial.printf("Interesting: Turning right with ltype %d and dr green dot %s\r\n", driving_interesting_actual_ltype, CUART_green_dots[3] ? "True" : "False");
         }
         // Keep Straight
         else
         {
-            // drive(20, 20);
+            drive(20, 20);
             Serial.printf("Interesting: Keeping Straight with ltype %d and dl green dot %s and dr green dot %s\r\n", driving_interesting_actual_ltype, CUART_green_dots[2] ? "True" : "False", CUART_green_dots[3] ? "True" : "False");
         }
 

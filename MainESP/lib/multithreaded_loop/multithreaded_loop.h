@@ -10,7 +10,7 @@ void multithreaded_loop(void* parameters) {
     while(true)
     {
         CUART_tick();
-
+        // display.tick();
     }
 }
 
