@@ -88,8 +88,8 @@ void debug_disp::draw_green_dots(int x, int y, int width, int height)
 void debug_disp::draw_ltype(int x, int y)
 {
     if (*_interesting_situation) oled->drawLine(x, y, x+14, y, SSD1306_WHITE);
-    // if (*_int_bias_left || *_int_bias_both) oled->drawLine(x, y+1, x+3, y+1, SSD1306_WHITE);
-    // if (*_int_bias_right || *_int_bias_both) oled->drawLine(x+11, y+1, x+14, y+1, SSD1306_WHITE);
+    if (*_int_bias_left || *_int_bias_both) oled->drawLine(x, y+1, x+3, y+1, SSD1306_WHITE);
+    if (*_int_bias_right || *_int_bias_both) oled->drawLine(x+11, y+1, x+14, y+1, SSD1306_WHITE);
 
     y += 4;
     oled->setCursor(x, y);

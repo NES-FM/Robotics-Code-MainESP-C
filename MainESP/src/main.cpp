@@ -57,6 +57,26 @@ void setup() {
     compass.init(&accel_sensor);
 
     init_multithreaded_loop();
+
+/*
+    ledcAttachPin(26, 1);
+
+    ledcWriteNote(1, NOTE_C, 4);
+    delay(500);
+    ledcWriteNote(1, NOTE_D, 4);
+    delay(500);
+    ledcWriteNote(1, NOTE_E, 4);
+    delay(500);
+    ledcWriteNote(1, NOTE_F, 4);
+    delay(500);
+    ledcWriteNote(1, NOTE_G, 4);
+    delay(500);
+    ledcWriteNote(1, NOTE_A, 4);
+    delay(500);
+    ledcWriteNote(1, NOTE_B, 4);
+    delay(500);
+    ledcDetachPin(26);
+    */
 }
 
 void loop() {
