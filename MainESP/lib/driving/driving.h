@@ -223,6 +223,37 @@ void drive_sensor_array()
             drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
             Serial.printf("Interesting: Turning right with ltype %d and dr green dot %s\r\n", driving_interesting_actual_ltype, CUART_green_dots[3] ? "True" : "False");
         }
+        // Dead End: Turn Around
+        else if ((driving_interesting_actual_ltype == CUART_LTYPE_t || 
+                 driving_interesting_actual_ltype == CUART_LTYPE_X) && 
+                 (CUART_green_dots[2] && CUART_green_dots[3]))
+        {
+            drive(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+            while(CUART_array_mid_sensor > 2) {
+                display.tick();
+                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+            }
+            while(CUART_array_mid_sensor < 2) {
+                display.tick();
+                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+            }
+            delay(10);
+            while(CUART_array_mid_sensor > 2) {
+                display.tick();
+                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+            }
+            delay(10);
+            while(CUART_array_mid_sensor < 2) {
+                display.tick();
+                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+            }
+            delay(10);
+            while(!CUART_sensor_array[10]) {
+                display.tick();
+                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+            }
+            drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        }
         // Keep Straight
         else
         {

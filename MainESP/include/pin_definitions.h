@@ -5,6 +5,7 @@
 #define PIN_SENS2 34
 #define PIN_SENS3 35
 #define PIN_SENS4 2
+// New PCB: #define PIN_SENS4 4
 
 #define PIN_BUZZ1 26
 #define PIN_BUZZ2 27
