@@ -195,8 +195,9 @@ void drive_sensor_array()
                  driving_interesting_actual_ltype == CUART_LTYPE_X) && 
                  (CUART_green_dots[2] && CUART_green_dots[3]))
         {
+            Serial.printf("Interesting: Turning Around (Dead End) with ltype %d and dl green dot %s and dr green dot %s\r\n", driving_interesting_actual_ltype, CUART_green_dots[2] ? "True" : "False", CUART_green_dots[3] ? "True" : "False");
             drive(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
-            while(CUART_array_mid_sensor > 2) {
+            while(CUART_array_right_sensor < 2) {
                 display.tick();
                 vTaskDelay( pdMS_TO_TICKS( 10 ) );
             }
@@ -204,17 +205,18 @@ void drive_sensor_array()
                 display.tick();
                 vTaskDelay( pdMS_TO_TICKS( 10 ) );
             }
-            delay(10);
-            while(CUART_array_mid_sensor > 2) {
+            while(CUART_array_left_sensor < 2) {
                 display.tick();
                 vTaskDelay( pdMS_TO_TICKS( 10 ) );
             }
-            delay(10);
+            while(CUART_array_right_sensor < 2) {
+                display.tick();
+                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+            }
             while(CUART_array_mid_sensor < 2) {
                 display.tick();
                 vTaskDelay( pdMS_TO_TICKS( 10 ) );
             }
-            delay(10);
             while(!CUART_sensor_array[10]) {
                 display.tick();
                 vTaskDelay( pdMS_TO_TICKS( 10 ) );
