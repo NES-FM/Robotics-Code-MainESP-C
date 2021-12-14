@@ -9,7 +9,7 @@ void multithreaded_loop(void* parameters) {
     Serial.println(xPortGetCoreID());
     while(true)
     {
-        CUART_tick();
+        cuart.tick();
         // display.tick();
     }
 }
