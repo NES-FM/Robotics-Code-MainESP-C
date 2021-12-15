@@ -158,9 +158,9 @@ void accel::init()
             this->enable(false);
             return;
         }
-        mpu->setAccOffsets(0,0,0);
-        mpu->setGyroOffsets(51,0,9.5);
-        // mpu->calcOffsets();
+        // mpu->setAccOffsets(0,0,0);
+        // mpu->setGyroOffsets(51,0,9.5);
+        mpu->calcOffsets();
     }
 }
 
