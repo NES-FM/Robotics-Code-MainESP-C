@@ -61,7 +61,7 @@ float compass_hmc::tiltCompensation()
     roll = ac->get_roll_for_compensation();
     pitch = ac->get_pitch_for_compensation();
 
-    if (roll > 0.78 || roll < -0.78 || pitch > 0.78 || pitch < -0.78)
+    if (roll > 0.78 || roll < -0.78 || pitch > 0.78 || pitch < -0.78 || (roll == 0 && pitch == 0))
     {
         return this->noTiltCompensation();
     }
