@@ -158,9 +158,9 @@ void accel::init()
             this->enable(false);
             return;
         }
-        // mpu->setAccOffsets(0,0,0);
-        // mpu->setGyroOffsets(51,0,9.5);
-        mpu->calcOffsets();
+        mpu->setAccOffsets(0.02,0.04,0.01);
+        mpu->setGyroOffsets(0.54,-0.66,9.34);
+        // mpu->calcOffsets();
     }
 }
 
@@ -183,8 +183,8 @@ float accel::get_roll_degrees()
 {
     if (_accel_enabled)
     {
-        print_values();
         mpu->update();
+        // print_values();
         return mpu->getAngleX();
     }
     return 0.0f;
@@ -202,7 +202,7 @@ float accel::get_roll_for_compensation()
 
 void accel::print_values()
 {
-    mpu->update();
+    // mpu->update();
     Serial.print(F("ACCELERO  X: "));Serial.print(mpu->getAccX());
     Serial.print("\tY: ");Serial.print(mpu->getAccY());
     Serial.print("\tZ: ");Serial.println(mpu->getAccZ());
