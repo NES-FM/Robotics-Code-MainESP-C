@@ -8,6 +8,7 @@
 #include "../../include/cuart_line_types.h"
 #include "compass.h"
 #include "accel.h"
+#include "analog_sensor.h"
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -37,7 +38,7 @@ static const unsigned char PROGMEM star_bmp[] =
 class debug_disp {
     public:
         debug_disp();
-        void init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc) ;
+        void init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc, analog_sensor* volt) ;
         void tick();
         void enable(bool enabled);
         bool is_enabled() { return _display_i2c_enabled; }
@@ -68,6 +69,7 @@ class debug_disp {
         void draw_motor_values(int x, int y);
         void draw_comp_accel(int x, int y);
         void draw_disabled_i2c_devices(int x, int y);
+        void draw_voltage(int x, int y);
 
         bool heartbeat_state = false;
 
@@ -77,6 +79,8 @@ class debug_disp {
         accel* _accelerometer;
 
         String i2c_disabled_devices = "";
+
+        analog_sensor* _voltage;
 };
 
 #endif /* DEBUG_DISP_H */

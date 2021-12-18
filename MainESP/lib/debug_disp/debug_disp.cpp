@@ -2,7 +2,7 @@
 
 debug_disp::debug_disp() {};
 
-void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc)
+void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc, analog_sensor* volt)
 {
     // Getting references to all variables to be shown on the screen
     _local_cuart_sensor_array = sensor_array;
@@ -21,6 +21,7 @@ void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type,
     _int_bias_both = int_bi_both;
     _compass = comp;
     _accelerometer = acc;
+    _voltage = volt;
 
     if (!oled->begin(SSD1306_SWITCHCAPVCC, _i2c_address))
     {
@@ -176,6 +177,16 @@ void debug_disp::draw_disabled_i2c_devices(int x, int y)
     oled->print(i2c_disabled_devices);
 }
 
+void debug_disp::draw_voltage(int x, int y)
+{
+    oled->setCursor(x, y);
+    oled->setTextColor(SSD1306_WHITE);
+    oled->setTextSize(2);
+
+    oled->printf("%.1fV", _voltage->convert_to_battery_voltage());
+    // oled->print(_voltage->get_state());
+}
+
 void debug_disp::tick()
 {
     if (_display_i2c_enabled)
@@ -202,6 +213,9 @@ void debug_disp::tick()
 
             // Disabled I2C Devices
             this->draw_disabled_i2c_devices(0, 40);
+
+            // Battery Voltage
+            this->draw_voltage(80,44);
 
             // Flashing Pixel in lower right corner
             heartbeat_state = !heartbeat_state;

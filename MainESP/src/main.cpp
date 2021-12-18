@@ -6,9 +6,10 @@
 
 #include "cuart.h"
 #include "motor.h"
-#include "debug_disp.h"
 #include "accel.h"
 #include "compass.h"
+#include "analog_sensor.h"
+#include "debug_disp.h"
 
 CUART_class cuart;
 
@@ -21,6 +22,8 @@ compass_hmc compass;
 motor motor_left;
 motor motor_right;
 #include "driving.h"
+
+analog_sensor bat_voltage(PIN_BATPROBE, true);
 
 #include "multithreaded_loop.h"
 
@@ -52,7 +55,7 @@ void setup() {
 
     cuart.init();
 
-    display.init(cuart.sensor_array, cuart.green_dots, &cuart.line_type, &cuart.line_angle, &cuart.line_midfactor, &cuart.array_left_sensor, &cuart.array_mid_sensor, &cuart.array_right_sensor, &motor_left.motor_speed, &motor_right.motor_speed, &driving_interesting_situation, &driving_interesting_bias_left, &driving_interesting_bias_right, &driving_interesting_bias_both, &compass, &accel_sensor);
+    display.init(cuart.sensor_array, cuart.green_dots, &cuart.line_type, &cuart.line_angle, &cuart.line_midfactor, &cuart.array_left_sensor, &cuart.array_mid_sensor, &cuart.array_right_sensor, &motor_left.motor_speed, &motor_right.motor_speed, &driving_interesting_situation, &driving_interesting_bias_left, &driving_interesting_bias_right, &driving_interesting_bias_both, &compass, &accel_sensor, &bat_voltage);
 
     accel_sensor.init();
     compass.init(&accel_sensor);
