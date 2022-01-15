@@ -43,7 +43,8 @@
 			"xtree": "cpp",
 			"xutility": "cpp",
 			"*.tcc": "cpp",
-			"streambuf": "cpp"
+			"streambuf": "cpp",
+			"iosfwd": "cpp"
 		}
 	}
 }

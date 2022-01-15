@@ -12,6 +12,50 @@ void drive(int speed_left, int speed_right)
     motor_right.move(speed_right);
 }
 
+void crossing_90_right()
+{
+    drive(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL-3);
+    while(cuart.array_mid_sensor > 2) {
+        display.tick();
+        vTaskDelay( pdMS_TO_TICKS( 10 ) );
+    }
+    while(cuart.sensor_array[10]) {
+        display.tick();
+        vTaskDelay( pdMS_TO_TICKS( 10 ) );
+    }
+    delay(10);
+    while(!cuart.sensor_array[10]) {
+        display.tick();
+        vTaskDelay( pdMS_TO_TICKS( 10 ) );
+    }
+    // delay(50);
+    // drive(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    // delay(100);
+    drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+}
+
+void crossing_90_left()
+{
+    drive(-DRIVE_SPEED_NORMAL-3, DRIVE_SPEED_NORMAL);
+    while(cuart.array_mid_sensor > 2) {
+        display.tick();
+        vTaskDelay( pdMS_TO_TICKS( 10 ) );
+    }
+    while(cuart.sensor_array[15]) {
+        display.tick();
+        vTaskDelay( pdMS_TO_TICKS( 10 ) );
+    }
+    delay(10);
+    while(!cuart.sensor_array[15]) {
+        display.tick();
+        vTaskDelay( pdMS_TO_TICKS( 10 ) );
+    }
+    // delay(50);
+    // drive(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    // delay(100);
+    drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+}
+
 bool driving_interesting_situation = false;
 bool driving_interesting_bias_left = false;  // If it is suspected to be either Tl or 90l, discard all right situations
 bool driving_interesting_bias_right = false; // ... and vice versa
@@ -84,15 +128,20 @@ void drive_sensor_array()
     }
 
     // Interesting situation passed
-    if (cuart.array_left_sensor < 2 && cuart.array_right_sensor < 2 && cuart.sensor_array[0] && driving_interesting_situation)
+    if ((
+        (cuart.array_left_sensor < 2 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor < 2) || 
+        (cuart.array_left_sensor < 2 && cuart.array_mid_sensor < 2 && cuart.array_right_sensor > 2) ||
+        (cuart.array_left_sensor > 2 && cuart.array_mid_sensor < 2 && cuart.array_right_sensor < 2) ||
+        (cuart.array_left_sensor < 2 && cuart.array_mid_sensor < 2 && cuart.array_right_sensor < 2)
+    ) && cuart.sensor_array[0] && driving_interesting_situation)
     {
         drive(0, 0);
         // delay(2000);
-        for (int del = 0; del <= 2000; del += 100)
-        {
-            display.tick();
-            delay(100);
-        }
+        // for (int del = 0; del <= 2000; del += 100)
+        // {
+        //     display.tick();
+        //     delay(100);
+        // }
 
         driving_interesting_actual_ltype = cuart.line_type;
 
@@ -103,7 +152,7 @@ void drive_sensor_array()
                 driving_interesting_actual_ltype = CUART_LTYPE_90l;
                 driving_interesting_actual_ltype_override = true;
             }
-            else
+            else if (driving_interesting_bias_right)
             {
                 driving_interesting_actual_ltype = CUART_LTYPE_90r;
                 driving_interesting_actual_ltype_override = true;
@@ -177,51 +226,33 @@ void drive_sensor_array()
             }
             drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
         }
-        // Turn left
-        else if ((driving_interesting_actual_ltype == CUART_LTYPE_90l) || 
-              ((driving_interesting_actual_ltype == CUART_LTYPE_tl || 
-                driving_interesting_actual_ltype == CUART_LTYPE_t || 
-                driving_interesting_actual_ltype == CUART_LTYPE_X) && cuart.green_dots[2]))
+        // Turn left - 90 deg
+        else if (driving_interesting_actual_ltype == CUART_LTYPE_90l)
         {
             Serial.printf("Interesting: Turning left with ltype %d and dl green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False");
-            drive(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
-            while(cuart.array_mid_sensor > 2) {
-                display.tick();
-                vTaskDelay( pdMS_TO_TICKS( 10 ) );
-            }
-            while(cuart.sensor_array[15]) {
-                display.tick();
-                vTaskDelay( pdMS_TO_TICKS( 10 ) );
-            }
-            delay(10);
-            while(!cuart.sensor_array[15]) {
-                display.tick();
-                vTaskDelay( pdMS_TO_TICKS( 10 ) );
-            }
-            drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+            crossing_90_left();
         }
-        // Turn right
-        else if ((driving_interesting_actual_ltype == CUART_LTYPE_90r) || 
-                  ((driving_interesting_actual_ltype == CUART_LTYPE_tr || 
-                    driving_interesting_actual_ltype == CUART_LTYPE_t || 
-                    driving_interesting_actual_ltype == CUART_LTYPE_X) && cuart.green_dots[3]))
+        // Turn left - green dot
+        else if ((driving_interesting_actual_ltype == CUART_LTYPE_tl || 
+                driving_interesting_actual_ltype == CUART_LTYPE_t || 
+                driving_interesting_actual_ltype == CUART_LTYPE_X) && cuart.green_dots[2])
+        {
+            crossing_90_left();
+            // delay(150);
+        }
+        // Turn right - 90
+        else if (driving_interesting_actual_ltype == CUART_LTYPE_90r)
         {
             Serial.printf("Interesting: Turning right with ltype %d and dr green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[3] ? "True" : "False");
-            drive(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
-            while(cuart.array_mid_sensor > 2) {
-                display.tick();
-                vTaskDelay( pdMS_TO_TICKS( 10 ) );
-            }
-            while(cuart.sensor_array[10]) {
-                display.tick();
-                vTaskDelay( pdMS_TO_TICKS( 10 ) );
-            }
-            delay(10);
-            while(!cuart.sensor_array[10]) {
-                display.tick();
-                vTaskDelay( pdMS_TO_TICKS( 10 ) );
-            }
-            drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+            crossing_90_right();
+        }
+        // Turn right - green dot
+        else if ((driving_interesting_actual_ltype == CUART_LTYPE_tr || 
+                    driving_interesting_actual_ltype == CUART_LTYPE_t || 
+                    driving_interesting_actual_ltype == CUART_LTYPE_X) && cuart.green_dots[3])
+        {
+            crossing_90_right();
+            // delay(150);
         }
         // Keep Straight
         else

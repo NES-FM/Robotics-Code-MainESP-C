@@ -147,7 +147,7 @@ float compass_hmc::get_angle()
     // Convert radians to degrees for readability.
     float headingDegrees = heading * 180/PI;
 
-    this->output(compass->readRawAxis(), scaled, heading, headingDegrees);
+    // this->output(compass->readRawAxis(), scaled, heading, headingDegrees);
 
     return headingDegrees; 
 }
