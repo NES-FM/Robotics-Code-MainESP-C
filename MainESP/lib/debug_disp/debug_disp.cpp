@@ -2,7 +2,7 @@
 
 debug_disp::debug_disp() {};
 
-void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc, analog_sensor* volt)
+void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc, analog_sensor* volt, DIP* d)
 {
     // Getting references to all variables to be shown on the screen
     _local_cuart_sensor_array = sensor_array;
@@ -22,6 +22,7 @@ void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type,
     _compass = comp;
     _accelerometer = acc;
     _voltage = volt;
+    _dip = d;
 
     if (!oled->begin(SSD1306_SWITCHCAPVCC, _i2c_address))
     {
@@ -187,6 +188,17 @@ void debug_disp::draw_voltage(int x, int y)
     // oled->print(_voltage->get_state());
 }
 
+void debug_disp::draw_dip(int x, int y)
+{
+    oled->drawRect(x, y, 14, 6, SSD1306_WHITE);
+    if (_dip->get_state(_dip->wettkampfmodus))
+        oled->fillRect(x+1, y+1, 4, 4, SSD1306_WHITE);
+    if (_dip->get_state(_dip->dip1))
+        oled->fillRect(x+5, y+1, 4, 4, SSD1306_WHITE);
+    if (_dip->get_state(_dip->dip2))
+        oled->fillRect(x+9, y+1, 4, 4, SSD1306_WHITE);
+}
+
 void debug_disp::tick()
 {
     if (_display_i2c_enabled)
@@ -216,6 +228,9 @@ void debug_disp::tick()
 
             // Battery Voltage
             this->draw_voltage(80,44);
+
+            // Dip Switches
+            this->draw_dip(0, SCREEN_HEIGHT-6);
 
             // Flashing Pixel in lower right corner
             heartbeat_state = !heartbeat_state;
@@ -249,4 +264,100 @@ void debug_disp::disable_i2c_device(String dev)
 {
     i2c_disabled_devices += dev;
     i2c_disabled_devices += " ";
+}
+
+void debug_disp::ota_on_start()
+{
+    ota_mode_display = _display_i2c_enabled;
+    _display_i2c_enabled = false;
+    
+    if (ArduinoOTA.getCommand() == U_FLASH)
+        ota_type = "sketch";
+    else // U_SPIFFS
+        ota_type = "filesystem";
+
+    if (ota_mode_display)
+    {
+        oled->fillScreen(SSD1306_BLACK);
+        oled->setCursor(1, 1);
+        oled->setTextSize(2);
+        oled->setTextColor(SSD1306_WHITE);
+        oled->print("OTA! " + ota_type);
+        oled->drawRect(0, 20, 101, 4, SSD1306_WHITE);
+        oled->setCursor(5, 36);
+        oled->print("00%");
+        oled->display();
+    }
+    else 
+    {
+        Serial.println("[OTA]: Start updating " + ota_type);
+    }
+}
+void debug_disp::ota_on_end()
+{
+    if (ota_mode_display)
+    {
+        oled->fillScreen(SSD1306_BLACK);
+        oled->setTextSize(2);
+        oled->setTextColor(SSD1306_WHITE);
+        oled->setCursor(0, 0);
+        oled->print("Finnished!");
+        oled->display();
+    }
+    else
+    {
+        Serial.println("\nEnd");
+    }
+}
+void debug_disp::ota_on_progress(unsigned int progress, unsigned int total)
+{
+    int perc = (progress / (total / 100));
+    if (ota_mode_display)
+    {
+        oled->fillScreen(SSD1306_BLACK);
+        oled->setCursor(1, 1);
+        oled->setTextSize(2);
+        oled->setTextColor(SSD1306_WHITE);
+        oled->print("OTA! " + ota_type);
+        oled->setCursor(5, 36);
+        oled->print(perc + "%");
+        oled->drawRect(0, 20, 101, 4, SSD1306_WHITE);
+        oled->drawRect(1, 21, perc, 2, SSD1306_WHITE);
+        oled->display();
+    }
+    else
+    {
+        Serial.printf("Progress: %u%%\r", perc);
+    }
+}
+void debug_disp::ota_on_error(ota_error_t error)
+{
+    if (ota_mode_display)
+    {
+        /*
+        oled->fillScreen(SSD1306_BLACK);
+        oled->setCursor(1, 1);
+        oled->setTextSize(2);
+        oled->setTextColor(SSD1306_WHITE);
+        oled->print("OTA! " + ota_type);
+        oled->setTextWrap(true);
+        oled->setCursor(1, 20);
+        oled->printf("Error[%u]: ", error);
+        if (error == OTA_AUTH_ERROR) oled->print("Auth Failed");
+        else if (error == OTA_BEGIN_ERROR) oled->print("Begin Failed");
+        else if (error == OTA_CONNECT_ERROR) oled->print("Connect Failed");
+        else if (error == OTA_RECEIVE_ERROR) oled->print("Receive Failed");
+        else if (error == OTA_END_ERROR) oled->print("End Failed");
+        oled->display();
+        */
+    }
+    else
+    {
+        Serial.printf("Error[%u]: ", error);
+        if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+        else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+        else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+        else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+        else if (error == OTA_END_ERROR) Serial.println("End Failed");
+    }
 }

@@ -21,7 +21,8 @@
 #define PIN_TX_CAM 22 // RX of Cam, TX of EXP
 
 #define PIN_DIP1 4
-#define PIN_DIP2 30
+#define PIN_DIP2 23
+#define PIN_DIP_WETTKAMPFMODUS 27
 
 #define PIN_BATPROBE 32
 
