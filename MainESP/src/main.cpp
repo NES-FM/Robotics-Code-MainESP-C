@@ -10,11 +10,14 @@
 #include "compass.h"
 #include "analog_sensor.h"
 #include "debug_disp.h"
+#include "dip.h"
 
 CUART_class cuart;
 
 debug_disp display;
 #include "i2c_scanner.h"
+#include "ota.h"
+OTA ota(&display);
 
 accel accel_sensor;
 compass_hmc compass;
@@ -24,6 +27,8 @@ motor motor_right;
 #include "driving.h"
 
 analog_sensor bat_voltage(PIN_BATPROBE, true);
+
+DIP dip;
 
 #include "multithreaded_loop.h"
 
@@ -49,13 +54,16 @@ void setup() {
     compass.enable(check_device_enabled(I2C_ADDRESS_COMPASS, "compass", "CO"));
     accel_sensor.enable(check_device_enabled(I2C_ADDRESS_ACCELEROMETER, "accelerometer", "AC"));
 
+    ota.enable(!dip.get_wettkampfmodus());
+    ota.init();
+
     // Initialization of lib
     motor_left.init(1);
     motor_right.init(2);
 
     cuart.init();
 
-    display.init(cuart.sensor_array, cuart.green_dots, &cuart.line_type, &cuart.line_angle, &cuart.line_midfactor, &cuart.array_left_sensor, &cuart.array_mid_sensor, &cuart.array_right_sensor, &motor_left.motor_speed, &motor_right.motor_speed, &driving_interesting_situation, &driving_interesting_bias_left, &driving_interesting_bias_right, &driving_interesting_bias_both, &compass, &accel_sensor, &bat_voltage);
+    display.init(cuart.sensor_array, cuart.green_dots, &cuart.line_type, &cuart.line_angle, &cuart.line_midfactor, &cuart.array_left_sensor, &cuart.array_mid_sensor, &cuart.array_right_sensor, &motor_left.motor_speed, &motor_right.motor_speed, &driving_interesting_situation, &driving_interesting_bias_left, &driving_interesting_bias_right, &driving_interesting_bias_both, &compass, &accel_sensor, &bat_voltage, &dip);
 
     accel_sensor.init();
     compass.init(&accel_sensor);

@@ -4,11 +4,13 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <ArduinoOTA.h>
 #include "../../include/i2c_addresses.h"
 #include "../../include/cuart_line_types.h"
 #include "compass.h"
 #include "accel.h"
 #include "analog_sensor.h"
+#include "dip.h"
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -38,12 +40,16 @@ static const unsigned char PROGMEM star_bmp[] =
 class debug_disp {
     public:
         debug_disp();
-        void init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc, analog_sensor* volt) ;
+        void init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc, analog_sensor* volt, DIP* d) ;
         void tick();
         void enable(bool enabled);
         bool is_enabled() { return _display_i2c_enabled; }
         void draw_star();
         void disable_i2c_device(String dev);
+        void ota_on_start();
+        void ota_on_end();
+        void ota_on_progress(unsigned int progress, unsigned int total);
+        void ota_on_error(ota_error_t error);
     private:
         uint8_t _i2c_address = I2C_ADDRESS_DISPLAY;
         bool _display_i2c_enabled = false;
@@ -70,6 +76,7 @@ class debug_disp {
         void draw_comp_accel(int x, int y);
         void draw_disabled_i2c_devices(int x, int y);
         void draw_voltage(int x, int y);
+        void draw_dip(int x, int y);
 
         bool heartbeat_state = false;
 
@@ -81,6 +88,11 @@ class debug_disp {
         String i2c_disabled_devices = "";
 
         analog_sensor* _voltage;
+
+        DIP* _dip;
+
+        bool ota_mode_display = false;
+        String ota_type;
 };
 
 #endif /* DEBUG_DISP_H */
