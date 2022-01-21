@@ -25,6 +25,7 @@ void main_loop()
 {
     cuart.tick();
     // display.tick();
+    ota.tick();
 }
 
 void init_multithreaded_loop()
