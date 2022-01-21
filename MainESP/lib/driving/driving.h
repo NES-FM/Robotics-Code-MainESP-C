@@ -5,6 +5,9 @@
 
 #define DEBUG_MOTOR_VALUES 0
 
+int DRIVE_SPEED_NORMAL = DRIVE_SPEED_NORMAL_DEFAULT;
+uint_fast64_t lowering_drive_speed_millis = 0;
+
 void drive(int speed_left, int speed_right)
 {
     //display.draw_star();
@@ -14,11 +17,12 @@ void drive(int speed_left, int speed_right)
 
 void crossing_90_right()
 {
-    drive(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL-3);
+    drive(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL/*-2*/);
     while(cuart.array_mid_sensor > 2) {
         display.tick();
         vTaskDelay( pdMS_TO_TICKS( 10 ) );
     }
+    // delay(25);
     while(cuart.sensor_array[10]) {
         display.tick();
         vTaskDelay( pdMS_TO_TICKS( 10 ) );
@@ -36,11 +40,12 @@ void crossing_90_right()
 
 void crossing_90_left()
 {
-    drive(-DRIVE_SPEED_NORMAL-3, DRIVE_SPEED_NORMAL);
+    drive(-DRIVE_SPEED_NORMAL/*-2*/, DRIVE_SPEED_NORMAL);
     while(cuart.array_mid_sensor > 2) {
         display.tick();
         vTaskDelay( pdMS_TO_TICKS( 10 ) );
     }
+    // delay(25);
     while(cuart.sensor_array[15]) {
         display.tick();
         vTaskDelay( pdMS_TO_TICKS( 10 ) );
@@ -103,7 +108,9 @@ void drive_sensor_array()
     if ((cuart.array_left_sensor + cuart.array_mid_sensor + cuart.array_right_sensor) > 9 && !driving_interesting_bias_both)
     {
         driving_interesting_situation = true;
-        drive(DRIVE_SPEED_HALF, DRIVE_SPEED_HALF);
+        // DRIVE_SPEED_NORMAL = DRIVE_SPEED_LOW_DEFAULT;
+        lowering_drive_speed_millis = millis();
+        drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
         driving_interesting_bias_both = ((cuart.array_left_sensor + cuart.array_mid_sensor + cuart.array_right_sensor) > 16);
         if (!driving_interesting_bias_both)
         {
@@ -129,13 +136,13 @@ void drive_sensor_array()
 
     // Interesting situation passed
     if ((
-        (cuart.array_left_sensor < 2 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor < 2) || 
-        (cuart.array_left_sensor < 2 && cuart.array_mid_sensor < 2 && cuart.array_right_sensor > 2) ||
-        (cuart.array_left_sensor > 2 && cuart.array_mid_sensor < 2 && cuart.array_right_sensor < 2) ||
-        (cuart.array_left_sensor < 2 && cuart.array_mid_sensor < 2 && cuart.array_right_sensor < 2)
+        (cuart.array_left_sensor < 4 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor < 4) || 
+        (cuart.array_left_sensor < 4 && cuart.array_mid_sensor < 4 && cuart.array_right_sensor > 2) ||
+        (cuart.array_left_sensor > 2 && cuart.array_mid_sensor < 4 && cuart.array_right_sensor < 4) ||
+        (cuart.array_left_sensor < 4 && cuart.array_mid_sensor < 4 && cuart.array_right_sensor < 4)
     ) && cuart.sensor_array[0] && driving_interesting_situation)
     {
-        drive(0, 0);
+        // drive(0, 0);
         // delay(2000);
         // for (int del = 0; del <= 2000; del += 100)
         // {
@@ -267,6 +274,11 @@ void drive_sensor_array()
         driving_interesting_bias_left = false;
         driving_interesting_bias_right = false;
         digitalWrite(LED_BUILTIN, LOW);
+    }
+
+    if ((millis() - lowering_drive_speed_millis) >= 1000)
+    {
+        DRIVE_SPEED_NORMAL = DRIVE_SPEED_NORMAL_DEFAULT;
     }
     
     if (DEBUG_MOTOR_VALUES == 1)
