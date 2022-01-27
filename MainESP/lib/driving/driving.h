@@ -123,6 +123,30 @@ void turn_90_right()
     drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
 }
 
+void turn_deadend()
+{
+    drive(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    while(cuart.array_right_sensor < 2) {
+        vTaskDelay(watchdog_delay);
+    }
+    while(cuart.array_mid_sensor < 2) {
+        vTaskDelay(watchdog_delay);
+    }
+    while(cuart.array_left_sensor < 2) {
+        vTaskDelay(watchdog_delay);
+    }
+    while(cuart.array_right_sensor < 2) {
+        vTaskDelay(watchdog_delay);
+    }
+    while(cuart.array_mid_sensor < 2) {
+        vTaskDelay(watchdog_delay);
+    }
+    while(!cuart.sensor_array[10]) {
+        vTaskDelay(watchdog_delay);
+    }
+    drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+}
+
 void drive_sensor_array()
 {
     // Line is left...
@@ -421,12 +445,78 @@ void drive_new()
         if (cuart.array_left_sensor > 2 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor > 2)
         {
             crossing: ; // Label crossing
+
+            drive(DRIVE_SPEED_LOW, DRIVE_SPEED_LOW);
+            
+            while (cuart.array_left_sensor > 2 || cuart.array_right_sensor > 2) 
+            { 
+                vTaskDelay(watchdog_delay); 
+            }
+
+            array_has_pixels = (cuart.array_total > 2);
+
+            while (!cuart.sensor_array[0]) { vTaskDelay(watchdog_delay); }
+            
+            if (cuart.green_dots[2] && !cuart.green_dots[3])
+            {
+                turn_90_left();
+                return;
+            }
+            else if (!cuart.green_dots[2] && cuart.green_dots[3])
+            {
+                turn_90_right();
+                return;
+            }
+            else if (cuart.green_dots[2] && cuart.green_dots[3])
+            {
+                turn_deadend();
+                return;
+            }
+
+            drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
         }
     }
-    // if (total_number_pixels > 7)
-    else
+    else // if (total_number_pixels <= 7)
     {
+        // Line is left... (copy pasted from previous)
+        if (cuart.array_left_sensor > 2)
+        {
+            if ((cuart.sensor_array[3] == true || cuart.sensor_array[4] == true) && cuart.array_left_sensor > 3)
+                drive(-DRIVE_SPEED_HIGH, DRIVE_SPEED_NORMAL);
+            else if (cuart.sensor_array[5] == true && cuart.array_left_sensor > 3)
+                drive(-DRIVE_SPEED_LOWER, DRIVE_SPEED_HIGH);
+            else if (cuart.sensor_array[6] == true && cuart.array_left_sensor > 3)
+                drive(-DRIVE_SPEED_LOW, DRIVE_SPEED_HIGH);
+            else if (cuart.sensor_array[7] == true)
+                drive(0, DRIVE_SPEED_HIGHER);
+            else if (cuart.sensor_array[8] == true)
+                drive(DRIVE_SPEED_LOWER, DRIVE_SPEED_HIGH); 
+            else if (cuart.sensor_array[9] == true)
+                drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_HIGH);
+        }
 
+        // Line is right... (copy pasted from previous)
+        if (cuart.array_right_sensor > 2)
+        {
+            if ((cuart.sensor_array[22] == true || cuart.sensor_array[21] == true) && cuart.array_right_sensor > 3)
+                drive(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_HIGH);
+            else if (cuart.sensor_array[20] == true && cuart.array_right_sensor > 3)
+                drive(DRIVE_SPEED_HIGH, -DRIVE_SPEED_LOWER);
+            else if (cuart.sensor_array[19] == true && cuart.array_right_sensor > 3)
+                drive(DRIVE_SPEED_HIGH, -DRIVE_SPEED_LOW);
+            else if (cuart.sensor_array[18] == true)
+                drive(DRIVE_SPEED_HIGHER, 0);
+            else if (cuart.sensor_array[17] == true)
+                drive(DRIVE_SPEED_HIGH, DRIVE_SPEED_LOWER); 
+            else if (cuart.sensor_array[16] == true)
+                drive(DRIVE_SPEED_HIGH, DRIVE_SPEED_NORMAL);
+        }
+
+        // Line is only in the middle (copy pasted from previous)
+        if (cuart.array_left_sensor < 2 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor < 2)
+        {
+            drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        }
     }
 }
 
