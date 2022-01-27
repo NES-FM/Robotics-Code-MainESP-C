@@ -114,6 +114,7 @@ void CUART_class::sensor_array_handler()
             array_right_sensor += sensor_array[i];
         
     }
+    array_total = array_left_sensor + array_right_sensor + array_mid_sensor;
 }
 
 

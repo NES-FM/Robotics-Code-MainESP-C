@@ -9,12 +9,12 @@ void multithreaded_loop(void* parameters) {
     Serial.println(xPortGetCoreID());
     while(true)
     {
-        display.tick();
+        // display.tick();
 
         // cuart.debugPrintArray();
 
         if (motor_left.is_enabled() && motor_right.is_enabled())
-            drive_sensor_array();
+            drive_new();
 
         // cuart.debugPrint();
     }
@@ -24,7 +24,7 @@ void multithreaded_loop(void* parameters) {
 void main_loop()
 {
     cuart.tick();
-    // display.tick();
+    display.tick();
     ota.tick();
 }
 

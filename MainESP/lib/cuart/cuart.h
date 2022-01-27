@@ -21,7 +21,7 @@ class CUART_class
         signed char line_midfactor = 0;
         bool sensor_array[24] = {};
 
-        int array_left_sensor = 0, array_mid_sensor = 0, array_right_sensor = 0;
+        int array_left_sensor = 0, array_mid_sensor = 0, array_right_sensor = 0, array_total = 0;
     private:
         signed char unsigned_to_signed(unsigned char s);
         void line_handler();

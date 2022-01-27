@@ -5,8 +5,23 @@
 
 #define DEBUG_MOTOR_VALUES 0
 
+TickType_t watchdog_delay = pdMS_TO_TICKS(5);
+
+/* drive_sensor_array */
 int DRIVE_SPEED_NORMAL = DRIVE_SPEED_NORMAL_DEFAULT;
 uint_fast64_t lowering_drive_speed_millis = 0;
+bool driving_interesting_situation = false;
+bool driving_interesting_bias_left = false;  // If it is suspected to be either Tl or 90l, discard all right situations
+bool driving_interesting_bias_right = false; // ... and vice versa
+bool driving_interesting_bias_both = false;  // ... or if the line is so wide, that only X or T is possible, discard 90lr and Tlr
+int driving_interesting_actual_ltype = 0;
+bool driving_interesting_actual_ltype_override = false;
+/***********************/
+
+/* drive_new */
+bool trust_cuart = false;
+bool array_has_pixels = false;
+/*************/
 
 void drive(int speed_left, int speed_right)
 {
@@ -20,17 +35,17 @@ void crossing_90_right()
     drive(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL/*-2*/);
     while(cuart.array_mid_sensor > 2) {
         display.tick();
-        vTaskDelay( pdMS_TO_TICKS( 10 ) );
+        vTaskDelay(watchdog_delay);
     }
     // delay(25);
     while(cuart.sensor_array[10]) {
         display.tick();
-        vTaskDelay( pdMS_TO_TICKS( 10 ) );
+        vTaskDelay(watchdog_delay);
     }
     delay(10);
     while(!cuart.sensor_array[10]) {
         display.tick();
-        vTaskDelay( pdMS_TO_TICKS( 10 ) );
+        vTaskDelay(watchdog_delay);
     }
     // delay(50);
     // drive(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
@@ -43,30 +58,23 @@ void crossing_90_left()
     drive(-DRIVE_SPEED_NORMAL/*-2*/, DRIVE_SPEED_NORMAL);
     while(cuart.array_mid_sensor > 2) {
         display.tick();
-        vTaskDelay( pdMS_TO_TICKS( 10 ) );
+        vTaskDelay(watchdog_delay);
     }
     // delay(25);
     while(cuart.sensor_array[15]) {
         display.tick();
-        vTaskDelay( pdMS_TO_TICKS( 10 ) );
+        vTaskDelay(watchdog_delay);
     }
     delay(10);
     while(!cuart.sensor_array[15]) {
         display.tick();
-        vTaskDelay( pdMS_TO_TICKS( 10 ) );
+        vTaskDelay(watchdog_delay);
     }
     // delay(50);
     // drive(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
     // delay(100);
     drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
 }
-
-bool driving_interesting_situation = false;
-bool driving_interesting_bias_left = false;  // If it is suspected to be either Tl or 90l, discard all right situations
-bool driving_interesting_bias_right = false; // ... and vice versa
-bool driving_interesting_bias_both = false;  // ... or if the line is so wide, that only X or T is possible, discard 90lr and Tlr
-int driving_interesting_actual_ltype = 0;
-bool driving_interesting_actual_ltype_override = false;
 
 void drive_sensor_array()
 {
@@ -209,27 +217,27 @@ void drive_sensor_array()
             drive(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
             while(cuart.array_right_sensor < 2) {
                 display.tick();
-                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+                vTaskDelay(watchdog_delay);
             }
             while(cuart.array_mid_sensor < 2) {
                 display.tick();
-                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+                vTaskDelay(watchdog_delay);
             }
             while(cuart.array_left_sensor < 2) {
                 display.tick();
-                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+                vTaskDelay(watchdog_delay);
             }
             while(cuart.array_right_sensor < 2) {
                 display.tick();
-                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+                vTaskDelay(watchdog_delay);
             }
             while(cuart.array_mid_sensor < 2) {
                 display.tick();
-                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+                vTaskDelay(watchdog_delay);
             }
             while(!cuart.sensor_array[10]) {
                 display.tick();
-                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+                vTaskDelay(watchdog_delay);
             }
             drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
         }
@@ -284,6 +292,34 @@ void drive_sensor_array()
     if (DEBUG_MOTOR_VALUES == 1)
     {
         Serial.printf("L: %d, M: %d, R: %d, I: %s, Bias: L: %s, R: %s, B: %s\r\n", cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor, driving_interesting_situation ? "T" : "F", driving_interesting_bias_left ? "T" : "F", driving_interesting_bias_right ? "T" : "F", driving_interesting_bias_both ? "T" : "F");
+    }
+}
+
+void drive_new()
+{
+    trust_cuart = false;
+
+    // Some sort of crossing
+    if (cuart.array_total > 7)
+    {
+        // 90l or Tl
+        if (cuart.array_left_sensor > 2 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor < 2)
+        {
+            drive(DRIVE_SPEED_LOW, DRIVE_SPEED_LOW);
+            while (!cuart.sensor_array[0]) { vTaskDelay(watchdog_delay); }
+            // check if there are pixels, and then check if cuart is possible...
+            if (cuart.array_total > 2)
+            {}
+            if (cuart.line_type != CUART_LTYPE_UNKNOWN)
+            {
+                trust_cuart = true;
+            }
+        }
+    }
+    // if (total_number_pixels > 7)
+    else
+    {
+
     }
 }
 
