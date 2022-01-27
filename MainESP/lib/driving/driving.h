@@ -21,6 +21,7 @@ bool driving_interesting_actual_ltype_override = false;
 /* drive_new */
 bool trust_cuart = false;
 bool array_has_pixels = false;
+int using_ltype = 0;
 /*************/
 
 void drive(int speed_left, int speed_right)
@@ -73,6 +74,52 @@ void crossing_90_left()
     // delay(50);
     // drive(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
     // delay(100);
+    drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+}
+
+void turn_90_left()
+{
+    drive(-DRIVE_SPEED_NORMAL/*-2*/, DRIVE_SPEED_NORMAL);
+
+    while(!cuart.sensor_array[6]) {
+        vTaskDelay(watchdog_delay);
+    }
+
+    while(cuart.sensor_array[7]) {
+        vTaskDelay(watchdog_delay);
+    }
+
+    while(cuart.sensor_array[15]) {
+        vTaskDelay(watchdog_delay);
+    }
+
+    while(!cuart.sensor_array[14]) {
+        vTaskDelay(watchdog_delay);
+    }
+
+    drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+}
+
+void turn_90_right()
+{
+    drive(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL/*-2*/);
+
+    while(!cuart.sensor_array[19]) {
+        vTaskDelay(watchdog_delay);
+    }
+
+    while(cuart.sensor_array[18]) {
+        vTaskDelay(watchdog_delay);
+    }
+
+    while(cuart.sensor_array[10]) {
+        vTaskDelay(watchdog_delay);
+    }
+
+    while(!cuart.sensor_array[11]) {
+        vTaskDelay(watchdog_delay);
+    }
+
     drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
 }
 
@@ -302,18 +349,78 @@ void drive_new()
     // Some sort of crossing
     if (cuart.array_total > 7)
     {
-        // 90l or Tl
-        if (cuart.array_left_sensor > 2 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor < 2)
+        // 90l or tr
+        if (cuart.array_left_sensor > 2 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor <= 2)
         {
+            
             drive(DRIVE_SPEED_LOW, DRIVE_SPEED_LOW);
-            while (!cuart.sensor_array[0]) { vTaskDelay(watchdog_delay); }
-            // check if there are pixels, and then check if cuart is possible...
-            if (cuart.array_total > 2)
-            {}
-            if (cuart.line_type != CUART_LTYPE_UNKNOWN)
-            {
-                trust_cuart = true;
+            
+            while (cuart.array_left_sensor > 2 || cuart.array_right_sensor > 2) 
+            { 
+                vTaskDelay(watchdog_delay); 
+                if (cuart.array_left_sensor > 2 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor > 2)
+                {
+                    goto crossing;
+                }
             }
+            array_has_pixels = (cuart.array_total > 2);
+            
+            if (!array_has_pixels)
+            {
+                turn_90_left(); 
+                return;
+            }
+            else // if (array_has_pixels)
+            {
+                while (!cuart.sensor_array[0]) { vTaskDelay(watchdog_delay); }
+                if (cuart.green_dots[2])
+                {
+                    turn_90_left();
+                    return;
+                }
+            }
+
+            drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        }
+
+        // 90r or tr
+        if (cuart.array_left_sensor <= 2 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor > 2)
+        {
+            
+            drive(DRIVE_SPEED_LOW, DRIVE_SPEED_LOW);
+            
+            while (cuart.array_left_sensor > 2 || cuart.array_right_sensor > 2) 
+            { 
+                vTaskDelay(watchdog_delay); 
+                if (cuart.array_left_sensor > 2 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor > 2)
+                {
+                    goto crossing;
+                }
+            }
+            array_has_pixels = (cuart.array_total > 2);
+            
+            if (!array_has_pixels)
+            {
+                turn_90_right(); 
+                return;
+            }
+            else // if (array_has_pixels)
+            {
+                while (!cuart.sensor_array[0]) { vTaskDelay(watchdog_delay); }
+                if (cuart.green_dots[3])
+                {
+                    turn_90_right();
+                    return;
+                }
+            }
+
+            drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        }
+
+        // T or X
+        if (cuart.array_left_sensor > 2 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor > 2)
+        {
+            crossing: ; // Label crossing
         }
     }
     // if (total_number_pixels > 7)
