@@ -7,6 +7,13 @@
 
 TickType_t watchdog_delay = pdMS_TO_TICKS(5);
 
+void drive(int speed_left, int speed_right)
+{
+    //display.draw_star();
+    motor_left.move(speed_left);
+    motor_right.move(speed_right);
+}
+
 /* drive_sensor_array */
 int DRIVE_SPEED_NORMAL = DRIVE_SPEED_NORMAL_DEFAULT;
 uint_fast64_t lowering_drive_speed_millis = 0;
@@ -16,20 +23,6 @@ bool driving_interesting_bias_right = false; // ... and vice versa
 bool driving_interesting_bias_both = false;  // ... or if the line is so wide, that only X or T is possible, discard 90lr and Tlr
 int driving_interesting_actual_ltype = 0;
 bool driving_interesting_actual_ltype_override = false;
-/***********************/
-
-/* drive_new */
-bool trust_cuart = false;
-bool array_has_pixels = false;
-int using_ltype = 0;
-/*************/
-
-void drive(int speed_left, int speed_right)
-{
-    //display.draw_star();
-    motor_left.move(speed_left);
-    motor_right.move(speed_right);
-}
 
 void crossing_90_right()
 {
@@ -76,26 +69,45 @@ void crossing_90_left()
     // delay(100);
     drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
 }
+/***********************/
+
+/* drive_new */
+bool trust_cuart = false;
+bool array_has_pixels = false;
+int using_ltype = 0;
+
+void wait_until(bool condition)
+{
+    while (!condition)
+    {
+        display.tick();
+        vTaskDelay(watchdog_delay);
+    }
+}
 
 void turn_90_left()
 {
     drive(-DRIVE_SPEED_NORMAL/*-2*/, DRIVE_SPEED_NORMAL);
 
-    while(!cuart.sensor_array[6]) {
-        vTaskDelay(watchdog_delay);
-    }
+    // while(!cuart.sensor_array[6]) {
+    //     vTaskDelay(watchdog_delay);
+    // }
+    wait_until(cuart.sensor_array[6]);
 
-    while(cuart.sensor_array[7]) {
-        vTaskDelay(watchdog_delay);
-    }
+    // while(cuart.sensor_array[7]) {
+    //     vTaskDelay(watchdog_delay);
+    // }
+    wait_until(!cuart.sensor_array[7]);
 
-    while(cuart.sensor_array[15]) {
-        vTaskDelay(watchdog_delay);
-    }
+    // while(cuart.sensor_array[15]) {
+    //     vTaskDelay(watchdog_delay);
+    // }
+    wait_until(!cuart.sensor_array[15]);
 
-    while(!cuart.sensor_array[14]) {
-        vTaskDelay(watchdog_delay);
-    }
+    // while(!cuart.sensor_array[14]) {
+    //     vTaskDelay(watchdog_delay);
+    // }
+    wait_until(cuart.sensor_array[14]);
 
     drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
 }
@@ -104,21 +116,25 @@ void turn_90_right()
 {
     drive(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL/*-2*/);
 
-    while(!cuart.sensor_array[19]) {
-        vTaskDelay(watchdog_delay);
-    }
+    // while(!cuart.sensor_array[19]) {
+    //     vTaskDelay(watchdog_delay);
+    // }
+    wait_until(cuart.sensor_array[19]);
 
-    while(cuart.sensor_array[18]) {
-        vTaskDelay(watchdog_delay);
-    }
+    // while(cuart.sensor_array[18]) {
+    //     vTaskDelay(watchdog_delay);
+    // }
+    wait_until(!cuart.sensor_array[18]);
 
-    while(cuart.sensor_array[10]) {
-        vTaskDelay(watchdog_delay);
-    }
+    // while(cuart.sensor_array[10]) {
+    //     vTaskDelay(watchdog_delay);
+    // }
+    wait_until(!cuart.sensor_array[10]);
 
-    while(!cuart.sensor_array[11]) {
-        vTaskDelay(watchdog_delay);
-    }
+    // while(!cuart.sensor_array[11]) {
+    //     vTaskDelay(watchdog_delay);
+    // }
+    wait_until(cuart.sensor_array[11]);
 
     drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
 }
@@ -126,26 +142,40 @@ void turn_90_right()
 void turn_deadend()
 {
     drive(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
-    while(cuart.array_right_sensor < 2) {
-        vTaskDelay(watchdog_delay);
-    }
-    while(cuart.array_mid_sensor < 2) {
-        vTaskDelay(watchdog_delay);
-    }
-    while(cuart.array_left_sensor < 2) {
-        vTaskDelay(watchdog_delay);
-    }
-    while(cuart.array_right_sensor < 2) {
-        vTaskDelay(watchdog_delay);
-    }
-    while(cuart.array_mid_sensor < 2) {
-        vTaskDelay(watchdog_delay);
-    }
-    while(!cuart.sensor_array[10]) {
-        vTaskDelay(watchdog_delay);
-    }
+    // while(cuart.array_right_sensor < 2) {
+    //     vTaskDelay(watchdog_delay);
+    // }
+    wait_until(cuart.array_right_sensor >= 2);
+
+    // while(cuart.array_mid_sensor < 2) {
+    //     vTaskDelay(watchdog_delay);
+    // }
+    wait_until(cuart.array_mid_sensor >= 2);
+
+    // while(cuart.array_left_sensor < 2) {
+    //     vTaskDelay(watchdog_delay);
+    // }
+    wait_until(cuart.array_left_sensor >= 2);
+
+    // while(cuart.array_right_sensor < 2) {
+    //     vTaskDelay(watchdog_delay);
+    // }
+    wait_until(cuart.array_right_sensor >= 2);
+
+    // while(cuart.array_mid_sensor < 2) {
+    //     vTaskDelay(watchdog_delay);
+    // }
+    wait_until(cuart.array_mid_sensor >= 2);
+
+    // while(!cuart.sensor_array[10]) {
+    //     vTaskDelay(watchdog_delay);
+    // }
+    wait_until(cuart.sensor_array[10]);
+    
     drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
 }
+
+/*************/
 
 void drive_sensor_array()
 {
@@ -379,14 +409,15 @@ void drive_new()
             
             drive(DRIVE_SPEED_LOW, DRIVE_SPEED_LOW);
             
-            while (cuart.array_left_sensor > 2 || cuart.array_right_sensor > 2) 
-            { 
-                vTaskDelay(watchdog_delay); 
-                if (cuart.array_left_sensor > 2 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor > 2)
-                {
-                    goto crossing;
-                }
-            }
+            // while (cuart.array_left_sensor > 2 || cuart.array_right_sensor > 2) 
+            // { 
+            //     vTaskDelay(watchdog_delay); 
+            //     if (cuart.array_left_sensor > 2 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor > 2)
+            //     {
+            //         goto crossing;
+            //     }
+            // }
+            wait_until(cuart.array_left_sensor <= 2 && cuart.array_right_sensor <= 2);
             array_has_pixels = (cuart.array_total > 2);
             
             if (!array_has_pixels)
@@ -396,7 +427,8 @@ void drive_new()
             }
             else // if (array_has_pixels)
             {
-                while (!cuart.sensor_array[0]) { vTaskDelay(watchdog_delay); }
+                // while (!cuart.sensor_array[0]) { vTaskDelay(watchdog_delay); }
+                wait_until(cuart.sensor_array[0]);
                 if (cuart.green_dots[2])
                 {
                     turn_90_left();
@@ -413,14 +445,15 @@ void drive_new()
             
             drive(DRIVE_SPEED_LOW, DRIVE_SPEED_LOW);
             
-            while (cuart.array_left_sensor > 2 || cuart.array_right_sensor > 2) 
-            { 
-                vTaskDelay(watchdog_delay); 
-                if (cuart.array_left_sensor > 2 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor > 2)
-                {
-                    goto crossing;
-                }
-            }
+            // while (cuart.array_left_sensor > 2 || cuart.array_right_sensor > 2) 
+            // { 
+            //     vTaskDelay(watchdog_delay); 
+            //     if (cuart.array_left_sensor > 2 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor > 2)
+            //     {
+            //         goto crossing;
+            //     }
+            // }
+            wait_until(cuart.array_left_sensor <= 2 && cuart.array_right_sensor <= 2);
             array_has_pixels = (cuart.array_total > 2);
             
             if (!array_has_pixels)
@@ -430,7 +463,8 @@ void drive_new()
             }
             else // if (array_has_pixels)
             {
-                while (!cuart.sensor_array[0]) { vTaskDelay(watchdog_delay); }
+                // while (!cuart.sensor_array[0]) { vTaskDelay(watchdog_delay); }
+                wait_until(cuart.sensor_array[0]);
                 if (cuart.green_dots[3])
                 {
                     turn_90_right();
@@ -448,14 +482,16 @@ void drive_new()
 
             drive(DRIVE_SPEED_LOW, DRIVE_SPEED_LOW);
             
-            while (cuart.array_left_sensor > 2 || cuart.array_right_sensor > 2) 
-            { 
-                vTaskDelay(watchdog_delay); 
-            }
+            // while (cuart.array_left_sensor > 2 || cuart.array_right_sensor > 2) 
+            // { 
+            //     vTaskDelay(watchdog_delay); 
+            // }
+            wait_until(cuart.array_left_sensor <= 2 && cuart.array_right_sensor <= 2);
 
             array_has_pixels = (cuart.array_total > 2);
 
-            while (!cuart.sensor_array[0]) { vTaskDelay(watchdog_delay); }
+            // while (!cuart.sensor_array[0]) { vTaskDelay(watchdog_delay); }
+            wait_until(cuart.sensor_array[0]);
             
             if (cuart.green_dots[2] && !cuart.green_dots[3])
             {
@@ -479,7 +515,7 @@ void drive_new()
     else // if (total_number_pixels <= 7)
     {
         // Line is left... (copy pasted from previous)
-        if (cuart.array_left_sensor > 2 && cuart.array_mid_sensor <= 2)
+        if (cuart.array_left_sensor > 2)
         {
             if ((cuart.sensor_array[3] == true || cuart.sensor_array[4] == true) && cuart.array_left_sensor > 3)
                 drive(-DRIVE_SPEED_HIGH, DRIVE_SPEED_NORMAL);
@@ -496,7 +532,7 @@ void drive_new()
         }
 
         // Line is right... (copy pasted from previous)
-        if (cuart.array_mid_sensor <= 2 && cuart.array_right_sensor > 2)
+        if (cuart.array_right_sensor > 2)
         {
             if ((cuart.sensor_array[22] == true || cuart.sensor_array[21] == true) && cuart.array_right_sensor > 3)
                 drive(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_HIGH);
