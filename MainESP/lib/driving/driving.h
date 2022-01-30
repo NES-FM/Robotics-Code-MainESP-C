@@ -479,7 +479,7 @@ void drive_new()
     else // if (total_number_pixels <= 7)
     {
         // Line is left... (copy pasted from previous)
-        if (cuart.array_left_sensor > 2)
+        if (cuart.array_left_sensor > 2 && cuart.array_mid_sensor <= 2)
         {
             if ((cuart.sensor_array[3] == true || cuart.sensor_array[4] == true) && cuart.array_left_sensor > 3)
                 drive(-DRIVE_SPEED_HIGH, DRIVE_SPEED_NORMAL);
@@ -496,7 +496,7 @@ void drive_new()
         }
 
         // Line is right... (copy pasted from previous)
-        if (cuart.array_right_sensor > 2)
+        if (cuart.array_mid_sensor <= 2 && cuart.array_right_sensor > 2)
         {
             if ((cuart.sensor_array[22] == true || cuart.sensor_array[21] == true) && cuart.array_right_sensor > 3)
                 drive(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_HIGH);

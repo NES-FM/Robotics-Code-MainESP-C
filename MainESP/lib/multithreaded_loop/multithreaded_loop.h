@@ -16,6 +16,8 @@ void multithreaded_loop(void* parameters) {
         if (motor_left.is_enabled() && motor_right.is_enabled())
             drive_new();
 
+        delay(10);
+
         // cuart.debugPrint();
     }
 }
@@ -24,8 +26,9 @@ void multithreaded_loop(void* parameters) {
 void main_loop()
 {
     cuart.tick();
-    display.tick();
-    ota.tick();
+    // display.tick();
+    // ota.tick();
+    delay(10);
 }
 
 void init_multithreaded_loop()

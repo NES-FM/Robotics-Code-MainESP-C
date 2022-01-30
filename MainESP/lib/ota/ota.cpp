@@ -8,7 +8,7 @@ void OTA::enable(bool enabled)
 {
     ota_enabled = enabled;
 }
-
+/*
 void OTA::check_wifi_available()
 {
     WiFi.mode(WIFI_STA);
@@ -25,7 +25,7 @@ void OTA::check_wifi_available()
     }
     this->enable(false);
 }
-
+*/
 void OTA::init()
 {
     if (ota_enabled)

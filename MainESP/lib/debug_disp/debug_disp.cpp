@@ -311,23 +311,26 @@ void debug_disp::ota_on_end()
 }
 void debug_disp::ota_on_progress(unsigned int progress, unsigned int total)
 {
-    int perc = (progress / (total / 100));
-    if (ota_mode_display)
+    if (progress != 0 && total != 0)
     {
-        oled->fillScreen(SSD1306_BLACK);
-        oled->setCursor(1, 1);
-        oled->setTextSize(2);
-        oled->setTextColor(SSD1306_WHITE);
-        oled->print("OTA! " + ota_type);
-        oled->setCursor(5, 36);
-        oled->print(perc + "%");
-        oled->drawRect(0, 20, 101, 4, SSD1306_WHITE);
-        oled->drawRect(1, 21, perc, 2, SSD1306_WHITE);
-        oled->display();
-    }
-    else
-    {
-        Serial.printf("Progress: %u%%\r", perc);
+        int perc = (progress / (total / 100));
+        if (ota_mode_display)
+        {
+            oled->fillScreen(SSD1306_BLACK);
+            oled->setCursor(1, 1);
+            oled->setTextSize(2);
+            oled->setTextColor(SSD1306_WHITE);
+            oled->print("OTA! " + ota_type);
+            oled->setCursor(5, 36);
+            oled->print(perc + "%");
+            oled->drawRect(0, 20, 101, 4, SSD1306_WHITE);
+            oled->drawRect(1, 21, perc, 2, SSD1306_WHITE);
+            oled->display();
+        }
+        else
+        {
+            Serial.printf("Progress: %u%%\r", perc);
+        }
     }
 }
 void debug_disp::ota_on_error(ota_error_t error)
