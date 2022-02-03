@@ -243,6 +243,21 @@ void drive_sensor_array()
             drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
     }
 
+    // Driven past line, no center line
+    if (driving_interesting_situation && !cuart.sensor_array[0] && cuart.array_total < 4)
+    {
+        if (driving_interesting_bias_left)
+        {
+            delay(100);
+            crossing_90_left();
+        }
+        else if (driving_interesting_bias_right)
+        {
+            delay(100);
+            crossing_90_right();
+        }
+    }
+
     // Interesting situation passed
     if ((
         (cuart.array_left_sensor < 4 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor < 4) || 

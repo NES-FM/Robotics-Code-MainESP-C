@@ -14,7 +14,10 @@ void multithreaded_loop(void* parameters) {
         // cuart.debugPrintArray();
 
         if (motor_left.is_enabled() && motor_right.is_enabled())
-            drive_new();
+        {
+            // drive_new();
+            drive_sensor_array();
+        }
 
         // delay(10);
 
