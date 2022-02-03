@@ -243,6 +243,16 @@ void drive_sensor_array()
             drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
     }
 
+    // Circle
+    if (driving_interesting_bias_both && 
+        (cuart.array_left_sensor > 2 && cuart.array_mid_sensor <= 2 && cuart.array_right_sensor > 2))
+    {
+        // Here something would happen, probably set a variable to change the behaviour everywhere else
+        drive(0, 0);
+        delay(2000);
+        drive(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    }
+
     // Driven past line, no center line
     if (driving_interesting_situation && !cuart.sensor_array[0] && cuart.array_total < 4)
     {
