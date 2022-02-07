@@ -168,6 +168,23 @@ void debug_disp::draw_comp_accel(int x, int y)
     // Serial.printf("%f  %5.1f\t\t%f %03d\r\n", _accelerometer->get_roll_degrees(), _accelerometer->get_roll_degrees(), _compass->get_angle(), int(_compass->get_angle()));
 }
 
+void debug_disp::draw_cuart(int x, int y)
+{
+    oled->setCursor(x, y);
+    oled->setTextSize(1);
+    oled->setTextColor(SSD1306_WHITE);
+
+    oled->printf("%+02d", *_local_cuart_line_angle);
+    // oled->print(0xF8);
+
+    oled->setCursor(x, y+8);
+
+    oled->printf("%+02d", *_local_cuart_line_midfactor);
+    // oled->print(0xF8);
+
+    // Serial.printf("%f  %5.1f\t\t%f %03d\r\n", _accelerometer->get_roll_degrees(), _accelerometer->get_roll_degrees(), _compass->get_angle(), int(_compass->get_angle()));
+}
+
 void debug_disp::draw_disabled_i2c_devices(int x, int y)
 {
     oled->setCursor(x, y);
@@ -214,14 +231,17 @@ void debug_disp::tick()
             // Ltype
             this->draw_ltype(80, 0);
 
+            // cuart values
+            this->draw_cuart(90, 24);
+
             // Green Dots
             this->draw_green_dots(100, 0, 22, 22);
 
             // Motor Values
             this->draw_motor_values(0, 24); // W: 108px
 
-            // Accelerometer and Compass
-            this->draw_comp_accel(90, 24);
+            // Accelerometer and Compass 
+            this->draw_comp_accel(32, 48);
 
             // Disabled I2C Devices
             this->draw_disabled_i2c_devices(0, 40);
