@@ -3,12 +3,16 @@
 
 TaskHandle_t multithreaded_loop_handle;
 
+#define DRIVE_IN_MAIN
+// #define DRIVE_IN_THREAD
+
 // Secondary loop running on core 0
 void multithreaded_loop(void* parameters) { 
     Serial.print("multithreaded_loop running on core ");
     Serial.println(xPortGetCoreID());
     while(true)
     {
+        #ifdef DRIVE_IN_THREAD
         display.tick();
 
         // cuart.debugPrintArray();
@@ -22,15 +26,30 @@ void multithreaded_loop(void* parameters) {
         // delay(10);
 
         // cuart.debugPrint();
+        #endif
+        #ifdef DRIVE_IN_MAIN
+        cuart.tick();
+        // display.tick();
+        #endif
     }
 }
 
 // Main loop running on core 1
 void main_loop()
 {
+    #ifdef DRIVE_IN_THREAD
     cuart.tick();
-    // display.tick();
-    // ota.tick();
+    #endif
+    #ifdef DRIVE_IN_MAIN
+    display.tick();
+
+    if (motor_left.is_enabled() && motor_right.is_enabled())
+    {
+        // drive_new();
+        drive_sensor_array();
+    }
+    #endif
+    ota.tick();
     // delay(10);
 }
 
