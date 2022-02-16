@@ -162,7 +162,7 @@ void debug_disp::draw_comp_accel(int x, int y)
 
     oled->setCursor(x, y+8);
 
-    oled->printf("  %03d", int(_compass->get_angle()));
+    oled->printf("  %03d", int(_compass->getRelativeAngle()));  //int(_compass->get_angle()));
     // oled->print(0xF8);
 
     // Serial.printf("%f  %5.1f\t\t%f %03d\r\n", _accelerometer->get_roll_degrees(), _accelerometer->get_roll_degrees(), _compass->get_angle(), int(_compass->get_angle()));

@@ -1,8 +1,11 @@
+//#define OTA_BUILD
+
 #include <Arduino.h>
 #include <Wire.h>
 
 #include "pin_definitions.h"
 #include "cuart_line_types.h"
+#include "drive_speeds.h"
 
 #include "cuart.h"
 #include "motor.h"
@@ -16,8 +19,11 @@ CUART_class cuart;
 
 debug_disp display;
 #include "i2c_scanner.h"
+
+#ifdef OTA_BUILD
 #include "ota.h"
 OTA ota(&display);
+#endif
 
 accel accel_sensor;
 compass_hmc compass;
@@ -54,8 +60,10 @@ void setup() {
     compass.enable(check_device_enabled(I2C_ADDRESS_COMPASS, "compass", "CO"));
     accel_sensor.enable(check_device_enabled(I2C_ADDRESS_ACCELEROMETER, "accelerometer", "AC"));
 
+    #ifdef OTA_BUILD
     ota.enable(!dip.get_wettkampfmodus());
     ota.init();
+    #endif
 
     // Initialization of lib
     motor_left.init(1);
@@ -68,7 +76,16 @@ void setup() {
     accel_sensor.init();
     compass.init(&accel_sensor);
 
+    if (dip.get_state(dip.dip2))
+    {
+        motor_left.move(DRIVE_SPEED_NORMAL_DEFAULT);
+        motor_right.move(-DRIVE_SPEED_NORMAL_DEFAULT);
+        compass.calibrate();
+    }
+
     init_multithreaded_loop();
+
+    // compass.setRelativeZeroAndGoal(45);
 
 /*
     ledcAttachPin(26, 1);
@@ -93,4 +110,6 @@ void setup() {
 
 void loop() {
     main_loop();
+    // if (compass.reachedRelativeGoal())
+    //     Serial.println("!!!!!");
 }

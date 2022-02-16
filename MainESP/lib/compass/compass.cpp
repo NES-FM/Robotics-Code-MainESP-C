@@ -103,10 +103,13 @@ void compass_hmc::init()
         if(error != 0) // If there is an error, print it out.
             Serial.println(compass->getErrorText(error));
 
-        valueOffset->XAxis = -276.92;
-        valueOffset->YAxis = -881.82;
+        valueOffset->XAxis = -197.8;  //-276.92;
+        valueOffset->YAxis = -554.76;  //-881.82;
+        valueOffset->ZAxis = -413.54;  //
 
         // this->calibrate();
+        cur_section = calculate_section();
+        setRelativeZero();
     }
 }
 
@@ -165,9 +168,11 @@ void compass_hmc::calibrate()
         cur = compass->readScaledAxis();
         valueMax.XAxis = max(valueMax.XAxis, cur.XAxis);
         valueMax.YAxis = max(valueMax.YAxis, cur.YAxis);
+        valueMax.ZAxis = max(valueMax.ZAxis, cur.ZAxis);
 
         valueMin.XAxis = min(valueMin.XAxis, cur.XAxis);
         valueMin.YAxis = min(valueMin.YAxis, cur.YAxis);
+        valueMin.ZAxis = min(valueMin.ZAxis, cur.ZAxis);
         delay(100);
     }
 
@@ -175,6 +180,9 @@ void compass_hmc::calibrate()
     valueOffset->YAxis = (valueMax.YAxis + valueMin.YAxis) / 2;
     valueOffset->ZAxis = (valueMax.ZAxis + valueMin.ZAxis) / 2;
 
+    Serial.printf("Compass: \r\nMax[x,y,z]: %f, %f, %f\r\nMin[x,y,z]: %f, %f, %f\r\nOffset[x,y,z]: %f, %f, %f\r\n", valueMax.XAxis, valueMax.YAxis, valueMax.ZAxis, valueMin.XAxis, valueMin.YAxis, valueMin.ZAxis, valueOffset->XAxis, valueOffset->YAxis, valueOffset->ZAxis);
+
+/*
     Serial.print("max: ");
     Serial.print(valueMax.XAxis);
     Serial.print(valueMax.YAxis);
@@ -187,6 +195,7 @@ void compass_hmc::calibrate()
     Serial.print(valueOffset->XAxis);
     Serial.print(valueOffset->YAxis);
     Serial.println(valueOffset->ZAxis);
+    */
 }
 
 void compass_hmc::output(MagnetometerRaw raw, MagnetometerScaled scaled, float heading, float headingDegrees)
@@ -212,4 +221,42 @@ void compass_hmc::output(MagnetometerRaw raw, MagnetometerScaled scaled, float h
     Serial.println(" Degrees   \t");
     // Serial.printf("S:%2f,%2f:E\r\n",scaled.XAxis,scaled.YAxis);
 }
+
+int compass_hmc::calculate_section()
+{
+    float angle = get_angle();
+    if (0 < angle && angle <= 90)
+        return 0;
+    if (90 < angle && angle <= 180)
+        return 1;
+    if (180 < angle && angle <= 270)
+        return 2;
+    if (270 < angle && angle <= 360)
+        return 3;
+}
+
+
+void compass_hmc::tick() 
+{
+    if (cur_section == 0 && calculate_section() == 3)
+    {
+        num_total_rotations -= 1;
+    }
+    else if (cur_section == 3 && calculate_section() == 0)
+    {
+        num_total_rotations += 1;
+    }
+    continuous_angle = (num_total_rotations * 360) + get_angle();
+    cur_section = calculate_section();
+    // Serial.printf("Section: %d, Rot: %d, Angle: %f\r\n", cur_section, num_total_rotations, continuous_angle);
+}
+
+bool compass_hmc::reachedRelativeGoal()
+{
+    if (relativeGoal > 0)
+        return this->getRelativeAngle() >= relativeGoal;
+    else
+        return this->getRelativeAngle() <= relativeGoal;
+}
+
 #endif

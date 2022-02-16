@@ -27,8 +27,10 @@ void multithreaded_loop(void* parameters) {
 
         // cuart.debugPrint();
         #endif
+
         #ifdef DRIVE_IN_MAIN
         cuart.tick();
+        // compass.tick();
         // display.tick();
         #endif
     }
@@ -39,7 +41,9 @@ void main_loop()
 {
     #ifdef DRIVE_IN_THREAD
     cuart.tick();
+    compass.tick();
     #endif
+
     #ifdef DRIVE_IN_MAIN
     display.tick();
 
@@ -49,7 +53,13 @@ void main_loop()
         drive_sensor_array();
     }
     #endif
+
+    #ifdef OTA_BUILD
     ota.tick();
+    #endif
+
+    compass.tick();
+    
     // delay(10);
 }
 
