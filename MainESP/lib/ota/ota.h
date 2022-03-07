@@ -8,11 +8,11 @@
 
 #include "debug_disp.h"
 
-#include "secrets.h"
+// #include "secrets.h"
 
 class OTA {
     public:
-        OTA(debug_disp* deb_disp);
+        OTA(debug_disp* deb_disp, char* s, char* p);
         void init();
         void tick();
         void check_wifi_available();
@@ -33,6 +33,9 @@ class OTA {
         void onError(ota_error_t error) { display->ota_on_error(error); };
 
         bool ota_enabled = false;
+
+        const char* ssid = "";
+        const char* password = "";
 };
 
 #endif

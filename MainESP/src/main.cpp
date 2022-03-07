@@ -1,4 +1,4 @@
-//#define OTA_BUILD
+// #define OTA_BUILD
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -21,8 +21,11 @@ debug_disp display;
 #include "i2c_scanner.h"
 
 #ifdef OTA_BUILD
+#include "secrets.h"
 #include "ota.h"
-OTA ota(&display);
+OTA ota(&display, ssid_define, password_define);
+#include "web.h"
+web web_app;
 #endif
 
 accel accel_sensor;
@@ -33,6 +36,9 @@ motor motor_right;
 #include "driving.h"
 
 analog_sensor bat_voltage(PIN_BATPROBE, true);
+
+analog_sensor poti_l(PIN_SENS1);
+analog_sensor poti_r(PIN_SENS2);
 
 DIP dip;
 
@@ -63,6 +69,7 @@ void setup() {
     #ifdef OTA_BUILD
     ota.enable(!dip.get_wettkampfmodus());
     ota.init();
+    web_app.init();
     #endif
 
     // Initialization of lib
@@ -83,33 +90,19 @@ void setup() {
         compass.calibrate();
     }
 
+    // drive(-DRIVE_SPEED_NORMAL_DEFAULT-3, DRIVE_SPEED_NORMAL_DEFAULT+5);
+
     init_multithreaded_loop();
+}
 
-    // compass.setRelativeZeroAndGoal(45);
-
-/*
-    ledcAttachPin(26, 1);
-
-    ledcWriteNote(1, NOTE_C, 4);
-    delay(500);
-    ledcWriteNote(1, NOTE_D, 4);
-    delay(500);
-    ledcWriteNote(1, NOTE_E, 4);
-    delay(500);
-    ledcWriteNote(1, NOTE_F, 4);
-    delay(500);
-    ledcWriteNote(1, NOTE_G, 4);
-    delay(500);
-    ledcWriteNote(1, NOTE_A, 4);
-    delay(500);
-    ledcWriteNote(1, NOTE_B, 4);
-    delay(500);
-    ledcDetachPin(26);
-    */
+void adjusted_drive(int ml, int mr)
+{
+    motor_left.move(ml + map(poti_l.get_state(), 0, 4095, -15, 15));
+    motor_right.move(mr + map(poti_r.get_state(), 0, 4095, -15, 15));
 }
 
 void loop() {
     main_loop();
-    // if (compass.reachedRelativeGoal())
-    //     Serial.println("!!!!!");
+    // adjusted_drive(30, -30);
+    // Serial.printf("Potis: L: %d, R: %d\r\n", map(poti_l.get_state(), 0, 4095, -15, 15), map(poti_r.get_state(), 0, 4095, -15, 15));
 }

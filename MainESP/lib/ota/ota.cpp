@@ -1,7 +1,9 @@
 #include "ota.h"
 
-OTA::OTA(debug_disp* deb_disp) { 
+OTA::OTA(debug_disp* deb_disp, char* s, char* p) { 
     display = deb_disp; 
+    ssid = s;
+    password = p;
 };
 
 void OTA::enable(bool enabled) 

@@ -58,7 +58,7 @@ void main_loop()
     ota.tick();
     #endif
 
-    compass.tick();
+    // compass.tick();
     
     // delay(10);
 }
