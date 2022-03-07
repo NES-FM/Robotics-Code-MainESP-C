@@ -26,6 +26,8 @@ bool driving_interesting_actual_ltype_override = false;
 
 void crossing_90_right()
 {
+    drive(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    delay(100);
     drive(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL/*-2*/);
     while(cuart.array_mid_sensor > 2) {
         display.tick();
@@ -49,6 +51,8 @@ void crossing_90_right()
 
 void crossing_90_left()
 {
+    drive(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    delay(100);
     drive(-DRIVE_SPEED_NORMAL/*-2*/, DRIVE_SPEED_NORMAL);
     while(cuart.array_mid_sensor > 2) {
         display.tick();
@@ -286,7 +290,7 @@ void drive_sensor_array()
 
         driving_interesting_actual_ltype = cuart.line_type;
 
-        if (cuart.array_mid_sensor < 2)
+        if (cuart.array_total < 4)
         {
             if (driving_interesting_bias_left)
             {
