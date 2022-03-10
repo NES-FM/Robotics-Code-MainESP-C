@@ -90,7 +90,7 @@ void setup() {
         compass.calibrate();
     }
 
-    // drive(-DRIVE_SPEED_NORMAL_DEFAULT-3, DRIVE_SPEED_NORMAL_DEFAULT+5);
+    // move(-DRIVE_SPEED_NORMAL_DEFAULT-3, DRIVE_SPEED_NORMAL_DEFAULT+5);
 
     init_multithreaded_loop();
 }

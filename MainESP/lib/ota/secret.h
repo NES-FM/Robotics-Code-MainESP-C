@@ -1,7 +1,7 @@
 // #ifndef SECRETS_H
 // #define SECRETS_H
 
-// const char* ssid = "MY_SSID";
-// const char* password = "WIFI_PASSWORD";
+// #define ssid_define "SSID"
+// #define password_define "PASSWORD"
 
 // #endif
