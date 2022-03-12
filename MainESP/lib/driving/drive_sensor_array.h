@@ -100,7 +100,7 @@ void crossing_90_left()
 void drive_sensor_array()
 {
     // Line is left...
-    if (!driving_interesting_situation && cuart.array_left_sensor >= 1 && cuart.array_right_sensor == 0)
+    if (!driving_interesting_situation && cuart.array_left_sensor >= 1 && cuart.array_right_sensor == 0 && cuart.array_mid_sensor <= 2)
     {
         if ((cuart.sensor_array[3] == true || cuart.sensor_array[4] == true) && cuart.array_left_sensor > 3)
             move(-DRIVE_SPEED_HIGH, DRIVE_SPEED_NORMAL);
@@ -109,7 +109,7 @@ void drive_sensor_array()
         else if (cuart.sensor_array[6] == true && cuart.array_left_sensor > 3)
             move(-DRIVE_SPEED_LOW, DRIVE_SPEED_HIGH);
         else if (cuart.sensor_array[7] == true)
-            move(0, DRIVE_SPEED_HIGHER);
+            move(-DRIVE_SPEED_LOW, DRIVE_SPEED_HIGH);
         else if (cuart.sensor_array[8] == true)
             move(DRIVE_SPEED_LOWER, DRIVE_SPEED_HIGH); 
         else if (cuart.sensor_array[9] == true)
@@ -117,7 +117,7 @@ void drive_sensor_array()
     }
 
     // Line is right...
-    if (!driving_interesting_situation && cuart.array_left_sensor == 0 && cuart.array_right_sensor >= 1)
+    if (!driving_interesting_situation && cuart.array_left_sensor == 0 && cuart.array_right_sensor >= 1 && cuart.array_mid_sensor <= 2)
     {
         if ((cuart.sensor_array[22] == true || cuart.sensor_array[21] == true) && cuart.array_right_sensor > 3)
             move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_HIGH);
@@ -126,7 +126,7 @@ void drive_sensor_array()
         else if (cuart.sensor_array[19] == true && cuart.array_right_sensor > 3)
             move(DRIVE_SPEED_HIGH, -DRIVE_SPEED_LOW);
         else if (cuart.sensor_array[18] == true)
-            move(DRIVE_SPEED_HIGHER, 0);
+            move(DRIVE_SPEED_HIGH, -DRIVE_SPEED_LOW);
         else if (cuart.sensor_array[17] == true)
             move(DRIVE_SPEED_HIGH, DRIVE_SPEED_LOWER); 
         else if (cuart.sensor_array[16] == true)
@@ -134,7 +134,7 @@ void drive_sensor_array()
     }
 
     // Line is interesting (could be 90 degree, could be T, could be X, etc...)
-    if ((cuart.array_left_sensor + cuart.array_mid_sensor + cuart.array_right_sensor) > 9 && !driving_interesting_bias_both)
+    if (cuart.array_total > 9 && !driving_interesting_bias_both)
     {
         driving_interesting_situation = true;
         // DRIVE_SPEED_NORMAL = DRIVE_SPEED_LOW_DEFAULT;
@@ -201,9 +201,9 @@ void drive_sensor_array()
         driving_interesting_actual_ltype = cuart.line_type;
         driving_interesting_actual_ltype_override = false;
 
-        move(0,0);
-        delay(1000);
-        move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        // move(0,0);
+        // delay(1000);
+        // move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
 
         if (cuart.array_total < 4 && !cuart.sensor_array[3] && !cuart.sensor_array[22])
         {
@@ -218,7 +218,7 @@ void drive_sensor_array()
                 driving_interesting_actual_ltype_override = true;
             }
         }
-        if (!driving_interesting_actual_ltype_override)
+        if (!driving_interesting_actual_ltype_override && !(cuart.green_dots[2] || cuart.green_dots[3]))
         {
             if (driving_interesting_bias_left)
             {
@@ -253,72 +253,79 @@ void drive_sensor_array()
 
         // Actual driving
 
-        // Dead End: Turn Around
-        if ((driving_interesting_actual_ltype == CUART_LTYPE_t || 
-                 driving_interesting_actual_ltype == CUART_LTYPE_X) && 
-                 (cuart.green_dots[2] && cuart.green_dots[3]))
+        // If there is a green dot somewhere
+        if (cuart.green_dots[2] || cuart.green_dots[3])
         {
-            Serial.printf("Interesting: Turning Around (Dead End) with ltype %d and dl green dot %s and dr green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False", cuart.green_dots[3] ? "True" : "False");
-            move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
-            while(cuart.array_right_sensor < 2) {
-                display.tick();
-                vTaskDelay(watchdog_delay);
+            // Dead End: Turn Around
+            if (/*(driving_interesting_actual_ltype == CUART_LTYPE_t || 
+                    driving_interesting_actual_ltype == CUART_LTYPE_X) && */
+                    (cuart.green_dots[2] && cuart.green_dots[3]))
+            {
+                Serial.printf("Interesting: Turning Around (Dead End) with ltype %d and dl green dot %s and dr green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False", cuart.green_dots[3] ? "True" : "False");
+                move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+                while(cuart.array_right_sensor < 2) {
+                    display.tick();
+                    vTaskDelay(watchdog_delay);
+                }
+                while(cuart.array_mid_sensor < 2) {
+                    display.tick();
+                    vTaskDelay(watchdog_delay);
+                }
+                while(cuart.array_left_sensor < 2) {
+                    display.tick();
+                    vTaskDelay(watchdog_delay);
+                }
+                while(cuart.array_right_sensor < 2) {
+                    display.tick();
+                    vTaskDelay(watchdog_delay);
+                }
+                while(cuart.array_mid_sensor < 2) {
+                    display.tick();
+                    vTaskDelay(watchdog_delay);
+                }
+                while(!cuart.sensor_array[10]) {
+                    display.tick();
+                    vTaskDelay(watchdog_delay);
+                }
+                move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
             }
-            while(cuart.array_mid_sensor < 2) {
-                display.tick();
-                vTaskDelay(watchdog_delay);
-            }
-            while(cuart.array_left_sensor < 2) {
-                display.tick();
-                vTaskDelay(watchdog_delay);
-            }
-            while(cuart.array_right_sensor < 2) {
-                display.tick();
-                vTaskDelay(watchdog_delay);
-            }
-            while(cuart.array_mid_sensor < 2) {
-                display.tick();
-                vTaskDelay(watchdog_delay);
-            }
-            while(!cuart.sensor_array[10]) {
-                display.tick();
-                vTaskDelay(watchdog_delay);
-            }
-            move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
-        }
-        // Turn left - 90 deg
-        else if (driving_interesting_actual_ltype == CUART_LTYPE_90l)
-        {
-            Serial.printf("Interesting: Turning left with ltype %d and dl green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False");
-            crossing_90_left();
-        }
-        // Turn left - green dot
-        else if ((driving_interesting_actual_ltype == CUART_LTYPE_tl || 
-                driving_interesting_actual_ltype == CUART_LTYPE_t || 
-                driving_interesting_actual_ltype == CUART_LTYPE_X) && cuart.green_dots[2])
-        {
-            crossing_90_left();
-            // delay(150);
-        }
-        // Turn right - 90
-        else if (driving_interesting_actual_ltype == CUART_LTYPE_90r)
-        {
-            Serial.printf("Interesting: Turning right with ltype %d and dr green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[3] ? "True" : "False");
-            crossing_90_right();
-        }
-        // Turn right - green dot
-        else if ((driving_interesting_actual_ltype == CUART_LTYPE_tr || 
+            // Turn left - green dot
+            else if (/*(driving_interesting_actual_ltype == CUART_LTYPE_tl || 
                     driving_interesting_actual_ltype == CUART_LTYPE_t || 
-                    driving_interesting_actual_ltype == CUART_LTYPE_X) && cuart.green_dots[3])
-        {
-            crossing_90_right();
-            // delay(150);
+                    driving_interesting_actual_ltype == CUART_LTYPE_X) && */cuart.green_dots[2])
+            {
+                crossing_90_left();
+                // delay(150);
+            }
+            // Turn right - green dot
+            else if (/*(driving_interesting_actual_ltype == CUART_LTYPE_tr || 
+                        driving_interesting_actual_ltype == CUART_LTYPE_t || 
+                        driving_interesting_actual_ltype == CUART_LTYPE_X) && */cuart.green_dots[3])
+            {
+                crossing_90_right();
+                // delay(150);
+            }
         }
-        // Keep Straight
-        else
+        else 
         {
-            Serial.printf("Interesting: Keeping Straight with ltype %d and dl green dot %s and dr green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False", cuart.green_dots[3] ? "True" : "False");
-            move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+            // Turn left - 90 deg
+            if (driving_interesting_actual_ltype == CUART_LTYPE_90l)
+            {
+                Serial.printf("Interesting: Turning left with ltype %d and dl green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False");
+                crossing_90_left();
+            }
+            // Turn right - 90 deg
+            else if (driving_interesting_actual_ltype == CUART_LTYPE_90r)
+            {
+                Serial.printf("Interesting: Turning right with ltype %d and dr green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[3] ? "True" : "False");
+                crossing_90_right();
+            }
+            // Keep Straight
+            else
+            {
+                Serial.printf("Interesting: Keeping Straight with ltype %d and dl green dot %s and dr green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False", cuart.green_dots[3] ? "True" : "False");
+                move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+            }
         }
 
         driving_interesting_situation = false;
