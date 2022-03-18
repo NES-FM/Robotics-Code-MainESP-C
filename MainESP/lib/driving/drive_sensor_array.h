@@ -64,6 +64,10 @@ void crossing_90_right()
     // move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
     // delay(100);
     move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    while(cuart.array_right_sensor > 2) {
+        display.tick();
+        vTaskDelay(watchdog_delay);
+    }
 
     while(cuart.array_mid_sensor > 2) {
         display.tick();
@@ -83,6 +87,10 @@ void crossing_90_left()
     // move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
     // delay(100);
     move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    while(cuart.array_left_sensor > 2) {
+        display.tick();
+        vTaskDelay(watchdog_delay);
+    }
 
     while(cuart.array_mid_sensor > 2) {
         display.tick();
@@ -100,7 +108,7 @@ void crossing_90_left()
 void drive_sensor_array()
 {
     // Line is left...
-    if (!driving_interesting_situation && cuart.array_left_sensor >= 1 && cuart.array_right_sensor == 0 && cuart.array_mid_sensor <= 2)
+    if (!driving_interesting_situation && cuart.array_left_sensor >= 1 && cuart.array_right_sensor == 0/* && cuart.array_mid_sensor <= 2*/)
     {
         if ((cuart.sensor_array[3] == true || cuart.sensor_array[4] == true) && cuart.array_left_sensor > 3)
             move(-DRIVE_SPEED_HIGH, DRIVE_SPEED_NORMAL);
@@ -117,7 +125,7 @@ void drive_sensor_array()
     }
 
     // Line is right...
-    if (!driving_interesting_situation && cuart.array_left_sensor == 0 && cuart.array_right_sensor >= 1 && cuart.array_mid_sensor <= 2)
+    if (!driving_interesting_situation && cuart.array_left_sensor == 0 && cuart.array_right_sensor >= 1 /*&& cuart.array_mid_sensor <= 2*/)
     {
         if ((cuart.sensor_array[22] == true || cuart.sensor_array[21] == true) && cuart.array_right_sensor > 3)
             move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_HIGH);
@@ -164,15 +172,15 @@ void drive_sensor_array()
             move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
     }
 
-    // Circle
-    if (driving_interesting_bias_both && 
-        (cuart.array_left_sensor > 2 && cuart.array_mid_sensor <= 2 && cuart.array_right_sensor > 2))
-    {
-        // Here something would happen, probably set a variable to change the behaviour everywhere else
-        move(0, 0);
-        delay(2000);
-        move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
-    }
+    // // Circle
+    // if (driving_interesting_bias_both && 
+    //     (cuart.array_left_sensor > 2 && cuart.array_mid_sensor <= 2 && cuart.array_right_sensor > 2))
+    // {
+    //     // Here something would happen, probably set a variable to change the behaviour everywhere else
+    //     move(0, 0);
+    //     delay(2000);
+    //     move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    // }
 
     // Driven past line, no center line
     if (driving_interesting_situation && !cuart.sensor_array[0] && cuart.array_total < 4)
