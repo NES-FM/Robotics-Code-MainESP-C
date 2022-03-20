@@ -7,6 +7,9 @@ bool driving_interesting_bias_both = false;  // ... or if the line is so wide, t
 int driving_interesting_actual_ltype = 0;
 bool driving_interesting_actual_ltype_override = false;
 
+#include "timer.h"
+timer white_timer;
+
 /*
 void crossing_90_right()
 {
