@@ -74,12 +74,16 @@ void crossing_90_right()
         vTaskDelay(watchdog_delay);
     }
 
-    while(cuart.array_mid_sensor > 2) {
+    while(cuart.array_mid_sensor >= 2) {
         display.tick();
         vTaskDelay(watchdog_delay);
     }
     delay(10);
-    while(cuart.array_mid_sensor < 5) {
+    while(cuart.array_mid_sensor < 3) {
+        display.tick();
+        vTaskDelay(watchdog_delay);
+    }
+    while(cuart.sensor_array[9] || cuart.sensor_array[16]) {
         display.tick();
         vTaskDelay(watchdog_delay);
     }
@@ -97,12 +101,16 @@ void crossing_90_left()
         vTaskDelay(watchdog_delay);
     }
 
-    while(cuart.array_mid_sensor > 2) {
+    while(cuart.array_mid_sensor >= 2) {
         display.tick();
         vTaskDelay(watchdog_delay);
     }
     delay(10);
-    while(cuart.array_mid_sensor < 5) {
+    while(cuart.array_mid_sensor < 3) {
+        display.tick();
+        vTaskDelay(watchdog_delay);
+    }
+    while(cuart.sensor_array[9] || cuart.sensor_array[16]) {
         display.tick();
         vTaskDelay(watchdog_delay);
     }
