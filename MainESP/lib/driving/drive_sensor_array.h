@@ -1,3 +1,5 @@
+#include "timer.h"
+
 int DRIVE_SPEED_NORMAL = DRIVE_SPEED_NORMAL_DEFAULT;
 uint_fast64_t lowering_drive_speed_millis = 0;
 bool driving_interesting_situation = false;
@@ -7,8 +9,8 @@ bool driving_interesting_bias_both = false;  // ... or if the line is so wide, t
 int driving_interesting_actual_ltype = 0;
 bool driving_interesting_actual_ltype_override = false;
 
-#include "timer.h"
-timer white_timer;
+timer white_timer(1500);
+#include "find_line.h"
 
 /*
 void crossing_90_right()
@@ -351,6 +353,16 @@ void drive_sensor_array()
     if ((millis() - lowering_drive_speed_millis) >= 1000)
     {
         DRIVE_SPEED_NORMAL = DRIVE_SPEED_NORMAL_DEFAULT;
+    }
+
+    if (cuart.array_total > 2)
+    {
+        white_timer.reset();
+    }
+
+    if (white_timer.has_reached_target())
+    {
+        find_line();
     }
     
     if (DEBUG_MOTOR_VALUES == 1)

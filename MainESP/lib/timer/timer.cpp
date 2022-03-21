@@ -5,6 +5,12 @@ timer::timer()
     reset();
 }
 
+timer::timer(int target)
+{
+    set_target(target);
+    reset();
+}
+
 void timer::reset()
 {
     zero_time = millis();

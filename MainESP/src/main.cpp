@@ -14,6 +14,7 @@
 #include "analog_sensor.h"
 #include "debug_disp.h"
 #include "dip.h"
+#include "timer.h"
 
 CUART_class cuart;
 
