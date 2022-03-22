@@ -15,8 +15,11 @@
 #include "debug_disp.h"
 #include "dip.h"
 #include "timer.h"
+#include "taster.h"
 
 CUART_class cuart;
+
+taster_class taster;
 
 debug_disp display;
 #include "i2c_scanner.h"
@@ -79,7 +82,7 @@ void setup() {
 
     cuart.init();
 
-    display.init(cuart.sensor_array, cuart.green_dots, &cuart.line_type, &cuart.line_angle, &cuart.line_midfactor, &cuart.array_left_sensor, &cuart.array_mid_sensor, &cuart.array_right_sensor, &motor_left.motor_speed, &motor_right.motor_speed, &driving_interesting_situation, &driving_interesting_bias_left, &driving_interesting_bias_right, &driving_interesting_bias_both, &compass, &accel_sensor, &bat_voltage, &dip);
+    display.init(cuart.sensor_array, cuart.green_dots, &cuart.line_type, &cuart.line_angle, &cuart.line_midfactor, &cuart.array_left_sensor, &cuart.array_mid_sensor, &cuart.array_right_sensor, &motor_left.motor_speed, &motor_right.motor_speed, &driving_interesting_situation, &driving_interesting_bias_left, &driving_interesting_bias_right, &driving_interesting_bias_both, &compass, &accel_sensor, &bat_voltage, &dip, &taster);
 
     accel_sensor.init();
     compass.init(&accel_sensor);
