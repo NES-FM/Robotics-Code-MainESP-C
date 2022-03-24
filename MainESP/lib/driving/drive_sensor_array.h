@@ -11,6 +11,7 @@ bool driving_interesting_actual_ltype_override = false;
 
 timer white_timer(1500);
 #include "find_line.h"
+#include "ausweichen.h"
 
 /*
 void crossing_90_right()
@@ -371,6 +372,11 @@ void drive_sensor_array()
     if (white_timer.has_reached_target())
     {
         find_line();
+    }
+
+    if (taster.get_state(taster.front))
+    {
+        ausweichen();
     }
     
     if (DEBUG_MOTOR_VALUES == 1)
