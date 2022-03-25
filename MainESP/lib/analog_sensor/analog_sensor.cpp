@@ -81,6 +81,7 @@ float analog_sensor::convert_to_battery_voltage()
 
     uint16_t state = this->get_state();
 
-    return (0.0000013422 * state * state) + (0.00048115 * state) + 3.2830;
+    //return (0.0000013422 * state * state) + (0.00048115 * state) + 3.2830;
+    return (0.0050462030154 * state) + 0.8888827902453;
 }
 

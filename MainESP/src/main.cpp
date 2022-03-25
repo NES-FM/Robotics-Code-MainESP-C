@@ -109,4 +109,6 @@ void loop() {
     main_loop();
     // adjusted_drive(30, -30);
     // Serial.printf("Potis: L: %d, R: %d\r\n", map(poti_l.get_state(), 0, 4095, -15, 15), map(poti_r.get_state(), 0, 4095, -15, 15));
+    // Serial.printf("Voltage Raw: %d, fixed: %f\r\n", bat_voltage.get_state(), bat_voltage.convert_to_battery_voltage());
+    // delay(200);
 }
