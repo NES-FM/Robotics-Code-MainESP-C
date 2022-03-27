@@ -7,6 +7,7 @@
 #include "cuart_line_types.h"
 #include "drive_speeds.h"
 
+#include "buzz.h"
 #include "cuart.h"
 #include "motor.h"
 #include "accel.h"
@@ -16,6 +17,8 @@
 #include "dip.h"
 #include "timer.h"
 #include "taster.h"
+
+buzz main_buzzer(PIN_BUZZ1, 100);
 
 CUART_class cuart;
 
@@ -65,7 +68,7 @@ void setup() {
     motor_right.enable(check_device_enabled(I2C_ADDRESSS_MOTOR_CONTROLLER, "motor_right", "MR"));
 
     display.enable(check_device_enabled(I2C_ADDRESS_DISPLAY, "display", "DI"));
-    check_device_enabled(I2C_ADDRESS_IO_EXTENDER, "io-extender", "IO");
+    // check_device_enabled(I2C_ADDRESS_IO_EXTENDER, "io-extender", "IO");
 
     compass.enable(check_device_enabled(I2C_ADDRESS_COMPASS, "compass", "CO"));
     accel_sensor.enable(check_device_enabled(I2C_ADDRESS_ACCELEROMETER, "accelerometer", "AC"));
@@ -96,6 +99,14 @@ void setup() {
 
     // move(-DRIVE_SPEED_NORMAL_DEFAULT-3, DRIVE_SPEED_NORMAL_DEFAULT+5);
 
+    main_buzzer.tone(NOTE_C, 4, 100);
+    main_buzzer.tone(NOTE_D, 4, 100);
+    main_buzzer.tone(NOTE_E, 4, 100);
+    main_buzzer.tone(NOTE_F, 4, 100);
+    main_buzzer.tone(NOTE_G, 4, 100);
+    main_buzzer.tone(NOTE_A, 4, 100);
+    main_buzzer.tone(NOTE_B, 4, 100);
+
     init_multithreaded_loop();
 }
 
@@ -107,8 +118,4 @@ void adjusted_drive(int ml, int mr)
 
 void loop() {
     main_loop();
-    // adjusted_drive(30, -30);
-    // Serial.printf("Potis: L: %d, R: %d\r\n", map(poti_l.get_state(), 0, 4095, -15, 15), map(poti_r.get_state(), 0, 4095, -15, 15));
-    // Serial.printf("Voltage Raw: %d, fixed: %f\r\n", bat_voltage.get_state(), bat_voltage.convert_to_battery_voltage());
-    // delay(200);
 }
