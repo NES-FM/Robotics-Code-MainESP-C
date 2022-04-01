@@ -69,6 +69,7 @@ void crossing_90_right()
 {
     // move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
     // delay(100);
+    main_buzzer.turnLeftSound();
     move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
     while(cuart.array_right_sensor > 2) {
         display.tick();
@@ -96,6 +97,7 @@ void crossing_90_left()
 {
     // move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
     // delay(100);
+    main_buzzer.turnRightSound();
     move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
     while(cuart.array_left_sensor > 2) {
         display.tick();
@@ -174,6 +176,7 @@ void drive_sensor_array()
             driving_interesting_bias_right = false;
         }
         digitalWrite(LED_BUILTIN, HIGH);
+        main_buzzer.startCrossingSound();
         move(DRIVE_SPEED_HALF, DRIVE_SPEED_HALF);
     }
 
@@ -356,6 +359,7 @@ void drive_sensor_array()
         driving_interesting_bias_left = false;
         driving_interesting_bias_right = false;
         move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        main_buzzer.noTone();
         digitalWrite(LED_BUILTIN, LOW);
     }
 

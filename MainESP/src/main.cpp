@@ -18,7 +18,7 @@
 #include "timer.h"
 #include "taster.h"
 
-buzz main_buzzer(PIN_BUZZ1, 100);
+buzz main_buzzer(PIN_BUZZ1, 128);
 
 CUART_class cuart;
 
