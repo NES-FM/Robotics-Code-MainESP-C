@@ -1,10 +1,11 @@
 #pragma once
 
 #include <Arduino.h>
+#include "dip.h"
 
 class buzz {
     public:
-        buzz(int p, int vol);
+        buzz(int p, int vol, DIP* dipref);
         void tone(note_t note, uint8_t octave, unsigned long duration = 0);
         void noTone();
         void setVol(int vol) { duty = vol; }
@@ -15,4 +16,5 @@ class buzz {
         int channel;
         int pin;
         int duty;
+        DIP* _dip;
 };

@@ -43,6 +43,7 @@ class debug_disp {
         debug_disp();
         void init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc, analog_sensor* volt, DIP* d, taster_class* t) ;
         void tick();
+        void force_tick() { _tick_last_millis = 0; tick(); }
         void enable(bool enabled);
         bool is_enabled() { return _display_i2c_enabled; }
         void draw_star();

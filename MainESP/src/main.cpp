@@ -1,4 +1,5 @@
 // #define OTA_BUILD
+// #define EXTENSIVE_DEBUG
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -7,7 +8,6 @@
 #include "cuart_line_types.h"
 #include "drive_speeds.h"
 
-#include "buzz.h"
 #include "cuart.h"
 #include "motor.h"
 #include "accel.h"
@@ -18,7 +18,10 @@
 #include "timer.h"
 #include "taster.h"
 
-buzz main_buzzer(PIN_BUZZ1, 128);
+DIP dip;
+
+#include "buzz.h"
+buzz main_buzzer(PIN_BUZZ1, 128, &dip);
 
 CUART_class cuart;
 
@@ -47,7 +50,6 @@ analog_sensor bat_voltage(PIN_BATPROBE, true);
 analog_sensor poti_l(PIN_SENS1);
 analog_sensor poti_r(PIN_SENS2);
 
-DIP dip;
 
 #include "multithreaded_loop.h"
 
@@ -90,12 +92,12 @@ void setup() {
     accel_sensor.init();
     compass.init(&accel_sensor);
 
-    if (dip.get_state(dip.dip2))
-    {
-        motor_left.move(DRIVE_SPEED_NORMAL_DEFAULT);
-        motor_right.move(-DRIVE_SPEED_NORMAL_DEFAULT);
-        compass.calibrate();
-    }
+    // if (dip.get_state(dip.dip2))
+    // {
+    //     motor_left.move(DRIVE_SPEED_NORMAL_DEFAULT);
+    //     motor_right.move(-DRIVE_SPEED_NORMAL_DEFAULT);
+    //     compass.calibrate();
+    // }
 
     // move(-DRIVE_SPEED_NORMAL_DEFAULT-3, DRIVE_SPEED_NORMAL_DEFAULT+5);
 

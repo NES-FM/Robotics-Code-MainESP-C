@@ -71,10 +71,10 @@ void CUART_class::line_handler()
 
 void CUART_class::green_handler()
 {
-    green_dots[0] = (_received_bytes[0] >> 3) & 0b00000001;
-    green_dots[1] = (_received_bytes[0] >> 2) & 0b00000001;
-    green_dots[2] = (_received_bytes[0] >> 1) & 0b00000001;
-    green_dots[3] = (_received_bytes[0] >> 0) & 0b00000001;
+    // green_dots[0] = (_received_bytes[0] >> 3) & 0b00000001;
+    // green_dots[1] = (_received_bytes[0] >> 2) & 0b00000001;
+    // green_dots[2] = (_received_bytes[0] >> 1) & 0b00000001;
+    // green_dots[3] = (_received_bytes[0] >> 0) & 0b00000001;
 }
 
 void CUART_class::sensor_array_handler()
