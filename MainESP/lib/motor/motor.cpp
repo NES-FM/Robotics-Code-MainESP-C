@@ -72,3 +72,16 @@ void motor::enable(bool enabled)
 {
     _motor_i2c_enabled = enabled;
 }
+
+void motor::force_resend()
+{
+    // By changing the current direction / speed forcing the resend of motor values
+
+    char save_current_speed = current_speed;
+    char save_current_direction = current_direc;
+
+    current_speed = current_speed + 1;
+    current_direc = current_direc + 1;
+
+    move_direction(save_current_speed, save_current_direction);
+}

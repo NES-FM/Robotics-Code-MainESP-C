@@ -19,6 +19,7 @@ class motor
         void off();
         void enable(bool enabled);
         bool is_enabled() { return _motor_i2c_enabled; }
+        void force_resend();
         int motor_speed = 0;
     private:
         const char _i2c_set_speed = 0x00;
