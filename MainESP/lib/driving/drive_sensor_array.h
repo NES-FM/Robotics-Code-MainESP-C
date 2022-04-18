@@ -172,7 +172,7 @@ void drive_sensor_array()
     }
 
     // Line is interesting (could be 90 degree, could be T, could be X, etc...)
-    if (cuart.array_total > 6 && !driving_interesting_bias_both)
+    if (cuart.array_total > 8 && !driving_interesting_bias_both)
     {
         #ifdef EXTENSIVE_DEBUG
         Serial.printf("[DRIVE_SENSOR_ARRAY] Line is interesting with: array_total: %d, left_sensor: %d, mid_sensor: %d, right_sensor: %d\r\n", cuart.array_total, cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor);

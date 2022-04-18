@@ -7,7 +7,7 @@ bool check_left_right()  // Returns true if line has been found by this method
 {
     white_timer.set_target(1000);
     white_timer.reset();
-    move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    move(-DRIVE_SPEED_CORNER, DRIVE_SPEED_CORNER);
     while(cuart.array_total <= 2 && !white_timer.has_reached_target())
     {
         display.tick();
@@ -20,7 +20,7 @@ bool check_left_right()  // Returns true if line has been found by this method
     
     white_timer.set_target(2000);
     white_timer.reset();
-    move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
     while(cuart.array_total <= 2 && !white_timer.has_reached_target())
     {
         display.tick();
@@ -33,7 +33,7 @@ bool check_left_right()  // Returns true if line has been found by this method
 
     white_timer.set_target(1000);
     white_timer.reset();
-    move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    move(-DRIVE_SPEED_CORNER, DRIVE_SPEED_CORNER);
     while(cuart.array_total <= 2 && !white_timer.has_reached_target())
     {
         display.tick();
@@ -69,9 +69,9 @@ void center_line()
     }
 
     if (rotating_left)
-        move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        move(-DRIVE_SPEED_CORNER, DRIVE_SPEED_CORNER);
     else
-        move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+        move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
 
     center_line(); // continue until done
 }
