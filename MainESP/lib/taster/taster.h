@@ -12,5 +12,5 @@ class taster_class
         };
         bool get_state(taster_name name);
     private:
-        digital_sensor* front_taster = new digital_sensor(PIN_SERVO1, INPUT_PULLUP, true);
+        digital_sensor* front_taster = new digital_sensor(PIN_SENS4, INPUT_PULLUP, true);
 }; 
