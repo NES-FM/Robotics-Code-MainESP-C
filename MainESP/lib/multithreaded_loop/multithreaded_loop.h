@@ -29,6 +29,7 @@ void multithreaded_loop(void* parameters) {
 
         #ifdef DRIVE_IN_MAIN
         cuart.tick();
+        // accel_sensor.print_values();
         // compass.tick();
         // display.tick();
         #endif
