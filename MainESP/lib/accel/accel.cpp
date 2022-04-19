@@ -158,8 +158,8 @@ void accel::init()
             this->enable(false);
             return;
         }
-        mpu->setAccOffsets(0.02,0.04,0.01);
-        mpu->setGyroOffsets(0.54,-0.66,9.34);
+        mpu->setAccOffsets(0.01,0.05,0.10);
+        mpu->setGyroOffsets(-2.83,0.14,-1.81);
         // mpu->calcOffsets();
     }
 }
@@ -174,7 +174,7 @@ float accel::get_pitch_degrees()
     if (_accel_enabled)
     {
         mpu->update();
-        return mpu->getAngleY();
+        return mpu->getAngleX();
     }
     return 0.0f;
 }
@@ -185,7 +185,7 @@ float accel::get_roll_degrees()
     {
         mpu->update();
         // print_values();
-        return mpu->getAngleX();
+        return mpu->getAngleY();
     }
     return 0.0f;
 }
@@ -198,6 +198,16 @@ float accel::get_pitch_for_compensation()
 float accel::get_roll_for_compensation()
 {
     return 0.0f;
+}
+
+accel::ramp_types accel::getCurrentRampState()
+{
+    float angle = this->get_roll_degrees();
+    if (angle < -10)
+        return up;
+    else if (angle > 10)
+        return down;
+    return level;
 }
 
 void accel::print_values()

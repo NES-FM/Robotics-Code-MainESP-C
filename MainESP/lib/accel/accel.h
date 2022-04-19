@@ -22,6 +22,12 @@ class accel {
         float get_roll_degrees();
         float get_pitch_for_compensation();
         float get_roll_for_compensation();
+        enum ramp_types {
+            up,
+            down,
+            level
+        } ;
+        ramp_types getCurrentRampState();
         #if ACCEL_LIBRARY == 2
         void print_values();
         #endif
