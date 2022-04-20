@@ -460,6 +460,7 @@ void drive_sensor_array()
             display.tick();
             delay(10);
         }
+        cuart.silver_line = false;
     }
 
     #ifdef EXTENSIVE_DEBUG
