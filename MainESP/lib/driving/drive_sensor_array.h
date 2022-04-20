@@ -80,18 +80,14 @@ void crossing_90_right()
     }
     delay(10);
     while(cuart.array_mid_sensor < 3) {
-        cuart.green_dots[0] = true;
         display.tick();
         vTaskDelay(watchdog_delay);
     }
     while(/*cuart.sensor_array[9] ||*/ cuart.sensor_array[16]) {
-        cuart.green_dots[1] = true;
         display.tick();
         vTaskDelay(watchdog_delay);
     }
     move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
-    cuart.green_dots[0] = false;
-    cuart.green_dots[1] = false;
 }
 
 void crossing_90_left()
@@ -111,18 +107,14 @@ void crossing_90_left()
     }
     delay(10);
     while(cuart.array_mid_sensor < 3) {
-        cuart.green_dots[0] = true;
         display.tick();
         vTaskDelay(watchdog_delay);
     }
     while(cuart.sensor_array[9]/* || cuart.sensor_array[16]*/) {
-        cuart.green_dots[1] = true;
         display.tick();
         vTaskDelay(watchdog_delay);
     }
     move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
-    cuart.green_dots[0] = false;
-    cuart.green_dots[1] = false;
 }
 
 void drive_sensor_array()
@@ -172,7 +164,7 @@ void drive_sensor_array()
     }
 
     // Line is interesting (could be 90 degree, could be T, could be X, etc...)
-    if (cuart.array_total > 8 && !driving_interesting_bias_both)
+    if (cuart.array_total > 8 && !driving_interesting_bias_both && accel_sensor.getCurrentRampState() != accel_sensor.down && accel_sensor.getCurrentRampState() != accel_sensor.up)
     {
         #ifdef EXTENSIVE_DEBUG
         Serial.printf("[DRIVE_SENSOR_ARRAY] Line is interesting with: array_total: %d, left_sensor: %d, mid_sensor: %d, right_sensor: %d\r\n", cuart.array_total, cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor);
@@ -449,6 +441,25 @@ void drive_sensor_array()
     if (DEBUG_MOTOR_VALUES == 1)
     {
         Serial.printf("L: %d, M: %d, R: %d, I: %s, Bias: L: %s, R: %s, B: %s\r\n", cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor, driving_interesting_situation ? "T" : "F", driving_interesting_bias_left ? "T" : "F", driving_interesting_bias_right ? "T" : "F", driving_interesting_bias_both ? "T" : "F");
+    }
+
+    if (accel_sensor.getCurrentRampState() == accel_sensor.down || accel_sensor.getCurrentRampState() == accel_sensor.up)
+    {
+        driving_interesting_situation = false;
+        driving_interesting_bias_both = false;
+        driving_interesting_bias_left = false;
+        driving_interesting_bias_right = false;
+        move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    }
+
+    if (cuart.silver_line)
+    {
+        move(0, 0);
+        for (int i = 0; i < 5000; i+=10)
+        {
+            display.tick();
+            delay(10);
+        }
     }
 
     #ifdef EXTENSIVE_DEBUG

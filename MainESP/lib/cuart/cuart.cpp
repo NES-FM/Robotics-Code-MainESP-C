@@ -30,6 +30,15 @@ void CUART_class::tick()
                     case 'S':
                         sensor_array_handler();
                     break;
+                    case 'R':
+                        red_line_handler();
+                    break;
+                    case 'E':
+                        green_line_handler();
+                    break;
+                    case 'K':
+                        silver_line_handler();
+                    break;
                 }
                 _currently_receiving = ' ';
                 _received_bytes_next_index = 0;
@@ -44,7 +53,7 @@ void CUART_class::tick()
 
         if (_currently_receiving == ' ')
         {
-            if (rec_char == 'L' || rec_char == 'G' || rec_char == 'S')
+            if (rec_char == 'L' || rec_char == 'G' || rec_char == 'S' || rec_char == 'R' || rec_char == 'E' || rec_char == 'K')
                 _currently_receiving = rec_char;
         }
         else
@@ -115,6 +124,21 @@ void CUART_class::sensor_array_handler()
         
     }
     array_total = array_left_sensor + array_right_sensor + array_mid_sensor;
+}
+
+void CUART_class::red_line_handler()
+{
+    red_line = true;
+}
+
+void CUART_class::green_line_handler()
+{
+    green_line = true;
+}
+
+void CUART_class::silver_line_handler()
+{
+    silver_line = true;
 }
 
 

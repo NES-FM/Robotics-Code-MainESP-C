@@ -24,12 +24,20 @@ class CUART_class
         signed char line_midfactor = 0;
         bool sensor_array[24] = {};
 
+        bool red_line = false;
+        bool green_line = false;
+        bool silver_line = false;
+
         int array_left_sensor = 0, array_mid_sensor = 0, array_right_sensor = 0, array_total = 0;
     private:
         signed char unsigned_to_signed(unsigned char s);
         void line_handler();
         void green_handler();
         void sensor_array_handler();
+
+        void red_line_handler();
+        void green_line_handler();
+        void silver_line_handler();
 
         HardwareSerial* _cuart_hwserial = new HardwareSerial(1);
         char _received_bytes[16] = {0x01};
