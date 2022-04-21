@@ -18,6 +18,11 @@
 #include "timer.h"
 #include "taster.h"
 
+#include <Servo.h>
+#include "servo_angles.h"
+Servo greifer_up;
+Servo greifer_zu;
+
 DIP dip;
 
 #include "buzz.h"
@@ -50,6 +55,7 @@ analog_sensor bat_voltage(PIN_BATPROBE, true);
 analog_sensor poti_l(PIN_SENS1);
 analog_sensor poti_r(PIN_SENS2);
 
+analog_sensor IR_l(PIN_SENS1, true);
 
 #include "multithreaded_loop.h"
 
@@ -74,6 +80,12 @@ void setup() {
 
     compass.enable(check_device_enabled(I2C_ADDRESS_COMPASS, "compass", "CO"));
     accel_sensor.enable(check_device_enabled(I2C_ADDRESS_ACCELEROMETER, "accelerometer", "AC"));
+
+    greifer_up.attach(PIN_SERVO2);
+    greifer_up.write(ANGLE_GREIFER_UP);
+    delay(1000);
+    greifer_zu.attach(PIN_SERVO1);
+    greifer_zu.write(ANGLE_GREIFER_CLOSE_CUBE);
 
     #ifdef OTA_BUILD
     ota.enable(!dip.get_wettkampfmodus());
@@ -119,5 +131,26 @@ void adjusted_drive(int ml, int mr)
 }
 
 void loop() {
-    main_loop();
+    // int pos = 0;
+    
+    // for (pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
+    // // in steps of 1 degree
+    // greifer_up.write(pos);              // tell servo to go to position in variable 'pos'
+    // Serial.println(pos);
+    // delay(15);                       // waits 15 ms for the servo to reach the position
+    // }
+    // for (pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
+    //     greifer_up.write(pos);              // tell servo to go to position in variable 'pos'
+    //     Serial.println(pos);
+    //     delay(15);                       // waits 15 ms for the servo to reach the position
+    // }
+    float volt = (((float)IR_l.get_state()/4096) * 3);
+    Serial.print(IR_l.get_state());
+    Serial.print(" ");
+    Serial.print(volt);
+    Serial.print(" ");
+    Serial.println(66.655466 * exp(-0.00281495 * IR_l.get_state()));
+    // main_loop();
+    delay(200);
+    // move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
 }

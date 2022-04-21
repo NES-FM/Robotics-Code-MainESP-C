@@ -83,7 +83,7 @@ void crossing_90_right()
         display.tick();
         vTaskDelay(watchdog_delay);
     }
-    while(/*cuart.sensor_array[9] ||*/ cuart.sensor_array[16]) {
+    while(/*cuart.sensor_array[9] ||*/ cuart.sensor_array[16] && cuart.array_total < 7) {
         display.tick();
         vTaskDelay(watchdog_delay);
     }
@@ -110,7 +110,7 @@ void crossing_90_left()
         display.tick();
         vTaskDelay(watchdog_delay);
     }
-    while(cuart.sensor_array[9]/* || cuart.sensor_array[16]*/) {
+    while(cuart.sensor_array[9]/* || cuart.sensor_array[16]*/ && cuart.array_total < 7) {
         display.tick();
         vTaskDelay(watchdog_delay);
     }
@@ -329,31 +329,36 @@ void drive_sensor_array()
                     (cuart.green_dots[2] && cuart.green_dots[3]))
             {
                 Serial.printf("Interesting: Turning Around (Dead End) with ltype %d and dl green dot %s and dr green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False", cuart.green_dots[3] ? "True" : "False");
-                move(DRIVE_SPEED_HALF, -DRIVE_SPEED_HALF);
-                while(cuart.array_right_sensor < 2) {
+                move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
+                for (int x = 0; x < 1800; x += 50)
+                {
                     display.tick();
-                    vTaskDelay(watchdog_delay);
+                    delay(50);
                 }
-                while(cuart.array_mid_sensor < 2) {
-                    display.tick();
-                    vTaskDelay(watchdog_delay);
-                }
-                while(cuart.array_left_sensor < 2) {
-                    display.tick();
-                    vTaskDelay(watchdog_delay);
-                }
-                while(cuart.array_right_sensor < 2) {
-                    display.tick();
-                    vTaskDelay(watchdog_delay);
-                }
-                while(cuart.array_mid_sensor < 2) {
-                    display.tick();
-                    vTaskDelay(watchdog_delay);
-                }
-                while(!cuart.sensor_array[10]) {
-                    display.tick();
-                    vTaskDelay(watchdog_delay);
-                }
+                // while(cuart.array_right_sensor < 2) {
+                //     display.tick();
+                //     vTaskDelay(watchdog_delay);
+                // }
+                // while(cuart.array_mid_sensor < 2) {
+                //     display.tick();
+                //     vTaskDelay(watchdog_delay);
+                // }
+                // while(cuart.array_left_sensor < 2) {
+                //     display.tick();
+                //     vTaskDelay(watchdog_delay);
+                // }
+                // while(cuart.array_right_sensor < 2) {
+                //     display.tick();
+                //     vTaskDelay(watchdog_delay);
+                // }
+                // while(cuart.array_mid_sensor < 2) {
+                //     display.tick();
+                //     vTaskDelay(watchdog_delay);
+                // }
+                // while(!cuart.sensor_array[10]) {
+                //     display.tick();
+                //     vTaskDelay(watchdog_delay);
+                // }
                 move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
             }
             // Turn left - green dot
@@ -452,7 +457,7 @@ void drive_sensor_array()
         move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
     }
 
-    if (cuart.silver_line)
+    /*if (cuart.silver_line)
     {
         move(0, 0);
         for (int i = 0; i < 5000; i+=10)
@@ -461,6 +466,16 @@ void drive_sensor_array()
             delay(10);
         }
         cuart.silver_line = false;
+    }*/
+    if (cuart.red_line)
+    {
+        move(0, 0);
+        while(true)
+        {
+            display.tick();
+            vTaskDelay(watchdog_delay);
+        }
+        cuart.red_line = false;
     }
 
     #ifdef EXTENSIVE_DEBUG
