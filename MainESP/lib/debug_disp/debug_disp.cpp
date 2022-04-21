@@ -221,8 +221,10 @@ void debug_disp::draw_taster(int x, int y, int w, int h)
 {
     oled->drawRect(x, y, w, h, SSD1306_WHITE);
     
-    if (_taster->get_state(_taster->front))
-        oled->fillRect(x+1, y+1, w-2, h/4, SSD1306_WHITE);
+    if (_taster->get_state(_taster->front_left))
+        oled->fillRect(x+1, y+1, (w/2)-1, h/4, SSD1306_WHITE);
+    if (_taster->get_state(_taster->front_right))
+        oled->fillRect(x+w, y+1, (w/2)-1, h/4, SSD1306_WHITE);
 }
 
 void debug_disp::tick()

@@ -435,7 +435,7 @@ void drive_sensor_array()
         find_line();
     }
 
-    if (taster.get_state(taster.front))
+    if (taster.get_state(taster.front_left) || taster.get_state(taster.front_right))
     {
         #ifdef EXTENSIVE_DEBUG
         Serial.printf("[DRIVE_SENSOR_ARRAY] Ausweichen!\r\n");
