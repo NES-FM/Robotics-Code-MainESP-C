@@ -32,7 +32,7 @@ void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type,
     }
     if (_display_i2c_enabled)
     {
-        oled->setRotation(2);
+        // oled->setRotation(2);
         oled->setTextWrap(false);
         oled->clearDisplay();
         oled->display();
@@ -224,7 +224,7 @@ void debug_disp::draw_taster(int x, int y, int w, int h)
     if (_taster->get_state(_taster->front_left))
         oled->fillRect(x+1, y+1, (w/2)-1, h/4, SSD1306_WHITE);
     if (_taster->get_state(_taster->front_right))
-        oled->fillRect(x+w, y+1, (w/2)-1, h/4, SSD1306_WHITE);
+        oled->fillRect(x+(w/2), y+1, (w/2)-1, h/4, SSD1306_WHITE);
 }
 
 void debug_disp::tick()

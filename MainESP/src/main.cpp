@@ -144,13 +144,16 @@ void loop() {
     //     Serial.println(pos);
     //     delay(15);                       // waits 15 ms for the servo to reach the position
     // }
-    // float volt = (((float)IR_l.get_state()/4096) * 3);
-    // Serial.print(IR_l.get_state());
-    // Serial.print(" ");
-    // Serial.print(volt);
-    // Serial.print(" ");
-    // Serial.println(66.655466 * exp(-0.00281495 * IR_l.get_state()));
-    main_loop();
-    // delay(200);
+    
+    float volt = (((float)IR_l.get_state()/4096) * 3);
+    Serial.print(IR_l.get_state());
+    Serial.print(" ");
+    Serial.print(volt);
+    Serial.print(" ");
+    Serial.println(66.655466 * exp(-0.00281495 * IR_l.get_state()));
+    delay(200);
+    
+    // main_loop();
+
     // move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
 }

@@ -8,6 +8,7 @@ int driving_interesting_actual_ltype = 0;
 bool driving_interesting_actual_ltype_override = false;
 
 timer white_timer(1500);
+timer silver_timer(3000);
 #include "find_line.h"
 #include "ausweichen.h"
 
@@ -432,7 +433,16 @@ void drive_sensor_array()
         #ifdef EXTENSIVE_DEBUG
         Serial.printf("[DRIVE_SENSOR_ARRAY] Starting Findline!\r\n");
         #endif
-        find_line();
+        if (silver_timer.has_reached_target())
+        {
+            find_line();
+        }
+        else // Raum
+        {
+            move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
+            in_raum = true;
+            return;
+        }
     }
 
     if (taster.get_state(taster.front_left) || taster.get_state(taster.front_right))
@@ -457,16 +467,11 @@ void drive_sensor_array()
         move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
     }
 
-    /*if (cuart.silver_line)
+    if (cuart.silver_line)
     {
-        move(0, 0);
-        for (int i = 0; i < 5000; i+=10)
-        {
-            display.tick();
-            delay(10);
-        }
         cuart.silver_line = false;
-    }*/
+        silver_timer.reset();
+    }
     if (cuart.red_line)
     {
         move(0, 0);

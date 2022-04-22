@@ -158,9 +158,10 @@ void accel::init()
             this->enable(false);
             return;
         }
-        mpu->setAccOffsets(0.01,0.05,0.10);
-        mpu->setGyroOffsets(-2.83,0.14,-1.81);
+        mpu->setAccOffsets(-0.02, 0.06, 0.09);
+        mpu->setGyroOffsets(5.69, -0.36, -0.77);
         // mpu->calcOffsets();
+        // this->print_values();
     }
 }
 
@@ -185,6 +186,7 @@ float accel::get_roll_degrees()
     {
         mpu->update();
         // print_values();
+        
         return mpu->getAngleY();
     }
     return 0.0f;

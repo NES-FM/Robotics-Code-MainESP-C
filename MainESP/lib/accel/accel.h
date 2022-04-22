@@ -43,6 +43,7 @@ class accel {
         float range_per_digit = .000061f; // ---''---  [https://github.com/jarzebski/Arduino-MPU6050/blob/master/MPU6050.cpp#L107]
         #endif
         bool _accel_enabled = false;
+        float max_angle = 0.0f;
 };
 
 #endif /* ACCEL_H */
