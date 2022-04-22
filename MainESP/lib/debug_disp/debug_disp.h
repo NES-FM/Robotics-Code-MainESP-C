@@ -12,6 +12,7 @@
 #include "analog_sensor.h"
 #include "dip.h"
 #include "taster.h"
+#include "ir.h"
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -41,7 +42,7 @@ static const unsigned char PROGMEM star_bmp[] =
 class debug_disp {
     public:
         debug_disp();
-        void init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc, analog_sensor* volt, DIP* d, taster_class* t) ;
+        void init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc, analog_sensor* volt, DIP* d, taster_class* t, IR* irl, IR* irr, int* ecke, int* hole, bool* cuart_silv) ;
         void tick();
         void force_tick() { _tick_last_millis = 0; tick(); }
         void enable(bool enabled);
@@ -52,6 +53,8 @@ class debug_disp {
         void ota_on_end();
         void ota_on_progress(unsigned int progress, unsigned int total);
         void ota_on_error(ota_error_t error);
+
+        bool raum_mode = false; //NEEDS TO BE CHANGED
     private:
         uint8_t _i2c_address = I2C_ADDRESS_DISPLAY;
         bool _display_i2c_enabled = false;
@@ -81,6 +84,8 @@ class debug_disp {
         void draw_dip(int x, int y);
         void draw_cuart(int x, int y);
         void draw_taster(int x, int y, int w, int h);
+        void draw_ir(int x, int y);
+        void draw_room_corner_hole(int x, int y);
 
         bool heartbeat_state = false;
 
@@ -97,8 +102,16 @@ class debug_disp {
 
         taster_class* _taster;
 
+        IR* _irl;
+        IR* _irr;
+
+        int* _ecke;
+        int* _hole;
+
         bool ota_mode_display = false;
         String ota_type;
+
+        bool* _cuart_silver;
 };
 
 #endif /* DEBUG_DISP_H */

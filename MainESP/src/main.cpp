@@ -17,6 +17,7 @@
 #include "dip.h"
 #include "timer.h"
 #include "taster.h"
+#include "ir.h"
 
 #include <Servo.h>
 #include "servo_angles.h"
@@ -31,6 +32,9 @@ buzz main_buzzer(PIN_BUZZ1, 128, &dip);
 CUART_class cuart;
 
 taster_class taster;
+
+IR IR_L(PIN_SENS1);
+IR IR_R(PIN_SENS2);
 
 debug_disp display;
 #include "i2c_scanner.h"
@@ -54,8 +58,6 @@ analog_sensor bat_voltage(PIN_BATPROBE, true);
 
 analog_sensor poti_l(PIN_SENS1);
 analog_sensor poti_r(PIN_SENS2);
-
-analog_sensor IR_l(PIN_SENS1, true);
 
 #include "multithreaded_loop.h"
 
@@ -81,11 +83,11 @@ void setup() {
     compass.enable(check_device_enabled(I2C_ADDRESS_COMPASS, "compass", "CO"));
     accel_sensor.enable(check_device_enabled(I2C_ADDRESS_ACCELEROMETER, "accelerometer", "AC"));
 
-    greifer_up.attach(PIN_SERVO2);
-    greifer_up.write(ANGLE_GREIFER_UP);
-    delay(1000);
     greifer_zu.attach(PIN_SERVO1);
     greifer_zu.write(ANGLE_GREIFER_CLOSE_CUBE);
+    delay(300);
+    greifer_up.attach(PIN_SERVO2);
+    greifer_up.write(ANGLE_GREIFER_UP);
 
     #ifdef OTA_BUILD
     ota.enable(!dip.get_wettkampfmodus());
@@ -99,7 +101,7 @@ void setup() {
 
     cuart.init();
 
-    display.init(cuart.sensor_array, cuart.green_dots, &cuart.line_type, &cuart.line_angle, &cuart.line_midfactor, &cuart.array_left_sensor, &cuart.array_mid_sensor, &cuart.array_right_sensor, &motor_left.motor_speed, &motor_right.motor_speed, &driving_interesting_situation, &driving_interesting_bias_left, &driving_interesting_bias_right, &driving_interesting_bias_both, &compass, &accel_sensor, &bat_voltage, &dip, &taster);
+    display.init(cuart.sensor_array, cuart.green_dots, &cuart.line_type, &cuart.line_angle, &cuart.line_midfactor, &cuart.array_left_sensor, &cuart.array_mid_sensor, &cuart.array_right_sensor, &motor_left.motor_speed, &motor_right.motor_speed, &driving_interesting_situation, &driving_interesting_bias_left, &driving_interesting_bias_right, &driving_interesting_bias_both, &compass, &accel_sensor, &bat_voltage, &dip, &taster, &IR_L, &IR_R, &ecke, &hole, &cuart.silver_line);
 
     accel_sensor.init();
     compass.init(&accel_sensor);
@@ -145,15 +147,7 @@ void loop() {
     //     delay(15);                       // waits 15 ms for the servo to reach the position
     // }
     
-    float volt = (((float)IR_l.get_state()/4096) * 3);
-    Serial.print(IR_l.get_state());
-    Serial.print(" ");
-    Serial.print(volt);
-    Serial.print(" ");
-    Serial.println(66.655466 * exp(-0.00281495 * IR_l.get_state()));
-    delay(200);
-    
-    // main_loop();
+    main_loop();
 
     // move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
 }

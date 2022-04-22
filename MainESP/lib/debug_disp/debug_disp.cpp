@@ -2,7 +2,7 @@
 
 debug_disp::debug_disp() {};
 
-void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc, analog_sensor* volt, DIP* d, taster_class* t)
+void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc, analog_sensor* volt, DIP* d, taster_class* t, IR* irl, IR* irr,  int* ecke, int* hole, bool* cuart_silv)
 {
     // Getting references to all variables to be shown on the screen
     _local_cuart_sensor_array = sensor_array;
@@ -24,6 +24,11 @@ void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type,
     _voltage = volt;
     _dip = d;
     _taster = t;
+    _irl = irl;
+    _irr = irr;
+    _ecke = ecke;
+    _hole = hole;
+    _cuart_silver = cuart_silv;
 
     if (!oled->begin(SSD1306_SWITCHCAPVCC, _i2c_address))
     {
@@ -225,6 +230,25 @@ void debug_disp::draw_taster(int x, int y, int w, int h)
         oled->fillRect(x+1, y+1, (w/2)-1, h/4, SSD1306_WHITE);
     if (_taster->get_state(_taster->front_right))
         oled->fillRect(x+(w/2), y+1, (w/2)-1, h/4, SSD1306_WHITE);
+
+    if (_cuart_silver)
+    {
+        oled->fillRect(x+1, y+(h/2), w, h/2, SSD1306_WHITE);
+    }
+}
+
+void debug_disp::draw_ir(int x, int y)
+{
+    oled->setTextSize(1);
+    oled->setCursor(x, y);
+    oled->printf("IR:L:%d,R:%d", (int)_irl->get_cm(), (int)_irr->get_cm());
+}
+
+void debug_disp::draw_room_corner_hole(int x, int y)
+{
+    oled->setTextSize(1);
+    oled->setCursor(x,y);
+    oled->printf("E:%d,H:%d", *_ecke, *_hole);
 }
 
 void debug_disp::tick()
@@ -236,36 +260,47 @@ void debug_disp::tick()
             _tick_last_millis = millis();
             oled->fillScreen(SSD1306_BLACK);
 
-            // Sensor array and numbers down below. 
-            this->draw_sensor_array(0, 0, 3, 5); // W: 2+element_width*24  H: element_height+18
-            
-            // Ltype
-            this->draw_ltype(80, 0);
+            if (raum_mode == false)
+            {
+                // Sensor array and numbers down below. 
+                this->draw_sensor_array(0, 0, 3, 5); // W: 2+element_width*24  H: element_height+18
+                
+                // Ltype
+                this->draw_ltype(80, 0);
 
-            // cuart values
-            this->draw_cuart(90, 24);
+                // cuart values
+                this->draw_cuart(90, 24);
 
-            // Green Dots
-            this->draw_green_dots(100, 0, 22, 22);
+                // Green Dots
+                this->draw_green_dots(100, 0, 22, 22);
 
-            // Motor Values
-            this->draw_motor_values(0, 24); // W: 108px
+                // Motor Values
+                this->draw_motor_values(0, 24); // W: 108px
 
-            // Accelerometer and Compass 
-            this->draw_comp_accel(45, 48);
+                // Accelerometer and Compass 
+                this->draw_comp_accel(45, 48);
 
-            // Disabled I2C Devices
-            this->draw_disabled_i2c_devices(0, 40);
+                // Disabled I2C Devices
+                this->draw_disabled_i2c_devices(0, 40);
 
-            // Battery Voltage
-            this->draw_voltage(80,44);
+                // Battery Voltage
+                this->draw_voltage(80,44);
 
-            // Dip Switches
-            this->draw_dip(0, SCREEN_HEIGHT-6);
+                // Dip Switches
+                this->draw_dip(0, SCREEN_HEIGHT-6);
 
-            // Taster
-            this->draw_taster(18, SCREEN_HEIGHT-16, 16, 16);
+                // Taster
+                this->draw_taster(18, SCREEN_HEIGHT-16, 16, 16);
+            }
+            else
+            {
+                this->draw_ir(0,0);
+                this->draw_taster(18, SCREEN_HEIGHT-16, 16, 16);
+                this->draw_voltage(80,44);
+                this->draw_motor_values(0, 24); // W: 108px
+                this->draw_room_corner_hole(0, 8);
 
+            }
             // Flashing Pixel in lower right corner
             heartbeat_state = !heartbeat_state;
             oled->drawPixel(SCREEN_WIDTH-1, SCREEN_HEIGHT-1, heartbeat_state ? SSD1306_WHITE : SSD1306_BLACK);
