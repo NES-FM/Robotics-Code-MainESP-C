@@ -18,6 +18,9 @@
 #include "timer.h"
 #include "taster.h"
 #include "ir.h"
+#include <Preferences.h>
+
+Preferences preferences;
 
 #include <Servo.h>
 #include "servo_angles.h"
@@ -70,6 +73,8 @@ void setup() {
     Serial.begin(115200); 
     Wire.begin(PIN_SDA, PIN_SCL, 400000);
 
+    preferences.begin("main_esp", false);
+
     // I2C Enable
     scan_i2c_addresses();
     print_i2c_addresses();
@@ -115,6 +120,11 @@ void setup() {
 
     // move(-DRIVE_SPEED_NORMAL_DEFAULT-3, DRIVE_SPEED_NORMAL_DEFAULT+5);
 
+    if (dip.get_state(dip.dip1))
+    {
+        preferences.putInt("balls", 0);
+    }
+
     main_buzzer.tone(NOTE_C, 4, 100);
     main_buzzer.tone(NOTE_D, 4, 100);
     main_buzzer.tone(NOTE_E, 4, 100);
@@ -147,6 +157,8 @@ void loop() {
     //     delay(15);                       // waits 15 ms for the servo to reach the position
     // }
     
+    // Serial.printf("L: Raw: %d, Cm: %f  R: Raw: %d, Cm: %f\r\n", IR_L.get_raw(), IR_L.get_cm(), IR_R.get_raw(), IR_R.get_cm());
+    // delay(200);
     main_loop();
 
     // move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);

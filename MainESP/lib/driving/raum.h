@@ -27,6 +27,10 @@ int ecke_possibility = ECKE_NONE;
 
 int hole = ECKE_NONE;
 
+int count_of_balls = 0;
+
+bool move_out_of_hole_now = false;
+
 void cust_delay(int millis)
 {
     for (int i = 0; i < millis; i+= 10)
@@ -36,9 +40,12 @@ void cust_delay(int millis)
     }
 }
 
+bool block_detect_exit = false;
+
 // returns true if corner found at pos
 bool check(int pos)
 {
+    block_detect_exit = false;
     move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
     cuart.silver_line = false;
     cuart.green_line = false;
@@ -96,10 +103,13 @@ void put_away()
     greifer_zu.write(ANGLE_GREIFER_CLOSE);
     greifer_up.write(ANGLE_GREIFER_UP);
 
-    // if(hole != 0)
-    // {
+    count_of_balls++;
+    preferences.putInt("balls", count_of_balls);
 
-    // }
+    if (count_of_balls == 1)
+    {
+        move_out_of_hole_now = true;
+    }
 }
 
 void move_along_wall()
@@ -139,13 +149,93 @@ void move_along_wall()
     }
 }
 
+void move_along_wall_find_exit()
+{
+    move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
+    while(!taster.get_state(taster.front_right) && !cuart.silver_line && !cuart.green_line)
+    {
+        display.tick();        
+        vTaskDelay(watchdog_delay);
+
+        if (IR_R.get_cm() > 45)
+        {
+            // Maybe hole
+            cust_delay(50);
+            move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+            cust_delay(TURN_90_DEG_DELAY);
+            cuart.silver_line = false;
+            cuart.green_line = false;
+            move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+            while(!taster.get_state(taster.front_right) && !cuart.silver_line && !cuart.green_line)
+            {
+                display.tick();
+                vTaskDelay(watchdog_delay);
+            }
+            if (cuart.green_line)
+            {
+                display.raum_mode = false;
+                in_raum = false;
+                return;
+            }
+            if (cuart.silver_line)
+            {
+                move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+                cust_delay(200);
+            }
+            move(-DRIVE_SPEED_RAUM, -DRIVE_SPEED_RAUM);
+            cust_delay(500);
+            move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+            cust_delay(TURN_90_DEG_DELAY);
+        }
+        else if (IR_R.get_cm() < 2)
+        {
+            move(DRIVE_SPEED_RAUM-5, DRIVE_SPEED_RAUM+5);
+        }
+        else if (IR_R.get_cm() > 2)
+        {
+            move(DRIVE_SPEED_RAUM+5, DRIVE_SPEED_RAUM-5);
+        }
+        else
+        {
+            move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
+        }
+    }
+    if (cuart.green_line)
+    {
+        display.raum_mode = false;
+        in_raum = false;
+        return;
+    }
+    if (cuart.silver_line)
+    {
+        move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+        cust_delay(200);
+    }
+    be_straight();
+    move_along_wall_find_exit();
+}
+
 void drive_raum()
 {
+    count_of_balls = preferences.getInt("balls", 0);
     move(-DRIVE_SPEED_RAUM, -DRIVE_SPEED_RAUM);
     cust_delay(300);
     move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
     cust_delay(TURN_90_DEG_DELAY);
     move_along_wall();
-    move(0, 0);
-    cust_delay(10000);
+    if (move_out_of_hole_now)
+    {
+        move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        cust_delay(100);
+        move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+        cust_delay(0.5* TURN_90_DEG_DELAY);
+        move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
+
+        move_along_wall_find_exit();
+        return;
+    }
+    else // Contine with searching for balls
+    {
+
+    }
 }
