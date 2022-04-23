@@ -1,4 +1,5 @@
 #include "servo_angles.h"
+#include "timer.h"
 
 /*
  ______ ______ ______ ______
@@ -31,6 +32,8 @@ int count_of_balls = 0;
 
 bool move_out_of_hole_now = false;
 
+int raum_entry_angle = 0;
+
 void cust_delay(int millis)
 {
     for (int i = 0; i < millis; i+= 10)
@@ -61,6 +64,8 @@ bool check(int pos)
         hole = pos;
         move(-DRIVE_SPEED_RAUM, -DRIVE_SPEED_RAUM);
         cust_delay(500);
+        cuart.silver_line = false;
+        cuart.green_line = false;
         return false;
     }
     cust_delay(200);
@@ -155,14 +160,17 @@ void move_along_wall()
     }
 }
 
+timer disable_IR_timer(2000);
+
 void move_along_wall_find_exit()
 {
     move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
+    IR_R.change_between_last_time();
     while(!taster.get_state(taster.front_right) && !cuart.silver_line && !cuart.green_line)
     {
         display.tick();        
-        vTaskDelay(watchdog_delay);
-
+        vTaskDelay(pdMS_TO_TICKS(50));
+/*
         if (IR_R.get_cm() > 45)
         {
             // Maybe hole
@@ -205,26 +213,74 @@ void move_along_wall_find_exit()
         {
             move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
         }
+        */
+       if (disable_IR_timer.has_reached_target() && IR_R.change_between_last_time() > 10/* && IR_R.change_direction == 1*/)
+       {
+           // Maybe hole
+           move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+            cust_delay(400);
+            move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+            cust_delay(TURN_90_DEG_DELAY);
+            cuart.silver_line = false;
+            cuart.green_line = false;
+            move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+            while(!(taster.get_state(taster.front_right) && taster.get_state(taster.front_left)) && !cuart.silver_line && !cuart.green_line)
+            {
+                display.tick();
+                vTaskDelay(watchdog_delay);
+            }
+            if (cuart.green_line)
+            {
+                display.raum_mode = false;
+                in_raum = false;
+                move(0,  0);
+                cust_delay(1000);
+                move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+                return;
+            }
+            if (cuart.silver_line)
+            {
+                move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+                cust_delay(200);
+                cuart.silver_line = false;
+                disable_IR_timer.reset();
+            }
+            turn_90_while_next_to_wall();
+            IR_R.change_between_last_time();
+            cuart.silver_line = false;
+       }
+    //    else if (IR_R.change_direction == 1)
+    //    {
+    //        move(DRIVE_SPEED_RAUM + 5, DRIVE_SPEED_RAUM - 5);
+    //    }
     }
     if (cuart.green_line)
     {
         display.raum_mode = false;
         in_raum = false;
+        move(0,  0);
+        cust_delay(1000);
+        move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
         return;
     }
     if (cuart.silver_line)
     {
         move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
         cust_delay(200);
+        cuart.silver_line = false;
+        disable_IR_timer.reset();
     }
     turn_90_while_next_to_wall();
+    
     move_along_wall_find_exit();
 }
 
 void drive_raum()
 {
-    count_of_balls = preferences.getInt("balls", 0);
+    count_of_balls = 0;//preferences.getInt("balls", 0);
     // ecke = preferences.getInt("ecke", 0);
+
+    raum_entry_angle = compass.get_angle();
 
     move(-DRIVE_SPEED_RAUM, -DRIVE_SPEED_RAUM);
     cust_delay(300);
@@ -233,13 +289,37 @@ void drive_raum()
     move_along_wall(); // Finding ecke / dropping off blue cube
     
     before_if:
-    if (move_out_of_hole_now) // If the robot is ready to exit the area
+    if (true)//move_out_of_hole_now) // If the robot is ready to exit the area
     {
         move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
         cust_delay(100);
         move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
-        cust_delay(0.5* TURN_90_DEG_DELAY);
+        cust_delay(1.5* TURN_90_DEG_DELAY);
         move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
+        
+        cuart.green_line = false;
+        cuart.silver_line = false;
+        while(!(taster.get_state(taster.front_right) || taster.get_state(taster.front_left)) && !cuart.silver_line && !cuart.green_line)
+        {
+            display.tick();
+            vTaskDelay(watchdog_delay);
+        }
+        if (cuart.green_line)
+        {
+            in_raum = false;
+            display.raum_mode = false;
+            move(0,  0);
+            cust_delay(1000);
+            move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+            return;
+        }
+        if (cuart.silver_line)
+        {
+            move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+            cust_delay(200);
+            cuart.silver_line = false;
+        }
+        turn_90_while_next_to_wall();
 
         move_along_wall_find_exit();
         return;
@@ -260,14 +340,14 @@ void drive_raum()
         while(!taster.get_state(taster.front_right) && !cuart.silver_line && !cuart.green_line) // driving until the other wall...
         {
             display.tick();
-            vTaskDelay(watchdog_delay);
+            vTaskDelay(pdMS_TO_TICKS(50));
 
             if (IR_L.change_between_last_time() > 5) // ... except if there is an abrupt change in IR
             {
                 float value_of_ball = IR_L.get_cm();
                 move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
                 cust_delay(100);
-                float value_of_wall = IR_R.get_cm();
+                float value_of_wall = IR_L.get_cm();
                 float mid_between_wall_and_ball = abs(value_of_ball - value_of_wall) / 2; // then measuring values
                 move(DRIVE_SPEED_CORNER, DRIVE_SPEED_CORNER);
                 while(IR_L.get_cm() > mid_between_wall_and_ball) // trying to find ball again, but exact
@@ -312,6 +392,8 @@ void drive_raum()
                 {
                     move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
                     cust_delay(500);
+                    cuart.silver_line = false;
+                    cuart.green_line = false;
                 }
                 turn_90_while_next_to_wall(); // getting straight to the wall
                 while(!taster.get_state(taster.front_right)) // until the ecke is detected
@@ -322,12 +404,13 @@ void drive_raum()
                 put_away(); // drop off
                 goto before_if; // go to before the if -> collect balls if necessary, else drive out
             }
-            // if (IR_R.change_between_last_time() > 5)
         }
         if (cuart.silver_line || cuart.green_line)
         {
             move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
             cust_delay(500);
+            cuart.silver_line = false;
+            cuart.green_line = false;
         }
         turn_90_while_next_to_wall(); // Reached end of room: Moving to the side and turning around
         move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);

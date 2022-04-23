@@ -91,8 +91,8 @@ void setup() {
     greifer_zu.attach(PIN_SERVO1);
     greifer_zu.write(ANGLE_GREIFER_CLOSE_CUBE);
     delay(300);
-    // greifer_up.attach(PIN_SERVO2);
-    // greifer_up.write(ANGLE_GREIFER_UP); //NEEDS TO BE CHANGED
+    greifer_up.attach(PIN_SERVO2);
+    greifer_up.write(ANGLE_GREIFER_UP); //NEEDS TO BE CHANGED
 
     #ifdef OTA_BUILD
     ota.enable(!dip.get_wettkampfmodus());

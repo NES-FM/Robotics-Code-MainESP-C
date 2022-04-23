@@ -168,7 +168,7 @@ void debug_disp::draw_comp_accel(int x, int y)
 
     oled->setCursor(x, y+8);
 
-    oled->printf(" %03d", int(_compass->getRelativeAngle()));  //int(_compass->get_angle()));
+    oled->printf(" %03d", int(_compass->get_angle()));//int(_compass->getRelativeAngle()));
     // oled->print(0xF8);
 
     // Serial.printf("%f  %5.1f\t\t%f %03d\r\n", _accelerometer->get_roll_degrees(), _accelerometer->get_roll_degrees(), _compass->get_angle(), int(_compass->get_angle()));
@@ -299,7 +299,7 @@ void debug_disp::tick()
                 this->draw_voltage(80,44);
                 this->draw_motor_values(0, 24); // W: 108px
                 this->draw_room_corner_hole(0, 8);
-
+                this->draw_green_dots(100, 0, 22, 22);
             }
             // Flashing Pixel in lower right corner
             heartbeat_state = !heartbeat_state;

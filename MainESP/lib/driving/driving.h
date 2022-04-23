@@ -12,7 +12,7 @@ timer resend_motor_timer(100);
 
 TickType_t watchdog_delay = pdMS_TO_TICKS(5);
 
-bool in_raum = true; //NEEDS TO BE CHANGED
+bool in_raum = false; //NEEDS TO BE CHANGED
 
 void move(int speed_left, int speed_right)
 {

@@ -444,6 +444,13 @@ void drive_sensor_array()
             in_raum = true;
             return;
         }
+        if (dip.get_state(dip.dip2))
+        {
+            move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
+            display.raum_mode = true;
+            in_raum = true;
+            return;
+        }
     }
 
     if (taster.get_state(taster.front_left) || taster.get_state(taster.front_right))
