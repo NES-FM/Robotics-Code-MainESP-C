@@ -91,8 +91,8 @@ void setup() {
     greifer_zu.attach(PIN_SERVO1);
     greifer_zu.write(ANGLE_GREIFER_CLOSE_CUBE);
     delay(300);
-    greifer_up.attach(PIN_SERVO2);
-    greifer_up.write(ANGLE_GREIFER_UP);
+    // greifer_up.attach(PIN_SERVO2);
+    // greifer_up.write(ANGLE_GREIFER_UP); //NEEDS TO BE CHANGED
 
     #ifdef OTA_BUILD
     ota.enable(!dip.get_wettkampfmodus());
@@ -123,6 +123,7 @@ void setup() {
     if (dip.get_state(dip.dip1))
     {
         preferences.putInt("balls", 0);
+        preferences.putInt("ecke", 0);
     }
 
     main_buzzer.tone(NOTE_C, 4, 100);
@@ -159,6 +160,7 @@ void loop() {
     
     // Serial.printf("L: Raw: %d, Cm: %f  R: Raw: %d, Cm: %f\r\n", IR_L.get_raw(), IR_L.get_cm(), IR_R.get_raw(), IR_R.get_cm());
     // delay(200);
+    
     main_loop();
 
     // move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);

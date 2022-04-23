@@ -54,7 +54,7 @@ class debug_disp {
         void ota_on_progress(unsigned int progress, unsigned int total);
         void ota_on_error(ota_error_t error);
 
-        bool raum_mode = false; //NEEDS TO BE CHANGED
+        bool raum_mode = true; //NEEDS TO BE CHANGED
     private:
         uint8_t _i2c_address = I2C_ADDRESS_DISPLAY;
         bool _display_i2c_enabled = false;
