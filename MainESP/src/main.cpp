@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+float lir_value = 0.0f;
+
 #include "pin_definitions.h"
 #include "cuart_line_types.h"
 #include "drive_speeds.h"
@@ -62,6 +64,8 @@ analog_sensor bat_voltage(PIN_BATPROBE, true);
 analog_sensor poti_l(PIN_SENS1);
 analog_sensor poti_r(PIN_SENS2);
 
+digital_sensor kugel_in_greifer(PIN_SERVO3, INPUT, false);
+
 #include "multithreaded_loop.h"
 
 void setup() {
@@ -106,7 +110,7 @@ void setup() {
 
     cuart.init();
 
-    display.init(cuart.sensor_array, cuart.green_dots, &cuart.line_type, &cuart.line_angle, &cuart.line_midfactor, &cuart.array_left_sensor, &cuart.array_mid_sensor, &cuart.array_right_sensor, &motor_left.motor_speed, &motor_right.motor_speed, &driving_interesting_situation, &driving_interesting_bias_left, &driving_interesting_bias_right, &driving_interesting_bias_both, &compass, &accel_sensor, &bat_voltage, &dip, &taster, &IR_L, &IR_R, &ecke, &hole, &cuart.silver_line);
+    display.init(cuart.sensor_array, cuart.green_dots, &cuart.line_type, &cuart.line_angle, &cuart.line_midfactor, &cuart.array_left_sensor, &cuart.array_mid_sensor, &cuart.array_right_sensor, &motor_left.motor_speed, &motor_right.motor_speed, &driving_interesting_situation, &driving_interesting_bias_left, &driving_interesting_bias_right, &driving_interesting_bias_both, &compass, &accel_sensor, &bat_voltage, &dip, &taster, &IR_L, &IR_R, &ecke, &hole, &kugel_in_greifer, &lir_value);
 
     accel_sensor.init();
     compass.init(&accel_sensor);

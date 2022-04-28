@@ -42,7 +42,7 @@ static const unsigned char PROGMEM star_bmp[] =
 class debug_disp {
     public:
         debug_disp();
-        void init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc, analog_sensor* volt, DIP* d, taster_class* t, IR* irl, IR* irr, int* ecke, int* hole, bool* cuart_silv) ;
+        void init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc, analog_sensor* volt, DIP* d, taster_class* t, IR* irl, IR* irr, int* ecke, int* hole, digital_sensor* kugel_in_greifer, float* lir_value) ;
         void tick();
         void force_tick() { _tick_last_millis = 0; tick(); }
         void enable(bool enabled);
@@ -111,7 +111,9 @@ class debug_disp {
         bool ota_mode_display = false;
         String ota_type;
 
-        bool* _cuart_silver;
+        digital_sensor* _kugel_in_greifer;
+
+        float* _lir_val;
 };
 
 #endif /* DEBUG_DISP_H */

@@ -275,11 +275,13 @@ void move_along_wall_find_exit()
     move_along_wall_find_exit();
 }
 
+timer ball_timer(800);
+
 void drive_raum()
 {
     count_of_balls = 0;//preferences.getInt("balls", 0);
     // ecke = preferences.getInt("ecke", 0);
-
+   // NEEDS_TO_BE_CHANGED
     raum_entry_angle = compass.get_angle();
 
     move(-DRIVE_SPEED_RAUM, -DRIVE_SPEED_RAUM);
@@ -287,7 +289,7 @@ void drive_raum()
     move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
     cust_delay(TURN_90_DEG_DELAY);
     move_along_wall(); // Finding ecke / dropping off blue cube
-    
+
     before_if:
     if (true)//move_out_of_hole_now) // If the robot is ready to exit the area
     {
@@ -328,39 +330,77 @@ void drive_raum()
     {
         move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
         cust_delay(500);
-        move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
-        cust_delay(0.5* TURN_90_DEG_DELAY);
-        move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
-        cust_delay(1000); // should now be standing against a wall
-        driving_to_ecke = false;
-        search_for_balls:
+        move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        cust_delay(1.5* TURN_90_DEG_DELAY);
+        // move(0, 0);
+        // greifer_up.write(ANGLE_GREIFER_DOWN);
+        // greifer_zu.write(ANGLE_GREIFER_AUSRICHTEN);
         move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
         cuart.silver_line = false;
         cuart.green_line = false;
-        while(!taster.get_state(taster.front_right) && !cuart.silver_line && !cuart.green_line) // driving until the other wall...
+        while(!(taster.get_state(taster.front_right) && taster.get_state(taster.front_left)) && !cuart.silver_line && !cuart.green_line)
         {
             display.tick();
-            vTaskDelay(pdMS_TO_TICKS(50));
-
-            if (IR_L.change_between_last_time() > 5) // ... except if there is an abrupt change in IR
+            vTaskDelay(watchdog_delay);
+        }
+        if (cuart.silver_line || cuart.green_line)
+        {
+            move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+            cust_delay(400);
+        }
+        move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+        cust_delay(500);
+        move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        cust_delay(2.125* TURN_90_DEG_DELAY);
+        move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+        cust_delay(500);
+        driving_to_ecke = false;
+        search_for_balls:
+        move(10, 10);
+        cuart.silver_line = false;
+        cuart.green_line = false;
+        IR_L.change_between_last_time();
+        while(!taster.get_state(taster.front_right) && !cuart.silver_line && !cuart.green_line) // driving until the other wall...
+        {
+            back_in_while:
+            display.tick();
+            vTaskDelay(pdMS_TO_TICKS(100));
+            Serial.println("wait");
+            lir_value = IR_L.get_cm();
+            Serial.printf("IR: %f, last:%f\r\n", lir_value, IR_L.last_state);
+            if (abs(lir_value - IR_L.last_state) > 10) // ... except if there is an abrupt change in IR
             {
+                Serial.println("ir change");
+                move(0, 0);
+                cust_delay(500);
                 float value_of_ball = IR_L.get_cm();
                 move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
-                cust_delay(100);
+                cust_delay(200);
+                move(0, 0);
+                cust_delay(500);
                 float value_of_wall = IR_L.get_cm();
                 float mid_between_wall_and_ball = abs(value_of_ball - value_of_wall) / 2; // then measuring values
+                Serial.printf("Wall: %f, Ball: %f, Mid: %f\r\n", value_of_wall, value_of_ball, mid_between_wall_and_ball);
                 move(DRIVE_SPEED_CORNER, DRIVE_SPEED_CORNER);
-                while(IR_L.get_cm() > mid_between_wall_and_ball) // trying to find ball again, but exact
+                ball_timer.reset();
+                while(IR_L.get_cm() > mid_between_wall_and_ball && !ball_timer.has_reached_target()) // trying to find ball again, but exact
                 {
                     display.tick();
                     vTaskDelay(watchdog_delay);
                     // TODO: What if ball isnt found
+                }
+                if (ball_timer.has_reached_target())
+                {
+                    move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+                    goto back_in_while;
                 }
                 move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL); // Trying to center robot to ball ...
                 cust_delay(60);
                 move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
                 cust_delay(TURN_90_DEG_DELAY); // ... and face the ball
                 move(0, 0);
+                greifer_up.write(ANGLE_GREIFER_MID);
+                cust_delay(500);
                 greifer_zu.write(ANGLE_GREIFER_OPEN);
                 cust_delay(500);
                 greifer_up.write(ANGLE_GREIFER_DOWN);
@@ -412,6 +452,7 @@ void drive_raum()
             cuart.silver_line = false;
             cuart.green_line = false;
         }
+        Serial.println("Wall -> turning around");
         turn_90_while_next_to_wall(); // Reached end of room: Moving to the side and turning around
         move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
         cust_delay(100);

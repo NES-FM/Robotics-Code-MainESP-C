@@ -31,10 +31,11 @@ uint16_t analog_sensor::get_state()
 {
     uint16_t state = analogRead(pin);
     
+    average8_list[average8_index] = state;
+    average8_index = (average8_index + 1) % 8;
+    
     if (average8_enabled)
     {
-        average8_list[average8_index] = state;
-        average8_index = (average8_index + 1) % 8;
 
         state = 0;
 
@@ -48,6 +49,20 @@ uint16_t analog_sensor::get_state()
     
     last_state = state;
     return state; 
+}
+
+uint16_t analog_sensor::get_average_state()
+{
+    uint16_t local_state = get_state();
+
+    for (auto t : average8_list)
+    {
+        local_state += t;
+    }
+
+    local_state /= 8;
+
+    return local_state; 
 }
 
 uint16_t analog_sensor::diff_to_last_state()

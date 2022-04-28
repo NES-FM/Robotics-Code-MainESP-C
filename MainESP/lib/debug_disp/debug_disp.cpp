@@ -2,7 +2,7 @@
 
 debug_disp::debug_disp() {};
 
-void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc, analog_sensor* volt, DIP* d, taster_class* t, IR* irl, IR* irr,  int* ecke, int* hole, bool* cuart_silv)
+void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc, analog_sensor* volt, DIP* d, taster_class* t, IR* irl, IR* irr,  int* ecke, int* hole, digital_sensor* kugel_in_greif, float* lir_value)
 {
     // Getting references to all variables to be shown on the screen
     _local_cuart_sensor_array = sensor_array;
@@ -28,7 +28,8 @@ void debug_disp::init(bool* sensor_array, bool* green_dots, unsigned char* type,
     _irr = irr;
     _ecke = ecke;
     _hole = hole;
-    _cuart_silver = cuart_silv;
+    _kugel_in_greifer = kugel_in_greif;
+    _lir_val = lir_value;
 
     if (!oled->begin(SSD1306_SWITCHCAPVCC, _i2c_address))
     {
@@ -231,7 +232,7 @@ void debug_disp::draw_taster(int x, int y, int w, int h)
     if (_taster->get_state(_taster->front_right))
         oled->fillRect(x+(w/2), y+1, (w/2)-1, h/4, SSD1306_WHITE);
 
-    if (_cuart_silver)
+    if (_kugel_in_greifer->get_state())
     {
         oled->fillRect(x+1, y+(h/2), w, h/2, SSD1306_WHITE);
     }
@@ -241,7 +242,7 @@ void debug_disp::draw_ir(int x, int y)
 {
     oled->setTextSize(1);
     oled->setCursor(x, y);
-    oled->printf("IR:L:%d,R:%d", (int)_irl->get_cm(), (int)_irr->get_cm());
+    oled->printf("IR:L:%d,R:%d", (int)*_lir_val, (int)_irr->get_cm());
 }
 
 void debug_disp::draw_room_corner_hole(int x, int y)
