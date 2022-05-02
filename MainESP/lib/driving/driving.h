@@ -12,6 +12,8 @@ timer resend_motor_timer(100);
 
 TickType_t watchdog_delay = pdMS_TO_TICKS(5);
 
+bool in_raum = false; //NEEDS TO BE CHANGED
+
 void move(int speed_left, int speed_right)
 {
     #ifdef EXTENSIVE_DEBUG
@@ -22,6 +24,8 @@ void move(int speed_left, int speed_right)
     // resend_motor_timer.reset();
 }
 
+#include "raum.h"
+
 #if DRIVING_TYPE == 0
 #include "drive_sensor_array.h"
 #elif DRIVING_TYPE == 1
@@ -31,7 +35,14 @@ void move(int speed_left, int speed_right)
 void drive()
 {
     // #if DRIVING_TYPE == 0
-    drive_sensor_array();
+    if (!in_raum)
+    {
+        drive_sensor_array();
+    }
+    else
+    {
+        drive_raum();
+    }
     // #elif DRIVING_TYPE == 1
     // drive_new();
     // #endif

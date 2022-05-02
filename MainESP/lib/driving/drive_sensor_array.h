@@ -8,6 +8,7 @@ int driving_interesting_actual_ltype = 0;
 bool driving_interesting_actual_ltype_override = false;
 
 timer white_timer(1500);
+timer silver_timer(3000);
 #include "find_line.h"
 #include "ausweichen.h"
 
@@ -83,7 +84,7 @@ void crossing_90_right()
         display.tick();
         vTaskDelay(watchdog_delay);
     }
-    while(/*cuart.sensor_array[9] ||*/ cuart.sensor_array[16]) {
+    while(/*cuart.sensor_array[9] ||*/ cuart.sensor_array[16] && cuart.array_total < 7) {
         display.tick();
         vTaskDelay(watchdog_delay);
     }
@@ -110,7 +111,7 @@ void crossing_90_left()
         display.tick();
         vTaskDelay(watchdog_delay);
     }
-    while(cuart.sensor_array[9]/* || cuart.sensor_array[16]*/) {
+    while(cuart.sensor_array[9]/* || cuart.sensor_array[16]*/ && cuart.array_total < 7) {
         display.tick();
         vTaskDelay(watchdog_delay);
     }
@@ -329,31 +330,36 @@ void drive_sensor_array()
                     (cuart.green_dots[2] && cuart.green_dots[3]))
             {
                 Serial.printf("Interesting: Turning Around (Dead End) with ltype %d and dl green dot %s and dr green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False", cuart.green_dots[3] ? "True" : "False");
-                move(DRIVE_SPEED_HALF, -DRIVE_SPEED_HALF);
-                while(cuart.array_right_sensor < 2) {
+                move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
+                for (int x = 0; x < 1800; x += 50)
+                {
                     display.tick();
-                    vTaskDelay(watchdog_delay);
+                    delay(50);
                 }
-                while(cuart.array_mid_sensor < 2) {
-                    display.tick();
-                    vTaskDelay(watchdog_delay);
-                }
-                while(cuart.array_left_sensor < 2) {
-                    display.tick();
-                    vTaskDelay(watchdog_delay);
-                }
-                while(cuart.array_right_sensor < 2) {
-                    display.tick();
-                    vTaskDelay(watchdog_delay);
-                }
-                while(cuart.array_mid_sensor < 2) {
-                    display.tick();
-                    vTaskDelay(watchdog_delay);
-                }
-                while(!cuart.sensor_array[10]) {
-                    display.tick();
-                    vTaskDelay(watchdog_delay);
-                }
+                // while(cuart.array_right_sensor < 2) {
+                //     display.tick();
+                //     vTaskDelay(watchdog_delay);
+                // }
+                // while(cuart.array_mid_sensor < 2) {
+                //     display.tick();
+                //     vTaskDelay(watchdog_delay);
+                // }
+                // while(cuart.array_left_sensor < 2) {
+                //     display.tick();
+                //     vTaskDelay(watchdog_delay);
+                // }
+                // while(cuart.array_right_sensor < 2) {
+                //     display.tick();
+                //     vTaskDelay(watchdog_delay);
+                // }
+                // while(cuart.array_mid_sensor < 2) {
+                //     display.tick();
+                //     vTaskDelay(watchdog_delay);
+                // }
+                // while(!cuart.sensor_array[10]) {
+                //     display.tick();
+                //     vTaskDelay(watchdog_delay);
+                // }
                 move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
             }
             // Turn left - green dot
@@ -427,10 +433,27 @@ void drive_sensor_array()
         #ifdef EXTENSIVE_DEBUG
         Serial.printf("[DRIVE_SENSOR_ARRAY] Starting Findline!\r\n");
         #endif
-        find_line();
+        if (silver_timer.has_reached_target())
+        {
+            find_line();
+        }
+        else // Raum
+        {
+            move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
+            display.raum_mode = true;
+            in_raum = true;
+            return;
+        }
+        if (dip.get_state(dip.dip2))
+        {
+            move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
+            display.raum_mode = true;
+            in_raum = true;
+            return;
+        }
     }
 
-    if (taster.get_state(taster.front))
+    if (taster.get_state(taster.front_left) || taster.get_state(taster.front_right))
     {
         #ifdef EXTENSIVE_DEBUG
         Serial.printf("[DRIVE_SENSOR_ARRAY] Ausweichen!\r\n");
@@ -454,13 +477,18 @@ void drive_sensor_array()
 
     if (cuart.silver_line)
     {
+        cuart.silver_line = false;
+        silver_timer.reset();
+    }
+    if (cuart.red_line)
+    {
         move(0, 0);
-        for (int i = 0; i < 5000; i+=10)
+        while(true)
         {
             display.tick();
-            delay(10);
+            vTaskDelay(watchdog_delay);
         }
-        cuart.silver_line = false;
+        cuart.red_line = false;
     }
 
     #ifdef EXTENSIVE_DEBUG

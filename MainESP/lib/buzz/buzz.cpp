@@ -20,7 +20,7 @@ buzz::buzz(int p, int vol, DIP* dipref)
 
 void buzz::tone(note_t note, uint8_t octave, unsigned long duration)
 {
-    if (_dip->get_state(_dip->dip2))
+    if (!_dip->get_state(_dip->wettkampfmodus))
     {
         ledcWriteNote(channel, note, octave);
         ledcWrite(channel, duty);

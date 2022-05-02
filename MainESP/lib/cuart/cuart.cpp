@@ -84,6 +84,7 @@ void CUART_class::green_handler()
     green_dots[1] = (_received_bytes[0] >> 2) & 0b00000001;
     green_dots[2] = (_received_bytes[0] >> 1) & 0b00000001;
     green_dots[3] = (_received_bytes[0] >> 0) & 0b00000001;
+    green_line = (green_dots[0] || green_dots[1] || green_dots[2] || green_dots[3]) && !silver_line;
 }
 
 void CUART_class::sensor_array_handler()
@@ -133,7 +134,7 @@ void CUART_class::red_line_handler()
 
 void CUART_class::green_line_handler()
 {
-    green_line = true;
+    //green_line = true;
 }
 
 void CUART_class::silver_line_handler()

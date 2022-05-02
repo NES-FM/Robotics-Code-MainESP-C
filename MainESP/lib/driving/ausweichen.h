@@ -3,11 +3,15 @@
 void ausweichen()
 {
     move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
-    delay(200);
-    move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
-    delay(800);
-    move(15, 35);
     delay(500);
+    move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
+    delay(900);
+    move(15, 35);
+    for (int x = 0; x < 3000; x+=10)
+    {
+        display.tick();
+        delay(10);
+    }
     while(cuart.array_mid_sensor < 3)
     {
         display.tick();

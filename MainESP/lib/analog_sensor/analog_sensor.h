@@ -11,6 +11,7 @@ class analog_sensor {
         uint16_t diff_to_last_state();
         float convert_to_battery_voltage();
         void setAverage8(bool is_on) {average8_enabled = is_on; };
+        uint16_t get_average_state();
     private:
         uint8_t pin;
         uint16_t last_state = 0;
