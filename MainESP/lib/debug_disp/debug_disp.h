@@ -12,7 +12,8 @@
 #include "analog_sensor.h"
 #include "dip.h"
 #include "taster.h"
-#include "ir.h"
+#include "cuart.h"
+#include "robot.h"
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -42,37 +43,30 @@ static const unsigned char PROGMEM star_bmp[] =
 class debug_disp {
     public:
         debug_disp();
-        void init(bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc, analog_sensor* volt, DIP* d, taster_class* t, IR* irl, IR* irr, int* ecke, int* hole, digital_sensor* kugel_in_greifer, float* lir_value) ;
+        // bool* sensor_array, bool* green_dots, unsigned char* type, signed char* angle, signed char* midfactor, int* l_sens, int* m_sens, int* r_sens, int* lm_val, int* rm_val, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both, compass_hmc* comp, accel* acc, analog_sensor* volt, DIP* d, taster_class* t, IR* irl, IR* irr, int* ecke, int* hole, digital_sensor* kugel_in_greifer, float* lir_value
+        void init(CUART_class* c, Robot* r, bool* int_sit, bool* int_bi_left, bool* int_bi_right, bool* int_bi_both);
         void tick();
         void force_tick() { _tick_last_millis = 0; tick(); }
         void enable(bool enabled);
         bool is_enabled() { return _display_i2c_enabled; }
         void draw_star();
         void disable_i2c_device(String dev);
-        void ota_on_start();
-        void ota_on_end();
-        void ota_on_progress(unsigned int progress, unsigned int total);
-        void ota_on_error(ota_error_t error);
 
-        bool raum_mode = false; //NEEDS TO BE CHANGED
+        enum display_draw_mode {
+            DISPLAY_DRAW_MODE_LINE,
+            DISPLAY_DRAW_MODE_ROOM
+        };
+
+        display_draw_mode draw_mode = DISPLAY_DRAW_MODE_LINE; //NEEDS TO BE CHANGED
     private:
         uint8_t _i2c_address = I2C_ADDRESS_DISPLAY;
         bool _display_i2c_enabled = false;
         Adafruit_SSD1306* oled = new Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
         int _tick_last_millis = 0;
-        bool* _local_cuart_sensor_array;
-
-        bool* _local_cuart_green_dots;
-
-        unsigned char* _local_cuart_line_type;
-        signed char* _local_cuart_line_angle;
-        signed char* _local_cuart_line_midfactor;
-
-        int* _l_motor_value, * _r_motor_value;
-        int* _l_sensor, * _m_sensor, * _r_sensor;
         
-        float _battery_voltage = 3.7;
+        CUART_class* _cuart;
+        Robot* _robot;
 
         void draw_sensor_array(int x, int y, int element_width, int element_height);
         void draw_green_dots(int x, int y, int width, int height);
@@ -84,36 +78,12 @@ class debug_disp {
         void draw_dip(int x, int y);
         void draw_cuart(int x, int y);
         void draw_taster(int x, int y, int w, int h);
-        void draw_ir(int x, int y);
-        void draw_room_corner_hole(int x, int y);
 
         bool heartbeat_state = false;
 
         bool* _interesting_situation, *_int_bias_left, *_int_bias_right, *_int_bias_both;
 
-        compass_hmc* _compass;
-        accel* _accelerometer;
-
         String i2c_disabled_devices = "";
-
-        analog_sensor* _voltage;
-
-        DIP* _dip;
-
-        taster_class* _taster;
-
-        IR* _irl;
-        IR* _irr;
-
-        int* _ecke;
-        int* _hole;
-
-        bool ota_mode_display = false;
-        String ota_type;
-
-        digital_sensor* _kugel_in_greifer;
-
-        float* _lir_val;
 };
 
 #endif /* DEBUG_DISP_H */

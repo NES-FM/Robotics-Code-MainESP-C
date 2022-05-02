@@ -14,18 +14,6 @@ TickType_t watchdog_delay = pdMS_TO_TICKS(5);
 
 bool in_raum = false; //NEEDS TO BE CHANGED
 
-void move(int speed_left, int speed_right)
-{
-    #ifdef EXTENSIVE_DEBUG
-    Serial.printf("[Move] L:%d, R:%d\r\n", speed_left, speed_right);
-    #endif
-    motor_left.move(speed_left);
-    motor_right.move(speed_right);
-    // resend_motor_timer.reset();
-}
-
-#include "raum.h"
-
 #if DRIVING_TYPE == 0
 #include "drive_sensor_array.h"
 #elif DRIVING_TYPE == 1
@@ -41,7 +29,7 @@ void drive()
     }
     else
     {
-        drive_raum();
+
     }
     // #elif DRIVING_TYPE == 1
     // drive_new();
