@@ -7,25 +7,21 @@
 #include "dip.h"
 #include "taster.h"
 #include <Servo.h>
-#include "servo_angles.h"
+#include "../../include/servo_angles.h"
 #include "buzz.h"
 #include "debug_disp.h"
-#include "i2c_addresses.h"
-#include "i2c_scanner.h"
+#include "../../include/i2c_addresses.h"
 
 class Robot
 {
     public:
         Robot();
-        void enable(debug_disp* disp);
         void init();
 
         void PlayBeginSound();
 
         void move(int speed_left, int speed_right);
         void greifer_home();
-    private:
-        debug_disp* display;
 
         Servo* greifer_up;
         Servo* greifer_zu;
@@ -41,5 +37,5 @@ class Robot
 
         analog_sensor* bat_voltage = new analog_sensor(PIN_BATPROBE, true);
 
-    friend class debug_disp;
+    private:
 };

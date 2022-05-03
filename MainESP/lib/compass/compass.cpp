@@ -233,6 +233,7 @@ int compass_hmc::calculate_section()
         return 2;
     if (270 < angle && angle <= 360)
         return 3;
+    return 0;
 }
 
 

@@ -5,7 +5,6 @@
 #include "../../include/pin_definitions.h"
 #include "../../include/motor_directions.h"
 #include "../../include/i2c_addresses.h"
-// #include "../../lib/i2c_scanner/i2c_scanner.h"
 #include <HardwareSerial.h>
 
 class motor 

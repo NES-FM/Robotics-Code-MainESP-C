@@ -4,24 +4,6 @@ Robot::Robot()
 {
 }
 
-void Robot::enable(debug_disp* disp)
-{
-    display = disp;
-    
-    // I2C Enable
-    scan_i2c_addresses();
-    print_i2c_addresses();
-
-    motor_left->enable(check_device_enabled(I2C_ADDRESSS_MOTOR_CONTROLLER, "motor_left", "ML"));
-    motor_right->enable(check_device_enabled(I2C_ADDRESSS_MOTOR_CONTROLLER, "motor_right", "MR"));
-
-    display->enable(check_device_enabled(I2C_ADDRESS_DISPLAY, "display", "DI"));
-    // check_device_enabled(I2C_ADDRESS_IO_EXTENDER, "io-extender", "IO");
-
-    compass->enable(check_device_enabled(I2C_ADDRESS_COMPASS, "compass", "CO"));
-    accel_sensor->enable(check_device_enabled(I2C_ADDRESS_ACCELEROMETER, "accelerometer", "AC"));
-}
-
 void Robot::init()
 {
     motor_left->init(1);

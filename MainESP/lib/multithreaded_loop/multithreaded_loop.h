@@ -47,7 +47,7 @@ void main_loop()
     #ifdef DRIVE_IN_MAIN
     display.tick();
 
-    if (motor_left.is_enabled() && motor_right.is_enabled())
+    if (robot.motor_left->is_enabled() && robot.motor_right->is_enabled())
     {
         drive();
     }

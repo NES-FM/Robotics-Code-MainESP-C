@@ -15,9 +15,9 @@ timer silver_timer(3000);
 /*
 void crossing_90_right()
 {
-    move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    robot.move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
     delay(100);
-    move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    robot.move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
     while(cuart.array_mid_sensor > 2) {
         display.tick();
         vTaskDelay(watchdog_delay);
@@ -33,16 +33,16 @@ void crossing_90_right()
         vTaskDelay(watchdog_delay);
     }
     // delay(50);
-    // move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    // robot.move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
     // delay(100);
-    move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
 }
 
 void crossing_90_left()
 {
-    move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    robot.move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
     delay(100);
-    move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    robot.move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
     while(cuart.array_mid_sensor > 2) {
         display.tick();
         vTaskDelay(watchdog_delay);
@@ -58,18 +58,18 @@ void crossing_90_left()
         vTaskDelay(watchdog_delay);
     }
     // delay(50);
-    // move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    // robot.move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
     // delay(100);
-    move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
 }
 //*/
 
 void crossing_90_right()
 {
-    // move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    // robot.move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
     // delay(100);
-    main_buzzer.turnLeftSound();
-    move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
+    robot.main_buzzer->turnLeftSound();
+    robot.move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
     while(cuart.array_right_sensor > 2) {
         display.tick();
         vTaskDelay(watchdog_delay);
@@ -88,15 +88,15 @@ void crossing_90_right()
         display.tick();
         vTaskDelay(watchdog_delay);
     }
-    move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
 }
 
 void crossing_90_left()
 {
-    // move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    // robot.move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
     // delay(100);
-    main_buzzer.turnRightSound();
-    move(-DRIVE_SPEED_CORNER, DRIVE_SPEED_CORNER);
+    robot.main_buzzer->turnRightSound();
+    robot.move(-DRIVE_SPEED_CORNER, DRIVE_SPEED_CORNER);
     while(cuart.array_left_sensor > 2) {
         display.tick();
         vTaskDelay(watchdog_delay);
@@ -115,7 +115,7 @@ void crossing_90_left()
         display.tick();
         vTaskDelay(watchdog_delay);
     }
-    move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
 }
 
 void drive_sensor_array()
@@ -131,17 +131,17 @@ void drive_sensor_array()
         Serial.printf("[DRIVE_SENSOR_ARRAY] Line is left with: driving_interesting_situation: %s, cuart.array_left_sensor: %d, cuart.array_right_sensor: %d\r\n", driving_interesting_situation ? "T" : "F", cuart.array_left_sensor, cuart.array_right_sensor);
         #endif
         if ((cuart.sensor_array[3] == true || cuart.sensor_array[4] == true) && cuart.array_left_sensor > 3)
-            move(-DRIVE_SPEED_HIGH, DRIVE_SPEED_NORMAL);
+            robot.move(-DRIVE_SPEED_HIGH, DRIVE_SPEED_NORMAL);
         else if (cuart.sensor_array[5] == true && cuart.array_left_sensor > 3)
-            move(-DRIVE_SPEED_LOWER, DRIVE_SPEED_HIGH);
+            robot.move(-DRIVE_SPEED_LOWER, DRIVE_SPEED_HIGH);
         else if (cuart.sensor_array[6] == true && cuart.array_left_sensor > 3)
-            move(-DRIVE_SPEED_LOW, DRIVE_SPEED_HIGH);
+            robot.move(-DRIVE_SPEED_LOW, DRIVE_SPEED_HIGH);
         else if (cuart.sensor_array[7] == true)
-            move(-DRIVE_SPEED_LOW, DRIVE_SPEED_HIGH);
+            robot.move(-DRIVE_SPEED_LOW, DRIVE_SPEED_HIGH);
         else if (cuart.sensor_array[8] == true)
-            move(DRIVE_SPEED_LOWER, DRIVE_SPEED_HIGH); 
+            robot.move(DRIVE_SPEED_LOWER, DRIVE_SPEED_HIGH); 
         else if (cuart.sensor_array[9] == true)
-            move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_HIGH);
+            robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_HIGH);
     }
 
     // Line is right...
@@ -151,27 +151,27 @@ void drive_sensor_array()
         Serial.printf("[DRIVE_SENSOR_ARRAY] Line is right with: driving_interesting_situation: %s, cuart.array_left_sensor: %d, cuart.array_right_sensor: %d\r\n", driving_interesting_situation ? "T" : "F", cuart.array_left_sensor, cuart.array_right_sensor);
         #endif
         if ((cuart.sensor_array[22] == true || cuart.sensor_array[21] == true) && cuart.array_right_sensor > 3)
-            move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_HIGH);
+            robot.move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_HIGH);
         else if (cuart.sensor_array[20] == true && cuart.array_right_sensor > 3)
-            move(DRIVE_SPEED_HIGH, -DRIVE_SPEED_LOWER);
+            robot.move(DRIVE_SPEED_HIGH, -DRIVE_SPEED_LOWER);
         else if (cuart.sensor_array[19] == true && cuart.array_right_sensor > 3)
-            move(DRIVE_SPEED_HIGH, -DRIVE_SPEED_LOW);
+            robot.move(DRIVE_SPEED_HIGH, -DRIVE_SPEED_LOW);
         else if (cuart.sensor_array[18] == true)
-            move(DRIVE_SPEED_HIGH, -DRIVE_SPEED_LOW);
+            robot.move(DRIVE_SPEED_HIGH, -DRIVE_SPEED_LOW);
         else if (cuart.sensor_array[17] == true)
-            move(DRIVE_SPEED_HIGH, DRIVE_SPEED_LOWER); 
+            robot.move(DRIVE_SPEED_HIGH, DRIVE_SPEED_LOWER); 
         else if (cuart.sensor_array[16] == true)
-            move(DRIVE_SPEED_HIGH, DRIVE_SPEED_NORMAL);
+            robot.move(DRIVE_SPEED_HIGH, DRIVE_SPEED_NORMAL);
     }
 
     // Line is interesting (could be 90 degree, could be T, could be X, etc...)
-    if (cuart.array_total > 8 && !driving_interesting_bias_both && accel_sensor.getCurrentRampState() != accel_sensor.down && accel_sensor.getCurrentRampState() != accel_sensor.up)
+    if (cuart.array_total > 8 && !driving_interesting_bias_both && robot.accel_sensor->getCurrentRampState() != robot.accel_sensor->down && robot.accel_sensor->getCurrentRampState() != robot.accel_sensor->up)
     {
         #ifdef EXTENSIVE_DEBUG
         Serial.printf("[DRIVE_SENSOR_ARRAY] Line is interesting with: array_total: %d, left_sensor: %d, mid_sensor: %d, right_sensor: %d\r\n", cuart.array_total, cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor);
         #endif
         driving_interesting_situation = true;
-        move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
         driving_interesting_bias_both = ((cuart.array_left_sensor + cuart.array_mid_sensor + cuart.array_right_sensor) > 16);
         if (!driving_interesting_bias_both)
         {
@@ -184,8 +184,8 @@ void drive_sensor_array()
             driving_interesting_bias_right = false;
         }
         digitalWrite(LED_BUILTIN, HIGH);
-        main_buzzer.startCrossingSound();
-        move(DRIVE_SPEED_HALF, DRIVE_SPEED_HALF);
+        robot.main_buzzer->startCrossingSound();
+        robot.move(DRIVE_SPEED_HALF, DRIVE_SPEED_HALF);
         #ifdef EXTENSIVE_DEBUG
         Serial.printf("[DRIVE_SENSOR_ARRAY] ==> bias_left: %s, bias_right: %s, bias_both: %s\r\n", driving_interesting_bias_left ? "T" : "F", driving_interesting_bias_right ? "T" : "F", driving_interesting_bias_both ? "T" : "F");
         #endif
@@ -198,9 +198,9 @@ void drive_sensor_array()
         Serial.printf("[DRIVE_SENSOR_ARRAY] Line is only in the middle with: left_sensor: %d, mid_sensor: %d, right_sensor: %d\r\n", cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor);
         #endif
         if (driving_interesting_situation)
-            move(DRIVE_SPEED_HALF, DRIVE_SPEED_HALF);
+            robot.move(DRIVE_SPEED_HALF, DRIVE_SPEED_HALF);
         else
-            move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+            robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
     }
 
     // // Circle
@@ -208,9 +208,9 @@ void drive_sensor_array()
     //     (cuart.array_left_sensor > 2 && cuart.array_mid_sensor <= 2 && cuart.array_right_sensor > 2))
     // {
     //     // Here something would happen, probably set a variable to change the behaviour everywhere else
-    //     move(0, 0);
+    //     robot.move(0, 0);
     //     delay(2000);
-    //     move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    //     robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
     // }
 
     // // Driven past line, no center line
@@ -238,8 +238,8 @@ void drive_sensor_array()
     //         driving_interesting_bias_both = false;
     //         driving_interesting_bias_left = false;
     //         driving_interesting_bias_right = false;
-    //         move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
-    //         main_buzzer.noTone();
+    //         robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    //         robot.main_buzzer->noTone();
     //         digitalWrite(LED_BUILTIN, LOW);
     //     }
     // }
@@ -260,9 +260,9 @@ void drive_sensor_array()
         driving_interesting_actual_ltype = cuart.line_type;
         driving_interesting_actual_ltype_override = false;
 
-        // move(0,0);
+        // robot.move(0,0);
         // delay(1000);
-        // move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        // robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
 
         if (cuart.array_total < 4 && !cuart.sensor_array[3] && !cuart.sensor_array[22])
         {
@@ -330,7 +330,7 @@ void drive_sensor_array()
                     (cuart.green_dots[2] && cuart.green_dots[3]))
             {
                 Serial.printf("Interesting: Turning Around (Dead End) with ltype %d and dl green dot %s and dr green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False", cuart.green_dots[3] ? "True" : "False");
-                move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
+                robot.move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
                 for (int x = 0; x < 1800; x += 50)
                 {
                     display.tick();
@@ -360,7 +360,7 @@ void drive_sensor_array()
                 //     display.tick();
                 //     vTaskDelay(watchdog_delay);
                 // }
-                move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+                robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
             }
             // Turn left - green dot
             else if (/*(driving_interesting_actual_ltype == CUART_LTYPE_tl || 
@@ -402,7 +402,7 @@ void drive_sensor_array()
             else
             {
                 Serial.printf("[DRIVE_SENSOR_ARRAY] Keeping Straight with ltype %d and dl green dot %s and dr green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False", cuart.green_dots[3] ? "True" : "False");
-                move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+                robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
             }
         }
 
@@ -411,8 +411,8 @@ void drive_sensor_array()
         driving_interesting_bias_both = false;
         driving_interesting_bias_left = false;
         driving_interesting_bias_right = false;
-        move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
-        main_buzzer.noTone();
+        robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        robot.main_buzzer->noTone();
         digitalWrite(LED_BUILTIN, LOW);
 
         #ifdef EXTENSIVE_DEBUG
@@ -439,21 +439,21 @@ void drive_sensor_array()
         }
         else // Raum
         {
-            move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
-            display.draw_mode = true;
+            robot.move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
+            display.draw_mode = display.DISPLAY_DRAW_MODE_ROOM;
             in_raum = true;
             return;
         }
-        if (dip.get_state(dip.dip2))
+        if (robot.dip->get_state(robot.dip->dip2))
         {
-            move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
-            display.draw_mode = true;
+            robot.move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
+            display.draw_mode = display.DISPLAY_DRAW_MODE_ROOM;
             in_raum = true;
             return;
         }
     }
 
-    if (taster.get_state(taster.front_left) || taster.get_state(taster.front_right))
+    if (robot.taster->get_state(robot.taster->front_left) || robot.taster->get_state(robot.taster->front_right))
     {
         #ifdef EXTENSIVE_DEBUG
         Serial.printf("[DRIVE_SENSOR_ARRAY] Ausweichen!\r\n");
@@ -466,13 +466,13 @@ void drive_sensor_array()
         Serial.printf("L: %d, M: %d, R: %d, I: %s, Bias: L: %s, R: %s, B: %s\r\n", cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor, driving_interesting_situation ? "T" : "F", driving_interesting_bias_left ? "T" : "F", driving_interesting_bias_right ? "T" : "F", driving_interesting_bias_both ? "T" : "F");
     }
 
-    if (accel_sensor.getCurrentRampState() == accel_sensor.down || accel_sensor.getCurrentRampState() == accel_sensor.up)
+    if (robot.accel_sensor->getCurrentRampState() == robot.accel_sensor->down || robot.accel_sensor->getCurrentRampState() == robot.accel_sensor->up)
     {
         driving_interesting_situation = false;
         driving_interesting_bias_both = false;
         driving_interesting_bias_left = false;
         driving_interesting_bias_right = false;
-        move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
     }
 
     if (cuart.silver_line)
@@ -482,7 +482,7 @@ void drive_sensor_array()
     }
     if (cuart.red_line)
     {
-        move(0, 0);
+        robot.move(0, 0);
         while(true)
         {
             display.tick();

@@ -1,5 +1,4 @@
-#ifndef PIN_DEFINITIONS
-#define PIN_DEFINITIONS
+#pragma once
 
 #define PIN_SENS1 33
 #define PIN_SENS2 34
@@ -27,6 +26,5 @@
 
 #define PIN_ROT_IRQ 5
 
+#undef LED_BUILTIN
 #define LED_BUILTIN 2
-
-#endif // PIN_DEFINITIONS

@@ -7,7 +7,7 @@ bool check_left_right()  // Returns true if line has been found by this method
 {
     white_timer.set_target(1000);
     white_timer.reset();
-    move(-DRIVE_SPEED_CORNER, DRIVE_SPEED_CORNER);
+    robot.move(-DRIVE_SPEED_CORNER, DRIVE_SPEED_CORNER);
     while(cuart.array_total <= 2 && !white_timer.has_reached_target())
     {
         display.tick();
@@ -20,7 +20,7 @@ bool check_left_right()  // Returns true if line has been found by this method
     
     white_timer.set_target(2000);
     white_timer.reset();
-    move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
+    robot.move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
     while(cuart.array_total <= 2 && !white_timer.has_reached_target())
     {
         display.tick();
@@ -33,7 +33,7 @@ bool check_left_right()  // Returns true if line has been found by this method
 
     white_timer.set_target(1000);
     white_timer.reset();
-    move(-DRIVE_SPEED_CORNER, DRIVE_SPEED_CORNER);
+    robot.move(-DRIVE_SPEED_CORNER, DRIVE_SPEED_CORNER);
     while(cuart.array_total <= 2 && !white_timer.has_reached_target())
     {
         display.tick();
@@ -49,7 +49,7 @@ bool check_left_right()  // Returns true if line has been found by this method
 
 void center_line()
 {
-    bool rotating_left = (motor_left.motor_speed < motor_right.motor_speed);
+    bool rotating_left = (robot.motor_left->motor_speed < robot.motor_right->motor_speed);
     while(cuart.array_total >= 2 && cuart.array_mid_sensor <= 2) // While there are some pixels continue rotating until mid sensor is reached
     {
         display.tick();
@@ -57,11 +57,11 @@ void center_line()
     }
     if (cuart.array_mid_sensor >= 2) // If MidSensor is reached -> done
     {
-        move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
         return;
     }
 
-    move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL); // If not, move forward until there are pixels
+    robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL); // If not, move forward until there are pixels
     while(cuart.array_total <= 2)
     {
         display.tick();
@@ -69,9 +69,9 @@ void center_line()
     }
 
     if (rotating_left)
-        move(-DRIVE_SPEED_CORNER, DRIVE_SPEED_CORNER);
+        robot.move(-DRIVE_SPEED_CORNER, DRIVE_SPEED_CORNER);
     else
-        move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
+        robot.move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
 
     center_line(); // continue until done
 }
@@ -87,7 +87,7 @@ void check_backwards()
     
     white_timer.set_target(2000);
     white_timer.reset();
-    move(-old_left_speed, -old_right_speed);
+    robot.move(-old_left_speed, -old_right_speed);
     while(cuart.array_total <= 2 && !white_timer.has_reached_target())
     {
         display.tick();
@@ -100,15 +100,15 @@ void check_backwards()
     else // Line has been found
     {
         delay(100);
-        move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
         //center_line();
     }
 }
 
 void find_line()
 {
-    old_left_speed = motor_left.motor_speed;
-    old_right_speed = motor_right.motor_speed;
+    old_left_speed = robot.motor_left->motor_speed;
+    old_right_speed = robot.motor_right->motor_speed;
     check_backwards();
     white_timer.set_target(1500);
 }

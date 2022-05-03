@@ -4,7 +4,6 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <ArduinoOTA.h>
 #include "../../include/i2c_addresses.h"
 #include "../../include/cuart_line_types.h"
 #include "compass.h"
