@@ -26,5 +26,4 @@
 
 #define PIN_ROT_IRQ 5
 
-#undef LED_BUILTIN
-#define LED_BUILTIN 2
+// #define LED_BUILTIN 2

@@ -215,6 +215,25 @@ void debug_disp::draw_taster(int x, int y, int w, int h)
         oled->fillRect(x+(w/2), y+1, (w/2)-1, h/4, SSD1306_WHITE);
 }
 
+void debug_disp::draw_tof(int x, int y)
+{
+    oled->setCursor(x, y);
+    uint16_t left = _robot->tof_left->getMeasurement();
+    uint16_t right = _robot->tof_right->getMeasurement();
+
+    if (_robot->tof_left->getMeasurementError() != _robot->tof_left->TOF_ERROR_NONE)
+        oled->print(left);
+    else
+        oled->print("Err");
+
+    oled->print("|");
+
+    if (_robot->tof_right->getMeasurementError() != _robot->tof_right->TOF_ERROR_NONE)
+        oled->print(right);
+    else
+        oled->print("Err");
+}
+
 void debug_disp::tick()
 {
     if (_display_i2c_enabled)
@@ -258,7 +277,8 @@ void debug_disp::tick()
             }
             else if (draw_mode == DISPLAY_DRAW_MODE_ROOM)
             {
-                this->draw_taster(18, SCREEN_HEIGHT-16, 16, 16);
+                this->draw_tof(0, 0);
+                this->draw_taster(0, SCREEN_HEIGHT-16, 16, 16);
                 this->draw_voltage(80,44);
                 this->draw_motor_values(0, 24); // W: 108px
                 this->draw_green_dots(100, 0, 22, 22);

@@ -56,7 +56,7 @@ class debug_disp {
             DISPLAY_DRAW_MODE_ROOM
         };
 
-        display_draw_mode draw_mode = DISPLAY_DRAW_MODE_LINE; //NEEDS TO BE CHANGED
+        display_draw_mode draw_mode = DISPLAY_DRAW_MODE_ROOM; //NEEDS TO BE CHANGED
     private:
         uint8_t _i2c_address = I2C_ADDRESS_DISPLAY;
         bool _display_i2c_enabled = false;
@@ -77,6 +77,7 @@ class debug_disp {
         void draw_dip(int x, int y);
         void draw_cuart(int x, int y);
         void draw_taster(int x, int y, int w, int h);
+        void draw_tof(int x, int y);
 
         bool heartbeat_state = false;
 

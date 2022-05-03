@@ -6,6 +6,31 @@ Robot::Robot()
 
 void Robot::init()
 {
+    // TOF
+    tof_left->enable(true); // Enabling both sensors by default
+    tof_right->enable(true);
+
+    tof_left->init(); // Setting Pinmodes
+    tof_right->init();
+
+    tof_left->holdReset(); // Resetting both sensors
+    tof_right->holdReset();
+    delay(10);
+    tof_left->releaseReset();
+    tof_right->releaseReset();
+    delay(10);
+
+    tof_left->holdReset(); // Resetting left, so that right can be initialized
+    tof_right->begin(I2C_ADDRESS_TOF_RIGHT);
+    tof_right->setContinuous(true);
+    tof_right->setLongRangeMode(true);
+
+    tof_left->releaseReset(); // Unresetting left, so that left can be initialized
+    tof_left->begin(I2C_ADDRESS_TOF_LEFT);
+    tof_left->setContinuous(true);
+    tof_left->setLongRangeMode(true);
+
+    // Others
     motor_left->init(1);
     motor_right->init(2);
 

@@ -9,8 +9,8 @@
 #include <Servo.h>
 #include "../../include/servo_angles.h"
 #include "buzz.h"
-#include "debug_disp.h"
 #include "../../include/i2c_addresses.h"
+#include "tof.h"
 
 class Robot
 {
@@ -23,17 +23,20 @@ class Robot
         void move(int speed_left, int speed_right);
         void greifer_home();
 
-        Servo* greifer_up;
-        Servo* greifer_zu;
-        DIP* dip;
+        Servo* greifer_up = new Servo();
+        Servo* greifer_zu = new Servo();
+        DIP* dip = new DIP();
         buzz* main_buzzer = new buzz(PIN_BUZZ1, 128, dip);
-        taster_class* taster;
+        taster_class* taster = new taster_class();
         
-        accel* accel_sensor;
-        compass_hmc* compass;
+        accel* accel_sensor = new accel();
+        compass_hmc* compass = new compass_hmc();
 
-        motor* motor_left;
-        motor* motor_right;
+        motor* motor_left = new motor();
+        motor* motor_right = new motor();
+
+        tof* tof_right = new tof(PIN_SENS1);
+        tof* tof_left = new tof(PIN_SENS2);
 
         analog_sensor* bat_voltage = new analog_sensor(PIN_BATPROBE, true);
 
