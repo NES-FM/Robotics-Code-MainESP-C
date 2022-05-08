@@ -139,7 +139,7 @@ uint16_t tof::getMeasurement()
             _error = TOF_ERROR_NONE;
         }
 
-        return measurment;
+        return measurment;// + abs(_offset_x);
     }
     else
     {

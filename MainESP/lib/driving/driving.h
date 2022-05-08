@@ -12,7 +12,7 @@ timer resend_motor_timer(100);
 
 TickType_t watchdog_delay = pdMS_TO_TICKS(5);
 
-bool in_raum = false; //NEEDS TO BE CHANGED
+bool in_raum = true; //NEEDS TO BE CHANGED
 
 #if DRIVING_TYPE == 0
 #include "drive_sensor_array.h"
@@ -29,7 +29,7 @@ void drive()
     }
     else
     {
-        
+        robot.calculate_position();   
     }
     // #elif DRIVING_TYPE == 1
     // drive_new();

@@ -147,14 +147,17 @@ void debug_disp::draw_comp_accel(int x, int y)
     oled->setTextColor(SSD1306_WHITE);
 
     oled->printf("%5.1f", _robot->accel_sensor->get_roll_degrees());
-    // oled->print(0xF8);
 
-    oled->setCursor(x, y+8);
+    this->draw_accel(x, y+8);
+}
+
+void debug_disp::draw_accel(int x, int y)
+{
+    oled->setCursor(x, y);
+    oled->setTextColor(SSD1306_WHITE);
+    oled->setTextSize(1);
 
     oled->printf(" %03d", int(_robot->compass->get_angle()));//int(_compass->getRelativeAngle()));
-    // oled->print(0xF8);
-
-    // Serial.printf("%f  %5.1f\t\t%f %03d\r\n", _accelerometer->get_roll_degrees(), _accelerometer->get_roll_degrees(), _compass->get_angle(), int(_compass->get_angle()));
 }
 
 void debug_disp::draw_cuart(int x, int y)
@@ -194,6 +197,16 @@ void debug_disp::draw_voltage(int x, int y)
     // oled->print(_voltage->get_state());
 }
 
+void debug_disp::draw_voltage_smol(int x, int y)
+{
+    oled->setCursor(x, y);
+    oled->setTextColor(SSD1306_WHITE);
+    oled->setTextSize(1);
+
+    oled->printf("%.1fV", _robot->bat_voltage->convert_to_battery_voltage());
+    // oled->print(_voltage->get_state());
+}
+
 void debug_disp::draw_dip(int x, int y)
 {
     oled->drawRect(x, y, 14, 6, SSD1306_WHITE);
@@ -217,22 +230,123 @@ void debug_disp::draw_taster(int x, int y, int w, int h)
 
 void debug_disp::draw_tof(int x, int y)
 {
+    oled->setTextSize(1);
     oled->setCursor(x, y);
     uint16_t left = _robot->tof_left->getMeasurement();
     uint16_t right = _robot->tof_right->getMeasurement();
 
-    if (_robot->tof_left->getMeasurementError() != _robot->tof_left->TOF_ERROR_NONE)
+    if (_robot->tof_left->getMeasurementError() == _robot->tof_left->TOF_ERROR_NONE)
         oled->print(left);
     else
         oled->print("Err");
 
-    oled->print("|");
+    oled->print(" | ");
 
-    if (_robot->tof_right->getMeasurementError() != _robot->tof_right->TOF_ERROR_NONE)
+    if (_robot->tof_right->getMeasurementError() == _robot->tof_right->TOF_ERROR_NONE)
         oled->print(right);
     else
         oled->print("Err");
+
+    oled->print(" => ");
+    oled->print(left+right);
 }
+
+void debug_disp::draw_room(int x, int y, float conversion_factor)
+{
+    // Serial.printf("Drawing Room with: Conv: %f, w: %f, h: %f\r\n", conversion_factor, _robot->room_width / conversion_factor, _robot->room_height / conversion_factor);
+    int w = _robot->room_width / conversion_factor;
+    int h = _robot->room_height / conversion_factor;
+
+    oled->drawRect(x, y, w, h, SSD1306_WHITE);
+
+    this->draw_robot_in_room_coordinates(x, y + h, conversion_factor);
+
+    for(Robot::point p: _robot->points)
+    {
+        if (p.x != 0 || p.y != 0)
+        {
+            oled->drawPixel(x + (p.x / conversion_factor), y - (p.y / conversion_factor), SSD1306_WHITE);
+        }
+    }
+}
+
+void debug_disp::draw_robot_in_room_coordinates(int bottom_left_x, int bottom_left_y, float conversion_factor)
+{
+    typedef struct robot_edge_point
+    {
+        float x;
+        float y;
+    };
+
+    robot_edge_point r_center;
+    r_center.x = float(_robot->posx);
+    r_center.y = float(_robot->posy);
+    float robot_angle_rad = DEG_TO_RAD * _robot->angle;
+
+    robot_edge_point temp;
+    temp.x = 0.0f;
+    temp.y = 0.0f;
+
+    // https://gamedev.stackexchange.com/questions/86755/how-to-calculate-corner-positions-marks-of-a-rotated-tilted-rectangle
+    robot_edge_point UL;
+    UL.x = (r_center.x - (0.5 * float(_robot->width)) - r_center.x);  // Translate Center Point to Origin
+    UL.y = (r_center.y + (0.5 * float(_robot->height)) - r_center.y);
+    temp.x = UL.x*cos(robot_angle_rad) + UL.y*sin(robot_angle_rad);  // Apply Rotation
+    temp.y = -UL.x*sin(robot_angle_rad) + UL.y*cos(robot_angle_rad);
+    UL.x = temp.x + r_center.x;  // Translate Back
+    UL.y = temp.y + r_center.y;
+    UL.x = bottom_left_x + (UL.x / conversion_factor); // Translate to Screen space
+    UL.y = bottom_left_y - (UL.y / conversion_factor);
+
+    robot_edge_point UR;
+    UR.x = (r_center.x + (0.5 * float(_robot->width)) - r_center.x);  // Translate Center Point to Origin
+    UR.y = (r_center.y + (0.5 * float(_robot->height)) - r_center.y);
+    temp.x = UR.x*cos(robot_angle_rad) + UR.y*sin(robot_angle_rad);  // Apply Rotation
+    temp.y = -UR.x*sin(robot_angle_rad) + UR.y*cos(robot_angle_rad);
+    UR.x = temp.x + r_center.x;  // Translate Back
+    UR.y = temp.y + r_center.y;
+    UR.x = bottom_left_x + (UR.x / conversion_factor); // Translate to Screen space
+    UR.y = bottom_left_y - (UR.y / conversion_factor);
+
+    robot_edge_point DL;
+    DL.x = (r_center.x - (0.5 * float(_robot->width)) - r_center.x);  // Translate Center Point to Origin
+    DL.y = (r_center.y - (0.5 * float(_robot->height)) - r_center.y);
+    temp.x = DL.x*cos(robot_angle_rad) + DL.y*sin(robot_angle_rad);  // Apply Rotation
+    temp.y = -DL.x*sin(robot_angle_rad) + DL.y*cos(robot_angle_rad);
+    DL.x = temp.x + r_center.x;  // Translate Back
+    DL.y = temp.y + r_center.y;
+    DL.x = bottom_left_x + (DL.x / conversion_factor); // Translate to Screen space
+    DL.y = bottom_left_y - (DL.y / conversion_factor);
+
+    robot_edge_point DR;
+    DR.x = (r_center.x + (0.5 * float(_robot->width)) - r_center.x);  // Translate Center Point to Origin
+    DR.y = (r_center.y - (0.5 * float(_robot->height)) - r_center.y);
+    temp.x = DR.x*cos(robot_angle_rad) + DR.y*sin(robot_angle_rad);  // Apply Rotation
+    temp.y = -DR.x*sin(robot_angle_rad) + DR.y*cos(robot_angle_rad);
+    DR.x = temp.x + r_center.x;  // Translate Back
+    DR.y = temp.y + r_center.y;
+    DR.x = bottom_left_x + (DR.x / conversion_factor); // Translate to Screen space
+    DR.y = bottom_left_y - (DR.y / conversion_factor);
+
+
+    robot_edge_point UM;
+    UM.x = (UL.x + UR.x) / 2; // UL and UR are already Screen space -> no need to convert again
+    UM.y = (UL.y + UR.y) / 2;
+
+    oled->drawLine(UL.x, UL.y, UR.x, UR.y, SSD1306_WHITE);
+    oled->drawLine(UR.x, UR.y, DR.x, DR.y, SSD1306_WHITE);
+    oled->drawLine(DR.x, DR.y, DL.x, DL.y, SSD1306_WHITE);
+    oled->drawLine(DL.x, DL.y, UL.x, UL.y, SSD1306_WHITE);
+    oled->drawLine(UM.x, UM.y, DL.x, DL.y, SSD1306_WHITE);
+    oled->drawLine(UM.x, UM.y, DR.x, DR.y, SSD1306_WHITE);
+
+    // https://stackoverflow.com/questions/644378/drawing-a-rotated-rectangle
+    // UL  =  x + ( Width / 2 ) * cos A - ( Height / 2 ) * sin A ,  y + ( Height / 2 ) * cos A  + ( Width / 2 ) * sin A
+    // UR  =  x - ( Width / 2 ) * cos A - ( Height / 2 ) * sin A ,  y + ( Height / 2 ) * cos A  - ( Width / 2 ) * sin A
+    // BL =   x + ( Width / 2 ) * cos A + ( Height / 2 ) * sin A ,  y - ( Height / 2 ) * cos A  + ( Width / 2 ) * sin A
+    // BR  =  x - ( Width / 2 ) * cos A + ( Height / 2 ) * sin A ,  y - ( Height / 2 ) * cos A  - ( Width / 2 ) * sin A
+}
+
 
 void debug_disp::tick()
 {
@@ -278,10 +392,12 @@ void debug_disp::tick()
             else if (draw_mode == DISPLAY_DRAW_MODE_ROOM)
             {
                 this->draw_tof(0, 0);
-                this->draw_taster(0, SCREEN_HEIGHT-16, 16, 16);
-                this->draw_voltage(80,44);
-                this->draw_motor_values(0, 24); // W: 108px
-                this->draw_green_dots(100, 0, 22, 22);
+
+                this->draw_room(0, 9, float(_robot->room_height) / float(SCREEN_HEIGHT-10));
+                
+                this->draw_accel(100, 46);
+                this->draw_voltage_smol(100, 54);
+                // this->draw_motor_values(0, 24); // W: 108px
             }
             
             // Flashing Pixel in lower right corner

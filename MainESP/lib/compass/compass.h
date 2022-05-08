@@ -10,6 +10,8 @@
 #endif
 #include "accel.h"
 
+#include <Preferences.h>
+
 class compass_hmc {
     public:
         compass_hmc();
@@ -29,6 +31,8 @@ class compass_hmc {
         void setRelativeZeroAndGoal(float angle) { setRelativeZero(); setRelativeGoal(angle); }
         float getRelativeAngle() { return getContinuousAngle() - relativeZero; }
         bool reachedRelativeGoal();
+
+        float keep_in_360_range(float alpha);
     private:
         bool _compass_enabled = false;
 
@@ -51,6 +55,8 @@ class compass_hmc {
         float relativeGoal = 0.0f;
         float relativeZero = 0.0f;
         int cur_section = 0; // 0: 0-90  1: 90-180  2: 180-270  3: 270-360
+
+        Preferences* compass_prefs = new Preferences();
 
         #endif
 };

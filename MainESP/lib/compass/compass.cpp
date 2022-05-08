@@ -95,6 +95,8 @@ void compass_hmc::init()
 {
     if (_compass_enabled)
     {
+        compass_prefs->begin("compass", false);
+
         error = compass->setScale(1.3); // Set the scale of the compass.
         if(error != 0) // If there is an error, print it out.
             Serial.println(compass->getErrorText(error));
@@ -103,9 +105,11 @@ void compass_hmc::init()
         if(error != 0) // If there is an error, print it out.
             Serial.println(compass->getErrorText(error));
 
-        valueOffset->XAxis = -197.8;  //-276.92;
-        valueOffset->YAxis = -554.76;  //-881.82;
-        valueOffset->ZAxis = -413.54;  //
+        valueOffset->XAxis = compass_prefs->getFloat("offset.x", 0);
+        valueOffset->YAxis = compass_prefs->getFloat("offset.y", 0);
+        valueOffset->ZAxis = compass_prefs->getFloat("offset.z", 0);
+
+        Serial.printf("Compass Initialized with: Offset[x,y,z]: %f, %f, %f\r\n", valueOffset->XAxis, valueOffset->YAxis, valueOffset->ZAxis);
 
         // this->calibrate();
         cur_section = calculate_section();
@@ -181,6 +185,10 @@ void compass_hmc::calibrate()
     valueOffset->ZAxis = (valueMax.ZAxis + valueMin.ZAxis) / 2;
 
     Serial.printf("Compass: \r\nMax[x,y,z]: %f, %f, %f\r\nMin[x,y,z]: %f, %f, %f\r\nOffset[x,y,z]: %f, %f, %f\r\n", valueMax.XAxis, valueMax.YAxis, valueMax.ZAxis, valueMin.XAxis, valueMin.YAxis, valueMin.ZAxis, valueOffset->XAxis, valueOffset->YAxis, valueOffset->ZAxis);
+
+    compass_prefs->putFloat("offset.x", valueOffset->XAxis);
+    compass_prefs->putFloat("offset.y", valueOffset->YAxis);
+    compass_prefs->putFloat("offset.z", valueOffset->ZAxis);
 
 /*
     Serial.print("max: ");
@@ -258,6 +266,19 @@ bool compass_hmc::reachedRelativeGoal()
         return this->getRelativeAngle() >= relativeGoal;
     else
         return this->getRelativeAngle() <= relativeGoal;
+}
+
+float compass_hmc::keep_in_360_range(float x)
+{
+    if (x > 360)
+    {
+        return x - 360;
+    }
+    if (x < 0)
+    {
+        return 360 + x;
+    }
+    return x;
 }
 
 #endif

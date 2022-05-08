@@ -14,7 +14,7 @@ class tof {
             TOF_ERROR_FAILED_TO_INITIALIZE
         };
 
-        tof(uint8_t xshut = -1) { _xshut = xshut; };
+        tof(uint8_t xshut, int offset_x, int offset_y, int offset_a) { _xshut = xshut; _offset_x = offset_x; _offset_y = offset_y; _offset_a = offset_a; };
         void init();
         void begin(uint8_t address = 0b0101001);
         void enable(bool enabled);
@@ -46,8 +46,13 @@ class tof {
         uint16_t last_measurement = 0;
 
         uint8_t _xshut = -1;
+        int _offset_x = 0;
+        int _offset_y = 0;
+        int _offset_a = 0;
 
         bool _enabled = false;
 
         tof_error_types _error = TOF_ERROR_NOT_ENABLED;
+
+    friend class Robot;
 };

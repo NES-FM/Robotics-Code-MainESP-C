@@ -72,12 +72,16 @@ class debug_disp {
         void draw_ltype(int x, int y);
         void draw_motor_values(int x, int y);
         void draw_comp_accel(int x, int y);
+        void draw_accel(int x, int y);
         void draw_disabled_i2c_devices(int x, int y);
         void draw_voltage(int x, int y);
+        void draw_voltage_smol(int x, int y);
         void draw_dip(int x, int y);
         void draw_cuart(int x, int y);
         void draw_taster(int x, int y, int w, int h);
         void draw_tof(int x, int y);
+        void draw_room(int x, int y, float conv);
+        void draw_robot_in_room_coordinates(int bottom_left_x, int bottom_left_y, float conv);
 
         bool heartbeat_state = false;
 

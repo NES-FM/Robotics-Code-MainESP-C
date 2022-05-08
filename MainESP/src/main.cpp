@@ -5,6 +5,10 @@
 
 #include <Adafruit_GFX.h>
 
+// deg = rad*180/pi  rad = deg*pi/180
+#define rad_to_deg(rad) (rad*(180/PI))
+#define deg_to_rad(deg) (deg*(PI/180))
+
 #include "pin_definitions.h"
 #include "cuart_line_types.h"
 #include "drive_speeds.h"
@@ -40,6 +44,9 @@ void setup()
 
     preferences.begin("main_esp", false);
 
+    // robot.tof_left->init();
+    // robot.tof_right->init();
+
     // I2C Enable
     scan_i2c_addresses();
     print_i2c_addresses();
@@ -64,6 +71,10 @@ void setup()
 
     // Done Initializing
     robot.PlayBeginSound();
+
+    robot.setRoomBeginningAngle();
+
+    // robot.compass->calibrate();
 }
 
 void loop() 

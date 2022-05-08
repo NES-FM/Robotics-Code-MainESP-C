@@ -47,7 +47,8 @@
 			"*.tcc": "cpp",
 			"streambuf": "cpp",
 			"iosfwd": "cpp",
-			"cmath": "cpp"
+			"cmath": "cpp",
+			"chrono": "cpp"
 		}
 	}
 }
