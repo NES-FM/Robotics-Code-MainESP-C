@@ -28,11 +28,11 @@ void Robot::init()
 
     tof_right->setLongRangeMode(true);
     tof_right->setContinuous(true);
-    tof_right->setHighAccuracy(true);
+    // tof_right->setHighAccuracy(true);
 
     tof_left->setLongRangeMode(true);
     tof_left->setContinuous(true);
-    tof_right->setHighAccuracy(true);
+    // tof_right->setHighAccuracy(true);
 
     // Others
     motor_left->init(1);
@@ -40,6 +40,9 @@ void Robot::init()
 
     accel_sensor->init();
     compass->init(accel_sensor);
+
+    pos.x_mm = 500;
+    pos.y_mm = 400;
 }
 
 void Robot::PlayBeginSound()
@@ -76,24 +79,70 @@ void Robot::calculate_position()
 {
     this->angle = compass->keep_in_360_range(compass->get_angle() - room_beginning_angle);
 
-    float left_dis = tof_left->getMeasurement() + abs(tof_left->_offset_x);
-    float right_dis = tof_right->getMeasurement() + abs(tof_right->_offset_x);
+    int left_dis = tof_left->getMeasurement() + abs(tof_left->_offset_x);
+    int right_dis = tof_right->getMeasurement() + abs(tof_right->_offset_x);
+
+    float measurement_angle = 0.0f;
+    int point_cloud_index = 0;
+    point measurement;
+    point measurement_old;
+
+    if (tof_right->getMeasurementError() == tof_right->TOF_ERROR_NONE)
+    {
+        measurement_angle = compass->keep_in_360_range(this->angle + tof_right->_offset_a);
+        point_cloud_index = int(measurement_angle / 4);
+
+        measurement_old = point_cloud[point_cloud_index];
+        measurement.x_mm = right_dis + pos.x_mm;
+        measurement.y_mm = tof_right->_offset_y + pos.y_mm;
+        measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
+
+        if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
+        {
+            measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
+            measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
+        }
+
+        point_cloud[point_cloud_index] = measurement;
+    }
 
     if (tof_left->getMeasurementError() == tof_left->TOF_ERROR_NONE)
     {
-        float measurement_angle = compass->keep_in_360_range(this->angle + tof_left->_offset_a);
-        point temp_point;
-        temp_point.x = (left_dis * cos( (measurement_angle - 90) * DEG_TO_RAD )) + posx;
-        temp_point.y = (left_dis * sin( (measurement_angle - 90) * DEG_TO_RAD )) + posy;
-        points[int(measurement_angle / 4)] = temp_point;
-    }
-    if (tof_right->getMeasurementError() == tof_right->TOF_ERROR_NONE)
-    {
-        float measurement_angle = compass->keep_in_360_range(this->angle + tof_right->_offset_a);
-        point temp_point;
-        temp_point.x = (right_dis * cos( (measurement_angle - 90) * DEG_TO_RAD )) + posx;
-        temp_point.y = (right_dis * sin( (measurement_angle - 90) * DEG_TO_RAD )) + posy;
-        points[int(measurement_angle / 4)] = temp_point;
+        measurement_angle = compass->keep_in_360_range(this->angle + tof_left->_offset_a);
+        point_cloud_index = int(measurement_angle / 4);
+
+        measurement_old = point_cloud[point_cloud_index];
+        measurement.x_mm = left_dis + pos.x_mm;
+        measurement.y_mm = tof_left->_offset_y + pos.y_mm;
+        measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
+
+        if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
+        {
+            measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
+            measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
+        }
+
+        point_cloud[point_cloud_index] = measurement;
     }
 }
+
+Robot::point Robot::rotate_point(point point_to_rotate, point pivot, float angle)
+{
+    float s = sin(angle);
+    float c = cos(angle);
+
+    // translate point back to origin:
+    point_to_rotate.x_mm -= pivot.x_mm;
+    point_to_rotate.y_mm -= pivot.y_mm;
+
+    // rotate point
+    float xnew = point_to_rotate.x_mm * c + point_to_rotate.y_mm * s;
+    float ynew = -point_to_rotate.x_mm * s + point_to_rotate.y_mm * c;
+
+    // translate point back:
+    point_to_rotate.x_mm = xnew + pivot.x_mm;
+    point_to_rotate.y_mm = ynew + pivot.y_mm;
+    return point_to_rotate;
+}
+
 

@@ -49,15 +49,16 @@ class Robot
         const int room_width = 1235;
         const int room_height = 950;
 
-        float room_beginning_angle = 0.0f;
-        float angle = 0.0f;
-        int posx = 500;
-        int posy = 400;
-
         struct point
         {
-            int x = 0;
-            int y = 0;
+            int x_mm = 0;
+            int y_mm = 0;
         };
-        point points[90];
+
+        point point_cloud[90];
+
+        float room_beginning_angle = 0.0f;
+        float angle = 0.0f;
+        point pos;
+        static point rotate_point(point point_to_rotate, point pivot, float angle);
 };

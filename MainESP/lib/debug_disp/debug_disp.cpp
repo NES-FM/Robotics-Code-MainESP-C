@@ -261,26 +261,29 @@ void debug_disp::draw_room(int x, int y, float conversion_factor)
 
     this->draw_robot_in_room_coordinates(x, y + h, conversion_factor);
 
-    for(Robot::point p: _robot->points)
+    for (Robot::point p: _robot->point_cloud)
     {
-        if (p.x != 0 || p.y != 0)
+        if (p.x_mm != 0 || p.y_mm != 0)
         {
-            oled->drawPixel(x + (p.x / conversion_factor), y - (p.y / conversion_factor), SSD1306_WHITE);
+            int draw_x = x + (p.x_mm / conversion_factor);
+            int draw_y = (y + h) - (p.y_mm / conversion_factor);
+            Serial.printf("Drawning Point on Screen at %d|%d\r\n", draw_x, draw_y);
+            oled->drawPixel(draw_x, draw_y, SSD1306_WHITE);
         }
     }
 }
 
 void debug_disp::draw_robot_in_room_coordinates(int bottom_left_x, int bottom_left_y, float conversion_factor)
 {
-    typedef struct robot_edge_point
+    struct robot_edge_point
     {
         float x;
         float y;
     };
 
     robot_edge_point r_center;
-    r_center.x = float(_robot->posx);
-    r_center.y = float(_robot->posy);
+    r_center.x = float(_robot->pos.x_mm);
+    r_center.y = float(_robot->pos.y_mm);
     float robot_angle_rad = DEG_TO_RAD * _robot->angle;
 
     robot_edge_point temp;
@@ -288,15 +291,22 @@ void debug_disp::draw_robot_in_room_coordinates(int bottom_left_x, int bottom_le
     temp.y = 0.0f;
 
     // https://gamedev.stackexchange.com/questions/86755/how-to-calculate-corner-positions-marks-of-a-rotated-tilted-rectangle
-    robot_edge_point UL;
-    UL.x = (r_center.x - (0.5 * float(_robot->width)) - r_center.x);  // Translate Center Point to Origin
-    UL.y = (r_center.y + (0.5 * float(_robot->height)) - r_center.y);
-    temp.x = UL.x*cos(robot_angle_rad) + UL.y*sin(robot_angle_rad);  // Apply Rotation
-    temp.y = -UL.x*sin(robot_angle_rad) + UL.y*cos(robot_angle_rad);
-    UL.x = temp.x + r_center.x;  // Translate Back
-    UL.y = temp.y + r_center.y;
-    UL.x = bottom_left_x + (UL.x / conversion_factor); // Translate to Screen space
-    UL.y = bottom_left_y - (UL.y / conversion_factor);
+    // robot_edge_point UL;
+    // UL.x = (r_center.x - (0.5 * float(_robot->width)) - r_center.x);  // Translate Center Point to Origin
+    // UL.y = (r_center.y + (0.5 * float(_robot->height)) - r_center.y);
+    // temp.x = UL.x*cos(robot_angle_rad) + UL.y*sin(robot_angle_rad);  // Apply Rotation
+    // temp.y = -UL.x*sin(robot_angle_rad) + UL.y*cos(robot_angle_rad);
+    // UL.x = temp.x + r_center.x;  // Translate Back
+    // UL.y = temp.y + r_center.y;
+    // UL.x = bottom_left_x + (UL.x / conversion_factor); // Translate to Screen space
+    // UL.y = bottom_left_y - (UL.y / conversion_factor);
+
+    Robot::point UL;
+    UL.x_mm = (_robot->pos.x_mm - (0.5 * _robot->width));
+    UL.y_mm = (_robot->pos.y_mm + (0.5 * _robot->height));
+    UL = Robot::rotate_point(UL, _robot->pos, _robot->angle * DEG_TO_RAD);
+    UL.x_mm = bottom_left_x + (UL.x_mm / conversion_factor); // Translate to Screen space
+    UL.y_mm = bottom_left_y - (UL.y_mm / conversion_factor);
 
     robot_edge_point UR;
     UR.x = (r_center.x + (0.5 * float(_robot->width)) - r_center.x);  // Translate Center Point to Origin
@@ -330,13 +340,13 @@ void debug_disp::draw_robot_in_room_coordinates(int bottom_left_x, int bottom_le
 
 
     robot_edge_point UM;
-    UM.x = (UL.x + UR.x) / 2; // UL and UR are already Screen space -> no need to convert again
-    UM.y = (UL.y + UR.y) / 2;
+    UM.x = (UL.x_mm + UR.x) / 2; // UL and UR are already Screen space -> no need to convert again
+    UM.y = (UL.y_mm + UR.y) / 2;
 
-    oled->drawLine(UL.x, UL.y, UR.x, UR.y, SSD1306_WHITE);
+    oled->drawLine(UL.x_mm, UL.x_mm, UR.x, UR.y, SSD1306_WHITE);
     oled->drawLine(UR.x, UR.y, DR.x, DR.y, SSD1306_WHITE);
     oled->drawLine(DR.x, DR.y, DL.x, DL.y, SSD1306_WHITE);
-    oled->drawLine(DL.x, DL.y, UL.x, UL.y, SSD1306_WHITE);
+    oled->drawLine(DL.x, DL.y, UL.x_mm, UL.x_mm, SSD1306_WHITE);
     oled->drawLine(UM.x, UM.y, DL.x, DL.y, SSD1306_WHITE);
     oled->drawLine(UM.x, UM.y, DR.x, DR.y, SSD1306_WHITE);
 
