@@ -47,6 +47,8 @@ void setup()
     // robot.tof_left->init();
     // robot.tof_right->init();
 
+    robot.init_tof_xshut();
+
     // I2C Enable
     scan_i2c_addresses();
     print_i2c_addresses();
@@ -62,6 +64,10 @@ void setup()
 
     // Initialization of libs
     robot.init();
+
+    Serial.println("\r\nI2C after robot.init:");
+    scan_i2c_addresses();
+    print_i2c_addresses();
 
     cuart.init();
 

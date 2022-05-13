@@ -23,6 +23,8 @@ void tof::begin(uint8_t address)
         }
         delay(10);
         changeAddress(address);
+        // setHighAccuracy(false);
+        // setLongRangeMode(false);
         _error = TOF_ERROR_NONE;
     }
 }

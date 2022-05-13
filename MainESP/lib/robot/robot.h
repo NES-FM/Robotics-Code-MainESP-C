@@ -16,6 +16,7 @@ class Robot
 {
     public:
         Robot();
+        void init_tof_xshut();
         void init();
 
         void PlayBeginSound();
@@ -40,6 +41,8 @@ class Robot
 
         tof* tof_right = new tof(PIN_SENS1, 95, 22, 90);
         tof* tof_left = new tof(PIN_SERVO2, -95, 22, -90);
+        tof* tof_back = new tof(PIN_SERVO3, 0, -90, 180);
+
 
         analog_sensor* bat_voltage = new analog_sensor(PIN_BATPROBE, true);
 
@@ -55,7 +58,7 @@ class Robot
             int y_mm = 0;
         };
 
-        point point_cloud[90];
+        point point_cloud[120];
 
         float room_beginning_angle = 0.0f;
         float angle = 0.0f;

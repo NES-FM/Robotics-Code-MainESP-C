@@ -234,20 +234,28 @@ void debug_disp::draw_tof(int x, int y)
     oled->setCursor(x, y);
     uint16_t left = _robot->tof_left->getMeasurement();
     uint16_t right = _robot->tof_right->getMeasurement();
+    uint16_t back = _robot->tof_back->getMeasurement();
 
     if (_robot->tof_left->getMeasurementError() == _robot->tof_left->TOF_ERROR_NONE)
         oled->print(left);
     else
         oled->print("Err");
 
-    oled->print(" | ");
+    oled->print("|");
+
+    if (_robot->tof_back->getMeasurementError() == _robot->tof_back->TOF_ERROR_NONE)
+        oled->print(back);
+    else
+        oled->print("Err");
+
+    oled->print("|");
 
     if (_robot->tof_right->getMeasurementError() == _robot->tof_right->TOF_ERROR_NONE)
         oled->print(right);
     else
         oled->print("Err");
 
-    oled->print(" => ");
+    oled->print("=>");
     oled->print(left+right);
 }
 
@@ -267,7 +275,7 @@ void debug_disp::draw_room(int x, int y, float conversion_factor)
         {
             int draw_x = x + (p.x_mm / conversion_factor);
             int draw_y = (y + h) - (p.y_mm / conversion_factor);
-            Serial.printf("Drawning Point on Screen at %d|%d\r\n", draw_x, draw_y);
+            // Serial.printf("Drawning Point on Screen at %d|%d\r\n", draw_x, draw_y);
             oled->drawPixel(draw_x, draw_y, SSD1306_WHITE);
         }
     }

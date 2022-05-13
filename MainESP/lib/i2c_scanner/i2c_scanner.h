@@ -11,6 +11,8 @@ uint8_t I2C_Addresses_len = 0;
 
 void scan_i2c_addresses()
 {
+    std::fill_n(I2C_Addresses, 32, 0);
+    I2C_Addresses_len = 0;
     uint8_t error, address;
     for (address = 0x01; address < 0x7f; address++)
     {

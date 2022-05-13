@@ -29,7 +29,8 @@ void drive()
     }
     else
     {
-        robot.calculate_position();   
+        robot.calculate_position();
+        robot.move(10, -10);
     }
     // #elif DRIVING_TYPE == 1
     // drive_new();

@@ -4,35 +4,46 @@ Robot::Robot()
 {
 }
 
+void Robot::init_tof_xshut()
+{
+    tof_right->enable(true);
+    tof_left->enable(true);
+    tof_back->enable(true);
+    tof_left->init(); // Setting Pinmodes
+    tof_right->init();
+    tof_back->init();
+    tof_left->holdReset(); // Resetting all sensors
+    tof_right->holdReset();
+    tof_back->holdReset();
+    delay(20);
+}
+
 void Robot::init()
 {
     // TOF
-    tof_right->enable(true);
-    tof_left->enable(true);
-    tof_left->init(); // Setting Pinmodes
-    tof_right->init();
-    delay(10);
-    tof_left->holdReset(); // Resetting both sensors
-    tof_right->holdReset();
-    delay(10);
-
     tof_right->releaseReset(); // Unresetting right, so that right can be initialized
-    delay(10);
+    delay(60);
     tof_right->begin(I2C_ADDRESS_TOF_RIGHT);
-    delay(10);
 
     tof_left->releaseReset(); // Unresetting left, so that left can be initialized
-    delay(10);
+    delay(60);
     tof_left->begin(I2C_ADDRESS_TOF_LEFT);
-    delay(10);
 
-    tof_right->setLongRangeMode(true);
+    tof_back->releaseReset(); // Unresetting back, so that back can be initialized
+    delay(60);
+    tof_back->begin(I2C_ADDRESS_TOF_BACK);
+
+    tof_right->setLongRangeMode(false);
     tof_right->setContinuous(true);
-    // tof_right->setHighAccuracy(true);
+    tof_right->setHighSpeed(true);
 
-    tof_left->setLongRangeMode(true);
+    tof_left->setLongRangeMode(false);
     tof_left->setContinuous(true);
-    // tof_right->setHighAccuracy(true);
+    tof_left->setHighSpeed(true);
+
+    tof_back->setLongRangeMode(false);
+    tof_back->setContinuous(true);
+    tof_back->setHighSpeed(true);
 
     // Others
     motor_left->init(1);
@@ -81,6 +92,7 @@ void Robot::calculate_position()
 
     int left_dis = tof_left->getMeasurement() + abs(tof_left->_offset_x);
     int right_dis = tof_right->getMeasurement() + abs(tof_right->_offset_x);
+    int back_dis = tof_back->getMeasurement() + abs(tof_back->_offset_x);
 
     float measurement_angle = 0.0f;
     int point_cloud_index = 0;
@@ -90,7 +102,7 @@ void Robot::calculate_position()
     if (tof_right->getMeasurementError() == tof_right->TOF_ERROR_NONE)
     {
         measurement_angle = compass->keep_in_360_range(this->angle + tof_right->_offset_a);
-        point_cloud_index = int(measurement_angle / 4);
+        point_cloud_index = int(measurement_angle / 3);
 
         measurement_old = point_cloud[point_cloud_index];
         measurement.x_mm = right_dis + pos.x_mm;
@@ -109,11 +121,30 @@ void Robot::calculate_position()
     if (tof_left->getMeasurementError() == tof_left->TOF_ERROR_NONE)
     {
         measurement_angle = compass->keep_in_360_range(this->angle + tof_left->_offset_a);
-        point_cloud_index = int(measurement_angle / 4);
+        point_cloud_index = int(measurement_angle / 3);
 
         measurement_old = point_cloud[point_cloud_index];
         measurement.x_mm = left_dis + pos.x_mm;
         measurement.y_mm = tof_left->_offset_y + pos.y_mm;
+        measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
+
+        if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
+        {
+            measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
+            measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
+        }
+
+        point_cloud[point_cloud_index] = measurement;
+    }
+
+    if (tof_back->getMeasurementError() == tof_back->TOF_ERROR_NONE)
+    {
+        measurement_angle = compass->keep_in_360_range(this->angle + tof_back->_offset_a);
+        point_cloud_index = int(measurement_angle / 3);
+
+        measurement_old = point_cloud[point_cloud_index];
+        measurement.x_mm = back_dis + pos.x_mm;
+        measurement.y_mm = tof_back->_offset_y + pos.y_mm;
         measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
 
         if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
