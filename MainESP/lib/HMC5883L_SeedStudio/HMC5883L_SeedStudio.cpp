@@ -38,13 +38,13 @@ void HMC5883L::initCompass() {
     int error = setScale(1.3);                              // Set the scale of the compass.
 
     if (error != 0) {                                               // If there is an error, print it out.
-        Serial.println(getErrorText(error));
+        logln("%s", getErrorText(error));
     }
 
     error = setMeasurementMode(MEASUREMENT_CONTINUOUS);     // Set the measurement mode to Continuous
 
     if (error != 0) {                                               // If there is an error, print it out.
-        Serial.println(getErrorText(error));
+        logln("%s", getErrorText(error));
     }
 
     #if __Dbg

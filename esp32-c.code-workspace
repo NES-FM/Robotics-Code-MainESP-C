@@ -4,10 +4,6 @@
 			"path": "."
 		},
 		{
-			"name": "blink",
-			"path": "blink"
-		},
-		{
 			"name": "MainESP",
 			"path": "MainESP"
 		}

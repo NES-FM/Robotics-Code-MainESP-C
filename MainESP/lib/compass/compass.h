@@ -12,6 +12,8 @@
 
 #include <Preferences.h>
 
+#include "logger.h"
+
 class compass_hmc {
     public:
         compass_hmc();

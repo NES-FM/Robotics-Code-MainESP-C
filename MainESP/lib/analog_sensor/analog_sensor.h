@@ -2,6 +2,7 @@
 #define ANALOG_SENSOR_H
 
 #include <Arduino.h>
+#include "logger.h"
 
 class analog_sensor {
     public:

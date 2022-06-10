@@ -8,30 +8,33 @@ TaskHandle_t multithreaded_loop_handle;
 
 // Secondary loop running on core 0
 void multithreaded_loop(void* parameters) { 
-    Serial.print("multithreaded_loop running on core ");
-    Serial.println(xPortGetCoreID());
+    logln("multithreaded_loop running on core %u", xPortGetCoreID());
     while(true)
     {
         // #ifdef DRIVE_IN_THREAD
-        // display.tick();
+            // display.tick();
 
-        // // cuart.debugPrintArray();
+            // // cuart.debugPrintArray();
 
-        // if (motor_left.is_enabled() && motor_right.is_enabled())
-        // {
-        //     drive();
-        // }
+            // if (motor_left.is_enabled() && motor_right.is_enabled())
+            // {
+            //     drive();
+            // }
 
-        // // delay(10);
+            // // delay(10);
 
-        // // cuart.debugPrint();
+            // // cuart.debugPrint();
         // #endif
 
         #ifdef DRIVE_IN_MAIN
-        cuart.tick();
-        // accel_sensor.print_values();
-        // compass.tick();
-        // display.tick();
+
+            cuart.tick();
+
+            robot.tick();
+
+            // accel_sensor.print_values();
+            // compass.tick();
+            // display.tick();
         #endif
     }
 }
@@ -40,17 +43,17 @@ void multithreaded_loop(void* parameters) {
 void main_loop()
 {
     // #ifdef DRIVE_IN_THREAD
-    // cuart.tick();
-    // compass.tick();
+        // cuart.tick();
+        // compass.tick();
     // #endif
 
     #ifdef DRIVE_IN_MAIN
-    display.tick();
+        display.tick();
 
-    if (robot.motor_left->is_enabled() && robot.motor_right->is_enabled())
-    {
-        drive();
-    }
+        if (robot.motor_left->is_enabled() && robot.motor_right->is_enabled())
+        {
+            drive();
+        }
     #endif
 
     // #ifdef OTA_BUILD
@@ -72,8 +75,7 @@ void init_multithreaded_loop()
                             0, /* Priority of the task */
                             &multithreaded_loop_handle, /* Task handle. */
                             0); /* Core where the task should run */
-    Serial.print("main loop running on core ");
-    Serial.println(xPortGetCoreID());
+    logln("main loop running on core %u", xPortGetCoreID());
 }
 
 #endif /* MULTITHREADED_LOOP_H */

@@ -74,7 +74,7 @@ void CUART_class::line_handler()
     }
     else
     {
-        Serial.printf("CUART_line_handler: Too few bytes received (%d/%d) ~ %d %d %d\r\n", _received_bytes_next_index, 3, sensor_array[0], sensor_array[1], sensor_array[2]);
+        logln("CUART_line_handler: Too few bytes received (%d/%d) ~ %d %d %d\r\n", _received_bytes_next_index, 3, sensor_array[0], sensor_array[1], sensor_array[2]);
     }
 }
 
@@ -105,7 +105,7 @@ void CUART_class::sensor_array_handler()
     }
     else
     {
-        Serial.printf("CUART_sensor_array_handler: Too few bytes received (%d/%d) ~ %d %d %d\r\n", _received_bytes_next_index, 3, sensor_array[0], sensor_array[1], sensor_array[2]);
+        logln("CUART_sensor_array_handler: Too few bytes received (%d/%d) ~ %d %d %d\r\n", _received_bytes_next_index, 3, sensor_array[0], sensor_array[1], sensor_array[2]);
     }
 
     // Calculating the Sensors used for driving
@@ -145,20 +145,21 @@ void CUART_class::silver_line_handler()
 
 void CUART_class::debugPrintLine()
 {
-    Serial.println("~");
-    Serial.print(line_type); Serial.print(line_angle); Serial.println(line_midfactor);
+    logln("~");
+    logln("%u %d %d", line_type, line_angle, line_midfactor);
 }
 
 void CUART_class::debugPrintArray()
 {
+    log_inline_begin();
     for (int i = 0; i < 24; i++)
     {
         if (sensor_array[i])
-            Serial.print("1 ");
+            log_inline("1 ");
         else
-            Serial.print("0 ");
+            log_inline("0 ");
     }
-    Serial.println("");
+    log_inline_end();
 }
 
 void CUART_class::debugPrint()

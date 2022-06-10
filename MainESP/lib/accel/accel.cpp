@@ -9,7 +9,7 @@ void accel::init()
     {
         if (!mpu->begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G))
         {
-            Serial.println("Accel initialisation failed!");
+            logln("Accel initialisation failed!");
             this->enable(false);
             return;
         }
@@ -41,8 +41,8 @@ float accel::get_roll_degrees()
     {
         Vector normAccel = mpu->readNormalizeAccel();
         float ret = (atan2(normAccel.YAxis, normAccel.ZAxis)*180.0)/PI;
-        // Serial.printf("[Accel]: XAxis: %f, YAxis: %f, ZAxis: %f, Ret: %f\r\n",normAccel.XAxis,normAccel.YAxis,normAccel.ZAxis,ret);
-        // Serial.println(ret);
+        // logln("[Accel]: XAxis: %f, YAxis: %f, ZAxis: %f, Ret: %f",normAccel.XAxis,normAccel.YAxis,normAccel.ZAxis,ret);
+        // logln(ret);
         return ret;
     }
     return 0.0f;
@@ -54,7 +54,7 @@ float accel::get_pitch_for_compensation()
     if (_accel_enabled)
     {
         Vector scaledAccel = mpu->readScaledAccel();
-        // Serial.printf("-X: %f, Y: %f\r\n", -scaledAccel.XAxis, scaledAccel.YAxis);
+        // logln("-X: %f, Y: %f\r\n", -scaledAccel.XAxis, scaledAccel.YAxis);
         return asin(-scaledAccel.XAxis);
     }
     return 0.0f;
@@ -65,7 +65,7 @@ float accel::get_roll_for_compensation()
     if (_accel_enabled)
     {
         Vector scaledAccel = mpu->readScaledAccel();
-        // Serial.printf("-X: %f, Y: %f\r\n", -scaledAccel.XAxis, scaledAccel.YAxis);
+        // logln("-X: %f, Y: %f\r\n", -scaledAccel.XAxis, scaledAccel.YAxis);
         return asin(scaledAccel.YAxis);
     }
     return 0.0f;
@@ -76,7 +76,7 @@ void accel::init()
     if (_accel_enabled)
     {
         if (!mpu->begin()) {
-            Serial.println("Sensor init failed");
+            logln("Sensor init failed");
             while (1)
                 yield();
         }
@@ -154,7 +154,7 @@ void accel::init()
     if (_accel_enabled)
     {
         if (mpu->begin() != 0) {
-            Serial.println("Accel initialisation failed!");
+            logln("Accel initialisation failed!");
             this->enable(false);
             return;
         }
@@ -215,31 +215,20 @@ accel::ramp_types accel::getCurrentRampState()
 void accel::print_values()
 {
     // mpu->update();
-    Serial.print(F("ACCELERO  X: "));Serial.print(mpu->getAccX());
-    Serial.print("\tY: ");Serial.print(mpu->getAccY());
-    Serial.print("\tZ: ");Serial.println(mpu->getAccZ());
+    logln("ACCELERO  X: %f\tY: %f\tZ: %f", mpu->getAccX(), mpu->getAccY(), mpu->getAccZ());
 
-    Serial.print(F("GYRO      X: "));Serial.print(mpu->getGyroX());
-    Serial.print("\tY: ");Serial.print(mpu->getGyroY());
-    Serial.print("\tZ: ");Serial.println(mpu->getGyroZ());
+    logln("GYRO      X: %f\tY: %f\tZ: %f", mpu->getGyroX(), mpu->getGyroY(), mpu->getGyroZ());
 
-    Serial.print(F("ACC ANGLE X: "));Serial.print(mpu->getAccAngleX());
-    Serial.print("\tY: ");Serial.println(mpu->getAccAngleY());
-    
-    Serial.print(F("ANGLE     X: "));Serial.print(mpu->getAngleX());
-    Serial.print("\tY: ");Serial.println(mpu->getAngleY());
+    logln("ACC ANGLE X: %f\tY: %f", mpu->getAccAngleX(), mpu->getAccAngleY());
 
-    Serial.print(F("RAW       X: "));Serial.print(acc_lsb_to_g * (mpu->getAccX() + mpu->getAccXoffset()));
-    Serial.print("\tY: ");Serial.println(acc_lsb_to_g * (mpu->getAccY() + mpu->getAccYoffset()));
+    logln("ANGLE     X: %f\tY: %f", mpu->getAngleX(), mpu->getAngleY());
 
-    Serial.print(F("OFFSET-A  X: "));Serial.print(mpu->getAccXoffset());
-    Serial.print("\tY: ");Serial.print(mpu->getAccYoffset());
-    Serial.print("\tZ: ");Serial.println(mpu->getAccZoffset());
+    logln("RAW       X: %f\tY: %f", acc_lsb_to_g * (mpu->getAccX() + mpu->getAccXoffset()), acc_lsb_to_g * (mpu->getAccY() + mpu->getAccYoffset()));
 
-    Serial.print(F("OFFSET-G  X: "));Serial.print(mpu->getGyroXoffset());
-    Serial.print("\tY: ");Serial.print(mpu->getGyroYoffset());
-    Serial.print("\tZ: ");Serial.println(mpu->getGyroZoffset());
+    logln("OFFSET-A  X: %f\tY: %f\tZ: %f", mpu->getAccXoffset(), mpu->getAccYoffset(), mpu->getAccZoffset());
 
-    Serial.println(F("\n=====================================================\n"));
+    logln("OFFSET-G  X: %f\tY: %f\tZ: %f", mpu->getGyroXoffset(), mpu->getGyroYoffset(), mpu->getGyroZoffset());
+
+    logln("\r\n=====================================================\r\n");
 }
 #endif

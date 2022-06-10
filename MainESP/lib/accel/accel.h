@@ -12,6 +12,8 @@
 #include <MPU6050_light.h>
 #endif
 
+#include "logger.h"
+
 class accel {
     public:
         accel();

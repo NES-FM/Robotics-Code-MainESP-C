@@ -121,14 +121,14 @@ void crossing_90_left()
 void drive_sensor_array()
 {
     #ifdef EXTENSIVE_DEBUG
-    Serial.println("[DRIVE_SENSOR_ARRAY] Start!");
+    logln("Start!");
     #endif
 
     // Line is left...
     if (!driving_interesting_situation && cuart.array_left_sensor >= 1 && cuart.array_right_sensor == 0/* && cuart.array_mid_sensor <= 2*/)
     {
         #ifdef EXTENSIVE_DEBUG
-        Serial.printf("[DRIVE_SENSOR_ARRAY] Line is left with: driving_interesting_situation: %s, cuart.array_left_sensor: %d, cuart.array_right_sensor: %d\r\n", driving_interesting_situation ? "T" : "F", cuart.array_left_sensor, cuart.array_right_sensor);
+        logln("Line is left with: driving_interesting_situation: %s, cuart.array_left_sensor: %d, cuart.array_right_sensor: %d", driving_interesting_situation ? "T" : "F", cuart.array_left_sensor, cuart.array_right_sensor);
         #endif
         if ((cuart.sensor_array[3] == true || cuart.sensor_array[4] == true) && cuart.array_left_sensor > 3)
             robot.move(-DRIVE_SPEED_HIGH, DRIVE_SPEED_NORMAL);
@@ -148,7 +148,7 @@ void drive_sensor_array()
     if (!driving_interesting_situation && cuart.array_left_sensor == 0 && cuart.array_right_sensor >= 1 /*&& cuart.array_mid_sensor <= 2*/)
     {
         #ifdef EXTENSIVE_DEBUG
-        Serial.printf("[DRIVE_SENSOR_ARRAY] Line is right with: driving_interesting_situation: %s, cuart.array_left_sensor: %d, cuart.array_right_sensor: %d\r\n", driving_interesting_situation ? "T" : "F", cuart.array_left_sensor, cuart.array_right_sensor);
+        logln("Line is right with: driving_interesting_situation: %s, cuart.array_left_sensor: %d, cuart.array_right_sensor: %d", driving_interesting_situation ? "T" : "F", cuart.array_left_sensor, cuart.array_right_sensor);
         #endif
         if ((cuart.sensor_array[22] == true || cuart.sensor_array[21] == true) && cuart.array_right_sensor > 3)
             robot.move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_HIGH);
@@ -168,7 +168,7 @@ void drive_sensor_array()
     if (cuart.array_total > 8 && !driving_interesting_bias_both && robot.accel_sensor->getCurrentRampState() != robot.accel_sensor->down && robot.accel_sensor->getCurrentRampState() != robot.accel_sensor->up)
     {
         #ifdef EXTENSIVE_DEBUG
-        Serial.printf("[DRIVE_SENSOR_ARRAY] Line is interesting with: array_total: %d, left_sensor: %d, mid_sensor: %d, right_sensor: %d\r\n", cuart.array_total, cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor);
+        logln("Line is interesting with: array_total: %d, left_sensor: %d, mid_sensor: %d, right_sensor: %d", cuart.array_total, cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor);
         #endif
         driving_interesting_situation = true;
         robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
@@ -187,7 +187,7 @@ void drive_sensor_array()
         robot.main_buzzer->startCrossingSound();
         robot.move(DRIVE_SPEED_HALF, DRIVE_SPEED_HALF);
         #ifdef EXTENSIVE_DEBUG
-        Serial.printf("[DRIVE_SENSOR_ARRAY] ==> bias_left: %s, bias_right: %s, bias_both: %s\r\n", driving_interesting_bias_left ? "T" : "F", driving_interesting_bias_right ? "T" : "F", driving_interesting_bias_both ? "T" : "F");
+        logln("  ==> bias_left: %s, bias_right: %s, bias_both: %s", driving_interesting_bias_left ? "T" : "F", driving_interesting_bias_right ? "T" : "F", driving_interesting_bias_both ? "T" : "F");
         #endif
     }
 
@@ -195,7 +195,7 @@ void drive_sensor_array()
     if (cuart.array_left_sensor < 2 && cuart.array_mid_sensor > 2 && cuart.array_right_sensor < 2)
     {
         #ifdef EXTENSIVE_DEBUG
-        Serial.printf("[DRIVE_SENSOR_ARRAY] Line is only in the middle with: left_sensor: %d, mid_sensor: %d, right_sensor: %d\r\n", cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor);
+        logln("Line is only in the middle with: left_sensor: %d, mid_sensor: %d, right_sensor: %d", cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor);
         #endif
         if (driving_interesting_situation)
             robot.move(DRIVE_SPEED_HALF, DRIVE_SPEED_HALF);
@@ -217,7 +217,7 @@ void drive_sensor_array()
     // if (driving_interesting_situation && !cuart.sensor_array[0] && cuart.array_total < 4)
     // {
     //     #ifdef EXTENSIVE_DEBUG
-    //     Serial.printf("[DRIVE_SENSOR_ARRAY] Driven past line, no center line with: left_sensor: %d, mid_sensor: %d, right_sensor: %d, array[0]: %s\r\n", cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor, cuart.sensor_array[0] ? "T": "F");
+    //     logln("Driven past line, no center line with: left_sensor: %d, mid_sensor: %d, right_sensor: %d, array[0]: %s", cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor, cuart.sensor_array[0] ? "T": "F");
     //     #endif
 
     //     if (driving_interesting_bias_left || driving_interesting_bias_right)
@@ -254,7 +254,7 @@ void drive_sensor_array()
     if (driving_interesting_situation && cuart.array_total <= 7 && cuart.sensor_array[0])
     {
         #ifdef EXTENSIVE_DEBUG
-        Serial.printf("[DRIVE_SENSOR_ARRAY] Interesting Situation started with: left_sensor: %d, mid_sensor: %d, right_sensor: %d, array[0]: %s\r\n", cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor, cuart.sensor_array[0] ? "T": "F");
+        logln("Interesting Situation started with: left_sensor: %d, mid_sensor: %d, right_sensor: %d, array[0]: %s", cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor, cuart.sensor_array[0] ? "T": "F");
         #endif
 
         driving_interesting_actual_ltype = cuart.line_type;
@@ -271,7 +271,7 @@ void drive_sensor_array()
                 driving_interesting_actual_ltype = CUART_LTYPE_90l;
                 driving_interesting_actual_ltype_override = true;
                 #ifdef EXTENSIVE_DEBUG
-                Serial.printf("[DRIVE_SENSOR_ARRAY] Overwritten with 90l\r\n");
+                logln("Overwritten with 90l");
                 #endif
             }
             else if (driving_interesting_bias_right)
@@ -279,7 +279,7 @@ void drive_sensor_array()
                 driving_interesting_actual_ltype = CUART_LTYPE_90r;
                 driving_interesting_actual_ltype_override = true;
                 #ifdef EXTENSIVE_DEBUG
-                Serial.printf("[DRIVE_SENSOR_ARRAY] Overwritten with 90r\r\n");
+                logln("Overwritten with 90r");
                 #endif
             }
         }
@@ -314,7 +314,7 @@ void drive_sensor_array()
             }
         }
 
-        // Serial.printf("Driving interesting situation with ltype: %d, Bias: L: %s, R: %s, B: %s\r\n", driving_interesting_actual_ltype, driving_interesting_bias_left ? "T" : "F", driving_interesting_bias_right ? "T" : "F", driving_interesting_bias_both ? "T" : "F");
+        // logln("Driving interesting situation with ltype: %d, Bias: L: %s, R: %s, B: %s", driving_interesting_actual_ltype, driving_interesting_bias_left ? "T" : "F", driving_interesting_bias_right ? "T" : "F", driving_interesting_bias_both ? "T" : "F");
 
         // Actual driving
 
@@ -322,14 +322,14 @@ void drive_sensor_array()
         if (cuart.green_dots[2] || cuart.green_dots[3])
         {
             #ifdef EXTENSIVE_DEBUG
-            Serial.printf("[DRIVE_SENSOR_ARRAY] Green dot somewhere\r\n");
+            logln("Green dot somewhere");
             #endif
             // Dead End: Turn Around
             if (/*(driving_interesting_actual_ltype == CUART_LTYPE_t || 
                     driving_interesting_actual_ltype == CUART_LTYPE_X) && */
                     (cuart.green_dots[2] && cuart.green_dots[3]))
             {
-                Serial.printf("Interesting: Turning Around (Dead End) with ltype %d and dl green dot %s and dr green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False", cuart.green_dots[3] ? "True" : "False");
+                logln("Interesting: Turning Around (Dead End) with ltype %d and dl green dot %s and dr green dot %s", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False", cuart.green_dots[3] ? "True" : "False");
                 robot.move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
                 for (int x = 0; x < 1800; x += 50)
                 {
@@ -367,7 +367,7 @@ void drive_sensor_array()
                     driving_interesting_actual_ltype == CUART_LTYPE_t || 
                     driving_interesting_actual_ltype == CUART_LTYPE_X) && */cuart.green_dots[2])
             {
-                Serial.printf("[DRIVE_SENSOR_ARRAY] Turning left with ltype %d and dl green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False");
+                logln("Turning left with ltype %d and dl green dot %s", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False");
                 crossing_90_left();
                 // delay(150);
             }
@@ -376,7 +376,7 @@ void drive_sensor_array()
                         driving_interesting_actual_ltype == CUART_LTYPE_t || 
                         driving_interesting_actual_ltype == CUART_LTYPE_X) && */cuart.green_dots[3])
             {
-                Serial.printf("[DRIVE_SENSOR_ARRAY] Turning right with ltype %d and dr green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[3] ? "True" : "False");
+                logln("Turning right with ltype %d and dr green dot %s", driving_interesting_actual_ltype, cuart.green_dots[3] ? "True" : "False");
                 crossing_90_right();
                 // delay(150);
             }
@@ -384,24 +384,24 @@ void drive_sensor_array()
         else 
         {
             #ifdef EXTENSIVE_DEBUG
-            Serial.printf("[DRIVE_SENSOR_ARRAY] No green dot!\r\n");
+            logln("No green dot!");
             #endif
             // Turn left - 90 deg
             if (driving_interesting_actual_ltype == CUART_LTYPE_90l)
             {
-                Serial.printf("[DRIVE_SENSOR_ARRAY] Turning left with ltype %d and dl green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False");
+                logln("Turning left with ltype %d and dl green dot %s", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False");
                 crossing_90_left();
             }
             // Turn right - 90 deg
             else if (driving_interesting_actual_ltype == CUART_LTYPE_90r)
             {
-                Serial.printf("[DRIVE_SENSOR_ARRAY] Turning right with ltype %d and dr green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[3] ? "True" : "False");
+                logln("Turning right with ltype %d and dr green dot %s", driving_interesting_actual_ltype, cuart.green_dots[3] ? "True" : "False");
                 crossing_90_right();
             }
             // Keep Straight
             else
             {
-                Serial.printf("[DRIVE_SENSOR_ARRAY] Keeping Straight with ltype %d and dl green dot %s and dr green dot %s\r\n", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False", cuart.green_dots[3] ? "True" : "False");
+                logln("Keeping Straight with ltype %d and dl green dot %s and dr green dot %s", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False", cuart.green_dots[3] ? "True" : "False");
                 robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
             }
         }
@@ -416,14 +416,14 @@ void drive_sensor_array()
         digitalWrite(LED_BUILTIN, LOW);
 
         #ifdef EXTENSIVE_DEBUG
-        Serial.printf("[DRIVE_SENSOR_ARRAY] Interesting Situation Done! Resetted all vars to false: %s %s %s %s %s\r\n", driving_interesting_situation ? "T": "F", driving_interesting_actual_ltype_override ? "T": "F", driving_interesting_bias_both ? "T": "F", driving_interesting_bias_left ? "T": "F", driving_interesting_bias_right ? "T" : "F");
+        logln("Interesting Situation Done! Resetted all vars to false: %s %s %s %s %s", driving_interesting_situation ? "T": "F", driving_interesting_actual_ltype_override ? "T": "F", driving_interesting_bias_both ? "T": "F", driving_interesting_bias_left ? "T": "F", driving_interesting_bias_right ? "T" : "F");
         #endif
     }
 
     if (cuart.array_total > 2)
     {
         #ifdef EXTENSIVE_DEBUG
-        Serial.printf("[DRIVE_SENSOR_ARRAY] White Timer Reset!\r\n");
+        logln("White Timer Reset!");
         #endif
         white_timer.reset();
     }
@@ -431,7 +431,7 @@ void drive_sensor_array()
     if (white_timer.has_reached_target())
     {
         #ifdef EXTENSIVE_DEBUG
-        Serial.printf("[DRIVE_SENSOR_ARRAY] Starting Findline!\r\n");
+        logln("Starting Findline!");
         #endif
         if (silver_timer.has_reached_target())
         {
@@ -440,15 +440,13 @@ void drive_sensor_array()
         else // Raum
         {
             robot.move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
-            display.draw_mode = display.DISPLAY_DRAW_MODE_ROOM;
-            in_raum = true;
+            robot.cur_drive_mode = robot.ROBOT_DRIVE_MODE_ROOM;
             return;
         }
         if (robot.dip->get_state(robot.dip->dip2))
         {
             robot.move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
-            display.draw_mode = display.DISPLAY_DRAW_MODE_ROOM;
-            in_raum = true;
+            robot.cur_drive_mode = robot.ROBOT_DRIVE_MODE_ROOM;
             return;
         }
     }
@@ -456,14 +454,14 @@ void drive_sensor_array()
     if (robot.taster->get_state(robot.taster->front_left) || robot.taster->get_state(robot.taster->front_right))
     {
         #ifdef EXTENSIVE_DEBUG
-        Serial.printf("[DRIVE_SENSOR_ARRAY] Ausweichen!\r\n");
+        logln("Ausweichen!");
         #endif
         ausweichen();
     }
     
     if (DEBUG_MOTOR_VALUES == 1)
     {
-        Serial.printf("L: %d, M: %d, R: %d, I: %s, Bias: L: %s, R: %s, B: %s\r\n", cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor, driving_interesting_situation ? "T" : "F", driving_interesting_bias_left ? "T" : "F", driving_interesting_bias_right ? "T" : "F", driving_interesting_bias_both ? "T" : "F");
+        logln("L: %d, M: %d, R: %d, I: %s, Bias: L: %s, R: %s, B: %s", cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor, driving_interesting_situation ? "T" : "F", driving_interesting_bias_left ? "T" : "F", driving_interesting_bias_right ? "T" : "F", driving_interesting_bias_both ? "T" : "F");
     }
 
     if (robot.accel_sensor->getCurrentRampState() == robot.accel_sensor->down || robot.accel_sensor->getCurrentRampState() == robot.accel_sensor->up)
@@ -492,6 +490,6 @@ void drive_sensor_array()
     }
 
     #ifdef EXTENSIVE_DEBUG
-    Serial.printf("[DRIVE_SENSOR_ARRAY] END!\r\n");
+    logln("END!");
     #endif
 }

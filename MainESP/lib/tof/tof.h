@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VL53L0X.h"
+#include "logger.h"
 
 #define TOF_MAX_VALID_DISTANCE 
 

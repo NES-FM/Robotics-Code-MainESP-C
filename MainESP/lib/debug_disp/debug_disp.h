@@ -51,12 +51,6 @@ class debug_disp {
         void draw_star();
         void disable_i2c_device(String dev);
 
-        enum display_draw_mode {
-            DISPLAY_DRAW_MODE_LINE,
-            DISPLAY_DRAW_MODE_ROOM
-        };
-
-        display_draw_mode draw_mode = DISPLAY_DRAW_MODE_ROOM; //NEEDS TO BE CHANGED
     private:
         uint8_t _i2c_address = I2C_ADDRESS_DISPLAY;
         bool _display_i2c_enabled = false;

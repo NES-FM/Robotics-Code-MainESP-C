@@ -23,13 +23,12 @@ bool in_raum = true; //NEEDS TO BE CHANGED
 void drive()
 {
     // #if DRIVING_TYPE == 0
-    if (!in_raum)
+    if (robot.cur_drive_mode == robot.ROBOT_DRIVE_MODE_LINE)
     {
         drive_sensor_array();
     }
     else
     {
-        robot.calculate_position();
         robot.move(10, -10);
     }
     // #elif DRIVING_TYPE == 1

@@ -15,7 +15,7 @@ void debug_disp::init(CUART_class* c, Robot* r, bool* int_sit, bool* int_bi_left
 
     if (!oled->begin(SSD1306_SWITCHCAPVCC, _i2c_address))
     {
-        Serial.println(F("SSD1306 allocation failed"));
+        logln("SSD1306 allocation failed");
         this->enable(false);
     }
     if (_display_i2c_enabled)
@@ -375,7 +375,7 @@ void debug_disp::tick()
             _tick_last_millis = millis();
             oled->fillScreen(SSD1306_BLACK);
 
-            if (draw_mode == DISPLAY_DRAW_MODE_LINE)
+            if (_robot->cur_drive_mode == Robot::ROBOT_DRIVE_MODE_LINE)
             {
                 // Sensor array and numbers down below. 
                 this->draw_sensor_array(0, 0, 3, 5); // W: 2+element_width*24  H: element_height+18
@@ -407,7 +407,7 @@ void debug_disp::tick()
                 // Taster
                 this->draw_taster(18, SCREEN_HEIGHT-16, 16, 16);
             }
-            else if (draw_mode == DISPLAY_DRAW_MODE_ROOM)
+            else if (_robot->cur_drive_mode == Robot::ROBOT_DRIVE_MODE_ROOM)
             {
                 this->draw_tof(0, 0);
 

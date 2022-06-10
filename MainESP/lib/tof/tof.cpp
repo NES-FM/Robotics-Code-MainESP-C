@@ -16,7 +16,7 @@ void tof::begin(uint8_t address)
         sensor->setTimeout(500);
         if (!sensor->init())
         {
-            Serial.println(F("Failed to detect and initialize VL53L0X!"));
+            logln("Failed to detect and initialize VL53L0X!");
             this->enable(false);
             _error = TOF_ERROR_FAILED_TO_INITIALIZE;
             return;

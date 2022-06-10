@@ -29,7 +29,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-
+#include "logger.h"
 
 #define HMC5883L_ADDRESS 0x1E
 #define CONFIGURATION_REGISTERA 0x00

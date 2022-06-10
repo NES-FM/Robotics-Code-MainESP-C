@@ -24,7 +24,7 @@ void analog_sensor::checkValidPin(uint8_t p)
             return;
         }
     }
-    Serial.printf("Error Initializing Analog Sensor: Pin %d is not a valid ADC pin\r\n", p);
+    logln("Error Initializing Analog Sensor: Pin %d is not a valid ADC pin\r\n", p);
 }
 
 uint16_t analog_sensor::get_state()

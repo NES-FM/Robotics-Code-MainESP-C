@@ -21,27 +21,33 @@ void Robot::init_tof_xshut()
 void Robot::init()
 {
     // TOF
-    tof_right->releaseReset(); // Unresetting right, so that right can be initialized
-    delay(60);
-    tof_right->begin(I2C_ADDRESS_TOF_RIGHT);
-
+    log_inline_begin();
+    log_inline(" Left: ");
     tof_left->releaseReset(); // Unresetting left, so that left can be initialized
-    delay(60);
+    delay(1000);
     tof_left->begin(I2C_ADDRESS_TOF_LEFT);
 
+    log_inline_begin();
+    log_inline("Right: ");
+    tof_right->releaseReset(); // Unresetting right, so that right can be initialized
+    delay(1000);
+    tof_right->begin(I2C_ADDRESS_TOF_RIGHT);
+
+    log_inline_begin();
+    log_inline("Back: ");
     tof_back->releaseReset(); // Unresetting back, so that back can be initialized
-    delay(60);
+    delay(1000);
     tof_back->begin(I2C_ADDRESS_TOF_BACK);
 
-    tof_right->setLongRangeMode(false);
+    // tof_right->setLongRangeMode(true);
     tof_right->setContinuous(true);
     tof_right->setHighSpeed(true);
 
-    tof_left->setLongRangeMode(false);
+    // tof_left->setLongRangeMode(true);
     tof_left->setContinuous(true);
     tof_left->setHighSpeed(true);
 
-    tof_back->setLongRangeMode(false);
+    // tof_back->setLongRangeMode(true);
     tof_back->setContinuous(true);
     tof_back->setHighSpeed(true);
 
@@ -54,6 +60,19 @@ void Robot::init()
 
     pos.x_mm = 500;
     pos.y_mm = 400;
+}
+
+void Robot::tick()
+{
+    if (cur_drive_mode == ROBOT_DRIVE_MODE_LINE)
+    {
+
+    }
+    else if (cur_drive_mode == ROBOT_DRIVE_MODE_ROOM)
+    {
+        // this->calculate_position();
+    }
+    logger_tick();
 }
 
 void Robot::PlayBeginSound()
@@ -70,7 +89,7 @@ void Robot::PlayBeginSound()
 void Robot::move(int speed_left, int speed_right)
 {
     #ifdef EXTENSIVE_DEBUG
-    Serial.printf("[Move] L:%d, R:%d\r\n", speed_left, speed_right);
+    logln("L:%d, R:%d", speed_left, speed_right);
     #endif
     motor_left->move(speed_left);
     motor_right->move(speed_right);
@@ -117,6 +136,10 @@ void Robot::calculate_position()
 
         point_cloud[point_cloud_index] = measurement;
     }
+    else
+    {
+        logln("Error with Right Sensor: %s", tof_right->getMeasurementErrorString().c_str());
+    }
 
     if (tof_left->getMeasurementError() == tof_left->TOF_ERROR_NONE)
     {
@@ -136,6 +159,10 @@ void Robot::calculate_position()
 
         point_cloud[point_cloud_index] = measurement;
     }
+    else
+    {
+        logln("Error with Left Sensor: %s", tof_left->getMeasurementErrorString().c_str());
+    }
 
     if (tof_back->getMeasurementError() == tof_back->TOF_ERROR_NONE)
     {
@@ -154,6 +181,10 @@ void Robot::calculate_position()
         }
 
         point_cloud[point_cloud_index] = measurement;
+    }
+    else
+    {
+        logln("Error with Back Sensor: %s", tof_back->getMeasurementErrorString().c_str());
     }
 }
 

@@ -99,17 +99,17 @@ void compass_hmc::init()
 
         error = compass->setScale(1.3); // Set the scale of the compass.
         if(error != 0) // If there is an error, print it out.
-            Serial.println(compass->getErrorText(error));
+            logln("%s", compass->getErrorText(error));
 
         error = compass->setMeasurementMode(MEASUREMENT_CONTINUOUS); // Set the measurement mode to Continuous
         if(error != 0) // If there is an error, print it out.
-            Serial.println(compass->getErrorText(error));
+            logln("%s", compass->getErrorText(error));
 
         valueOffset->XAxis = compass_prefs->getFloat("offset.x", 0);
         valueOffset->YAxis = compass_prefs->getFloat("offset.y", 0);
         valueOffset->ZAxis = compass_prefs->getFloat("offset.z", 0);
 
-        Serial.printf("Compass Initialized with: Offset[x,y,z]: %f, %f, %f\r\n", valueOffset->XAxis, valueOffset->YAxis, valueOffset->ZAxis);
+        logln("Compass Initialized with: Offset[x,y,z]: %f, %f, %f", valueOffset->XAxis, valueOffset->YAxis, valueOffset->ZAxis);
 
         // this->calibrate();
         cur_section = calculate_section();
@@ -161,7 +161,7 @@ float compass_hmc::get_angle()
 
 void compass_hmc::calibrate()
 {
-    Serial.println("calibrate the compass");
+    logln("calibrate the compass");
     MagnetometerScaled valueMax = {0, 0, 0};
     MagnetometerScaled valueMin = {0, 0, 0};
 
@@ -184,7 +184,7 @@ void compass_hmc::calibrate()
     valueOffset->YAxis = (valueMax.YAxis + valueMin.YAxis) / 2;
     valueOffset->ZAxis = (valueMax.ZAxis + valueMin.ZAxis) / 2;
 
-    Serial.printf("Compass: \r\nMax[x,y,z]: %f, %f, %f\r\nMin[x,y,z]: %f, %f, %f\r\nOffset[x,y,z]: %f, %f, %f\r\n", valueMax.XAxis, valueMax.YAxis, valueMax.ZAxis, valueMin.XAxis, valueMin.YAxis, valueMin.ZAxis, valueOffset->XAxis, valueOffset->YAxis, valueOffset->ZAxis);
+    logln("Compass: \r\nMax[x,y,z]: %f, %f, %f\r\nMin[x,y,z]: %f, %f, %f\r\nOffset[x,y,z]: %f, %f, %f", valueMax.XAxis, valueMax.YAxis, valueMax.ZAxis, valueMin.XAxis, valueMin.YAxis, valueMin.ZAxis, valueOffset->XAxis, valueOffset->YAxis, valueOffset->ZAxis);
 
     compass_prefs->putFloat("offset.x", valueOffset->XAxis);
     compass_prefs->putFloat("offset.y", valueOffset->YAxis);
@@ -208,26 +208,7 @@ void compass_hmc::calibrate()
 
 void compass_hmc::output(MagnetometerRaw raw, MagnetometerScaled scaled, float heading, float headingDegrees)
 {
-    Serial.print("Raw:\t");
-    Serial.print(raw.XAxis);
-    Serial.print("   ");   
-    Serial.print(raw.YAxis);
-    Serial.print("   ");   
-    Serial.print(raw.ZAxis);
-    Serial.print("   \tScaled:\t");
-
-    Serial.print(scaled.XAxis);
-    Serial.print("   ");   
-    Serial.print(scaled.YAxis);
-    Serial.print("   ");   
-    Serial.print(scaled.ZAxis);
-
-    Serial.print("   \tHeading:\t");
-    Serial.print(heading);
-    Serial.print(" Radians   \t");
-    Serial.print(headingDegrees);
-    Serial.println(" Degrees   \t");
-    // Serial.printf("S:%2f,%2f:E\r\n",scaled.XAxis,scaled.YAxis);
+    logln("Raw: %h   %h   %h   \tScaled: %f   %f   %f   \tHeading: %f Radians   \t%f Degrees", raw.XAxis, raw.YAxis, raw.ZAxis, scaled.XAxis, scaled.YAxis, scaled.ZAxis, heading, headingDegrees);
 }
 
 int compass_hmc::calculate_section()

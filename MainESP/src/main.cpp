@@ -13,6 +13,8 @@
 #include "cuart_line_types.h"
 #include "drive_speeds.h"
 
+#include "logger.h"
+
 #include "debug_disp.h"
 
 #include "cuart.h"
@@ -42,6 +44,8 @@ void setup()
     Serial.begin(115200); 
     Wire.begin(PIN_SDA, PIN_SCL, 400000);
 
+    logger_init(!robot.dip->get_wettkampfmodus());
+
     preferences.begin("main_esp", false);
 
     // robot.tof_left->init();
@@ -65,7 +69,7 @@ void setup()
     // Initialization of libs
     robot.init();
 
-    Serial.println("\r\nI2C after robot.init:");
+    logln("I2C after robot.init:");
     scan_i2c_addresses();
     print_i2c_addresses();
 

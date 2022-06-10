@@ -29,19 +29,20 @@ void scan_i2c_addresses()
 
 void print_i2c_addresses()
 {
+    log_inline_begin();
     if (I2C_Addresses_len > 0)
-        Serial.print("I2C Addresses: ");
+        log_inline("I2C Addresses: ");
     else
-        Serial.print("No I2C Devices found!");
+        log_inline("No I2C Devices found!");
     for (int i = 0; i < I2C_Addresses_len; i++)
     {
-        Serial.print("0x");
+        log_inline("0x");
         if (I2C_Addresses[i] < 16)
-            Serial.print("0");
-        Serial.print(I2C_Addresses[i], HEX);
-        Serial.print(" ");
+            log_inline("0");
+        log_inline("%x", I2C_Addresses[i]);
+        log_inline(" ");
     }
-    Serial.println("");
+    log_inline_end();
 }
 
 bool check_device_enabled(uint8_t address, String name, String short_name)
@@ -51,7 +52,8 @@ bool check_device_enabled(uint8_t address, String name, String short_name)
     {
         if (I2C_Addresses[i] == address)
         {
-            Serial.println(name + " enabled");
+            String tmp = name + " enabled";
+            logln("%s", tmp.c_str());
             ret = true;
             break;
         }
@@ -60,7 +62,8 @@ bool check_device_enabled(uint8_t address, String name, String short_name)
     if (!ret)
     {
         display.disable_i2c_device(short_name);
-        Serial.println("ERROR: " + name + "! DEVICE NOT FOUND!");
+        String tmp = "ERROR: " + name + "! DEVICE NOT FOUND!";
+        logln("%s", tmp.c_str());
     }
     return ret;
 }

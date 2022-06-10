@@ -11,6 +11,7 @@
 #include "buzz.h"
 #include "../../include/i2c_addresses.h"
 #include "tof.h"
+#include "logger.h"
 
 class Robot
 {
@@ -18,6 +19,8 @@ class Robot
         Robot();
         void init_tof_xshut();
         void init();
+
+        void tick();
 
         void PlayBeginSound();
 
@@ -39,10 +42,9 @@ class Robot
         motor* motor_left = new motor();
         motor* motor_right = new motor();
 
-        tof* tof_right = new tof(PIN_SENS1, 95, 22, 90);
+        tof* tof_right = new tof(PIN_SERVO1, 95, 22, 90);
         tof* tof_left = new tof(PIN_SERVO2, -95, 22, -90);
         tof* tof_back = new tof(PIN_SERVO3, 0, -90, 180);
-
 
         analog_sensor* bat_voltage = new analog_sensor(PIN_BATPROBE, true);
 
@@ -64,4 +66,12 @@ class Robot
         float angle = 0.0f;
         point pos;
         static point rotate_point(point point_to_rotate, point pivot, float angle);
+
+        enum ROBOT_DRIVE_MODE
+        {
+            ROBOT_DRIVE_MODE_LINE,
+            ROBOT_DRIVE_MODE_ROOM
+            //TBD: Different Steps of room
+        };
+        ROBOT_DRIVE_MODE cur_drive_mode = ROBOT_DRIVE_MODE_ROOM; // NEEDS TO BE CHANGED (Sets default drive mode)
 };
