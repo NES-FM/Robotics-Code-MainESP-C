@@ -6,6 +6,8 @@ TaskHandle_t multithreaded_loop_handle;
 #define DRIVE_IN_MAIN
 // #define DRIVE_IN_THREAD
 
+String command_to_parse = "";
+
 // Secondary loop running on core 0
 void multithreaded_loop(void* parameters) { 
     logln("multithreaded_loop running on core %u", xPortGetCoreID());
@@ -32,6 +34,12 @@ void multithreaded_loop(void* parameters) {
 
             robot.tick();
 
+            String logger_tick_return = logger_tick();
+            if (logger_tick_return != "")
+            {
+                command_to_parse = logger_tick_return;
+            }
+
             // accel_sensor.print_values();
             // compass.tick();
             // display.tick();
@@ -54,6 +62,9 @@ void main_loop()
         {
             drive();
         }
+
+        if (command_to_parse != "")
+            logger_pasrse_command(command_to_parse);
     #endif
 
     // #ifdef OTA_BUILD

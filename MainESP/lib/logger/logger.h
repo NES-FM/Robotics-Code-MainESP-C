@@ -19,9 +19,8 @@
 #define log_inline_end() logger_log_formatted_string("\r\n")
 
 void logger_init(bool bluetoothEnabled = true);
-void logger_tick();
+String logger_tick();
 void logger_log_formatted_string(const char *format, ...);
 void logger_bluetooth_callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *param);
-void logger_pasrse_command(String command);
 
 #endif

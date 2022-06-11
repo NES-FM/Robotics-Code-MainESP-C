@@ -14,6 +14,7 @@
 #include "drive_speeds.h"
 
 #include "logger.h"
+#include "command_parser.h"
 
 #include "debug_disp.h"
 
@@ -45,6 +46,7 @@ void setup()
     Wire.begin(PIN_SDA, PIN_SCL, 400000);
 
     logger_init(!robot.dip->get_wettkampfmodus());
+    parser_set_logger_robot_ref(&robot);
 
     preferences.begin("main_esp", false);
 

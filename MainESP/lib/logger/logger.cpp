@@ -27,11 +27,11 @@ void logger_init(bool bluetoothEnabled)
     }
 }
 
-void logger_tick()
+String logger_tick()
 {
     if (_logger_bluetooth_connected && logger_btser.available() > 0)
     {
-        logger_pasrse_command(logger_btser.readStringUntil('\n'));
+        return (logger_btser.readStringUntil('\n'));
     }
     if (Serial.available() > 0)
     {
@@ -52,12 +52,13 @@ void logger_tick()
             {
                 _logger_ser_buf[_logger_ser_buf_idx] = '\0';
 
-                logger_pasrse_command(_logger_ser_buf);
                 //Reset for the next message
                 _logger_ser_buf_idx = 0;
+                return (_logger_ser_buf);
             }
         }
     }
+    return "";
 }
 
 void logger_log_formatted_string(const char *format, ...)
@@ -90,11 +91,5 @@ void logger_bluetooth_callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *par
         _logger_bluetooth_connected = false;
         logln("Bluetooth disconnected!");
     }
-}
-
-void logger_pasrse_command(String command)
-{
-    command.trim();
-    logln("Parsing Command: %s", command.c_str());
 }
 

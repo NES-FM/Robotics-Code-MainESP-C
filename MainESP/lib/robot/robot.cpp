@@ -72,7 +72,6 @@ void Robot::tick()
     {
         // this->calculate_position();
     }
-    logger_tick();
 }
 
 void Robot::PlayBeginSound()

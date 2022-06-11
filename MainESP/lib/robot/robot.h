@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef ROBOT_H
+#define ROBOT_H
+#endif
+
 #include "motor.h"
 #include "accel.h"
 #include "compass.h"
@@ -11,6 +15,7 @@
 #include "buzz.h"
 #include "../../include/i2c_addresses.h"
 #include "tof.h"
+
 #include "logger.h"
 
 class Robot

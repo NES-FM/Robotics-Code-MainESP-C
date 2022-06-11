@@ -11,6 +11,7 @@ bool DIP::get_state(dips index)
         case dip2:
             return _dip2->get_state();
     }
+    return false;
 }
 
 char DIP::get_state()
@@ -34,6 +35,7 @@ bool DIP::has_changed(dips index)
         case dip2:
             return _dip2->state_changed();
     }
+    return false;
 }
 
 bool DIP::has_changed()

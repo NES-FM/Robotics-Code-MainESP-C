@@ -1,12 +1,25 @@
-Guru Meditation Error: Core  1 panic'ed (IntegerDivideByZero). Exception was unhandled.
+Guru Meditation Error: Core  1 panic'ed (LoadStoreError). Exception was unhandled.
 Core 1 register dump:
-PC      : 0x400f120d  PS      : 0x00060f30  A0      : 0x800f1281  A1      : 0x3ffb1e60
-A2      : 0x00000000  A3      : 0x00000000  A4      : 0x3ffb1e88  A5      : 0x0000a380
-A6      : 0x00000000  A7      : 0x3ffb0060  A8      : 0x019b3970  A9      : 0x00000020
-A10     : 0x000001f4  A11     : 0x00000000  A12     : 0x00000002  A13     : 0x3ffb1d80
-A14     : 0x00000000  A15     : 0x3ffb0060  SAR     : 0x00000001  EXCCAUSE: 0x00000006
-EXCVADDR: 0x00000000  LBEG    : 0x4000c2e0  LEND    : 0x4000c2f6  LCOUNT  : 0x00000000
+PC      : 0x40001406  PS      : 0x00060930  A0      : 0x800d395c  A1      : 0x3ffc81a0
+A2      : 0x3f401074  A3      : 0x3ffe1a1c  A4      : 0x000000ff  A5      : 0x0000ff00
+A6      : 0x00ff0000  A7      : 0xff000000  A8      : 0x65672d2d  A9      : 0x3ffc8170
+A10     : 0x3f401074  A11     : 0x3f401058  A12     : 0x0000000a  A13     : 0x00000072
+A14     : 0x3ffe1a18  A15     : 0xff000000  SAR     : 0x00000018  EXCCAUSE: 0x00000003
+EXCVADDR: 0x3f401074  LBEG    : 0x400013f9  LEND    : 0x4000140d  LCOUNT  : 0xffffffff
 
 ELF file SHA256: 0000000000000000
 
-Backtrace: 0x400f120d:0x3ffb1e60 0x400f127e:0x3ffb1e80 0x400f197b:0x3ffb1ec0 0x400f1ebd:0x3ffb1f00 0x400f2009:0x3ffb1f20 0x400d31c5:0x3ffb1f40 0x400d20ab:0x3ffb1f60 0x400d6a8e:0x3ffb1fb0 0x40086a75:0x3ffb1fd0
+Backtrace: 0x40001406:0x3ffc81a0 0x400d3959:0x3ffc81b0 0x400d3d14:0x3ffc81f0 0x400d20eb:0x3ffc8280 0x400d242b:0x3ffc82b0 0x400d78f5:0x3ffc82d0 0x400908e2:0x3ffc82f0
+
+Rebooting...
+
+0x40001406: ?? ??:0
+0x400013f9: ?? ??:0
+0x4000140d: ?? ??:0
+0x40001406: ?? ??:0
+0x400d3959: get_command(String, String) at D:\Develop\Robotics\Robotics-Code-MainESP-C\MainESP/lib/command_parser/command_parser.cpp:138
+0x400d3d14: logger_pasrse_command(String) at D:\Develop\Robotics\Robotics-Code-MainESP-C\MainESP/lib/command_parser/command_parser.cpp:165 (discriminator 3)
+0x400d20eb: main_loop() at D:\Develop\Robotics\Robotics-Code-MainESP-C\MainESP/lib/multithreaded_loop/multithreaded_loop.h:67
+0x400d242b: loop() at D:\Develop\Robotics\Robotics-Code-MainESP-C\MainESP/src/main.cpp:94
+0x400d78f5: loopTask(void*) at C:\Users\flori\.platformio\packages\framework-arduinoespressif32\cores\esp32/main.cpp:23
+0x400908e2: vPortTaskWrapper at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/port.c:355 (discriminator 1)
