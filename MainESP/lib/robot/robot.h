@@ -17,6 +17,7 @@
 #include "tof.h"
 
 #include "logger.h"
+#include "command_parser.h"
 
 class Robot
 {
@@ -79,4 +80,10 @@ class Robot
             //TBD: Different Steps of room
         };
         ROBOT_DRIVE_MODE cur_drive_mode = ROBOT_DRIVE_MODE_ROOM; // NEEDS TO BE CHANGED (Sets default drive mode)
+
+    private:
+        void parse_command(String command);
+        String help_command();
+        String get_command(String sensor, String subsensor);
+        String move_command(String left, String right);
 };

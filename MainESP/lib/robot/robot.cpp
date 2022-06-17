@@ -72,6 +72,11 @@ void Robot::tick()
     {
         // this->calculate_position();
     }
+    String logger_tick_return = logger_tick();
+    if (logger_tick_return != "")
+    {
+        this->parse_command(logger_tick_return);
+    }
 }
 
 void Robot::PlayBeginSound()
@@ -206,4 +211,131 @@ Robot::point Robot::rotate_point(point point_to_rotate, point pivot, float angle
     return point_to_rotate;
 }
 
+
+String Robot::help_command()
+{
+    String ret = "";
+    ret += "--Help--\r\n";
+    ret += "get [sensor] [<subsensor>]\r\n";
+    ret += "--------\r\n";
+    return ret;
+}
+
+String Robot::get_command(String sensor, String subsensor)
+{
+    char out[255];
+    sprintf(out, "unknown error");
+
+    logln("Inside Get");
+
+    if (sensor == "")
+        sprintf(out, "too few arguments");
+    else if (sensor == "help")
+    {
+        logln("Inside help");
+        String ret = "";
+        ret += "--get--\r\n";
+        ret += "battery\r\n";
+        ret += "dip [<dip1/dip2/wettkampfmodus>]\r\n";
+        ret += "accel\r\n";
+        ret += "compass\r\n";
+        ret += "tof [<back/left/right>]\r\n";
+        ret += "drive mode\r\n";
+        ret += "-------\r\n";
+
+        sprintf(out, "%s", ret.c_str());
+        logln("After sprintf");
+    }
+    else if (sensor == "battery")
+        sprintf(out, "%fV", bat_voltage->convert_to_battery_voltage());
+    else if (sensor == "dip")
+    {
+        if (subsensor == "")
+            sprintf(out, "%s%s%s", dip->get_state(DIP::dip1) ? "1": "0", dip->get_state(DIP::dip2) ? "1": "0", dip->get_state(DIP::wettkampfmodus) ? "1": "0");
+        else if (subsensor == "dip1")
+            sprintf(out, "%s", dip->get_state(DIP::dip1) ? "1": "0");
+        else if (subsensor == "dip2")
+            sprintf(out, "%s", dip->get_state(DIP::dip2) ? "1": "0");
+        else if (subsensor == "wettkampfmodus")
+            sprintf(out, "%s", dip->get_state(DIP::wettkampfmodus) ? "1": "0");
+        else
+            sprintf(out, "subsensor not found");
+    }
+    else if (sensor == "accel")
+    {
+        if (subsensor == "")
+            sprintf(out, "%f", accel_sensor->get_roll_degrees());
+        else
+            sprintf(out, "subsensor not found");
+        // ToDo: Other Axis + Ramp modes
+    }
+    else if (sensor == "compass")
+        sprintf(out, "%f", compass->get_angle());
+    else if (sensor == "tof")
+    {
+        if (subsensor == "")
+            sprintf(out, "Specifying of subsensor needed");
+        else if (subsensor == "right")
+            sprintf(out, "%f", tof_right->getMeasurement());
+        else if (subsensor == "left")
+            sprintf(out, "%f", tof_left->getMeasurement());
+        else if (subsensor == "back")
+            sprintf(out, "%f", tof_back->getMeasurement());
+        else
+            sprintf(out, "subsensor not found");
+    }
+    else if (sensor == "drive" && subsensor == "mode")
+    {
+        if (cur_drive_mode == Robot::ROBOT_DRIVE_MODE_LINE)
+            sprintf(out, "line");
+        else if (cur_drive_mode == Robot::ROBOT_DRIVE_MODE_ROOM)
+            sprintf(out, "room");
+        else
+            sprintf(out, "unknown drive mode");
+    }
+    logln("Before return");
+    // ToDo: Taster
+    return out;
+}
+
+String Robot::move_command(String l, String r)
+{
+    
+}
+
+void Robot::parse_command(String command)
+{
+    command.trim();
+    logln("Parsing Command: %s", command.c_str());
+
+    splitstring splitted = split_string_at_space(command);
+
+    logln("String Split");
+
+    String top_level_command = splitted.data[0];
+    String first_arg = "";
+    String second_arg = "";
+
+    if (splitted.length > 1)
+        first_arg = splitted.data[1];
+    if (splitted.length > 2)
+        second_arg = splitted.data[2];
+
+    String out;
+
+    top_level_command.toLowerCase();
+    first_arg.toLowerCase();
+    second_arg.toLowerCase();
+
+    logln("Vars initialized");
+
+    if (top_level_command == "help")
+        out = this->help_command();
+    else if (top_level_command == "get")
+        out = this->get_command(first_arg, second_arg);
+
+    logln("Before logln");
+
+    logln("%s", out.c_str());
+}
 

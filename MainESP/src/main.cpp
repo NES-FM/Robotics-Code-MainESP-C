@@ -14,7 +14,6 @@
 #include "drive_speeds.h"
 
 #include "logger.h"
-#include "command_parser.h"
 
 #include "debug_disp.h"
 
@@ -43,10 +42,9 @@ void setup()
     digitalWrite(LED_BUILTIN, LOW);
 
     Serial.begin(115200); 
-    Wire.begin(PIN_SDA, PIN_SCL, 400000);
+    Wire.begin(PIN_SDA, PIN_SCL, 400000U);
 
     logger_init(!robot.dip->get_wettkampfmodus());
-    parser_set_logger_robot_ref(&robot);
 
     preferences.begin("main_esp", false);
 

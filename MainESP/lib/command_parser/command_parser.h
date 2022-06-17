@@ -2,8 +2,14 @@
 
 #include <Arduino.h>
 #include "logger.h"
-#include "robot.h"
 
-void logger_pasrse_command(String command);
-void parser_set_logger_robot_ref(Robot* robot);
+int count_occurrences_in_string(String str, char chr);
 
+struct splitstring
+{
+    String* data;
+    unsigned int length;
+    unsigned int start = 0;
+};
+
+splitstring split_string_at_space(String str);
