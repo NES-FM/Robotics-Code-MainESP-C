@@ -86,4 +86,7 @@ class Robot
         String help_command();
         String get_command(String sensor, String subsensor);
         String move_command(String left, String right);
+        String control_command(String on_off);
+
+        bool is_control_on_user = false;
 };

@@ -2,6 +2,12 @@
 
 motor::motor() {};
 
+void motor::enable(bool enabled) 
+{
+    _motor_i2c_enabled = enabled;
+}
+
+#ifndef comm_v2
 void motor::writeto_mem(char addr, char reg, char data)
 {
     if (_motor_i2c_enabled == true) 
@@ -68,11 +74,6 @@ void motor::stop() { this->move_direction(0, MOTOR_DIREC_STOP); }
 
 void motor::off() { this->move_direction(0, MOTOR_DIREC_OFF); }
 
-void motor::enable(bool enabled) 
-{
-    _motor_i2c_enabled = enabled;
-}
-
 void motor::force_resend()
 {
     // By changing the current direction / speed forcing the resend of motor values
@@ -85,3 +86,77 @@ void motor::force_resend()
 
     move_direction(save_current_speed, save_current_direction);
 }
+#endif
+
+#ifdef comm_v2
+void motor::init(char mnum) 
+{
+    logln("init motor %d", mnum);
+    motor_num = mnum;
+    move(0);
+}
+
+void motor::move(int speed)
+{
+    logln("move motor %d with speed %d", motor_num, speed);
+    if (speed != current_speed)
+    {
+        logln("Actually moving");
+        current_speed = speed;
+
+        if (speed == 0)
+        {
+            stop_command out;
+            out.motor_num = motor_num;
+            out.type = stop_type_stop;
+
+            logln("Before wire");
+            Wire.beginTransmission(_i2c_address);
+            Wire.write((unsigned char*) &out, sizeof(out));
+            Wire.endTransmission();
+            logln("After wire");
+        }
+        else
+        {
+            uint8_t direction = 0;
+            if (speed < 0)
+                direction = move_direction_backward;
+            else if (speed > 0)
+                direction = move_direction_forward;
+
+            drive_command out;
+            out.motor_num = motor_num;
+            out.direction = direction;
+            out.speed = (uint8_t) abs(speed);
+
+            logln("Before wire");
+            Wire.beginTransmission(_i2c_address);
+            Wire.write((unsigned char*) &out, sizeof(out));
+            Wire.endTransmission();
+            logln("After wire");
+        }
+    }
+}
+
+void motor::off() 
+{ 
+    stop_command out;
+    out.motor_num = motor_num;
+    out.type = stop_type_off;
+
+    Wire.beginTransmission(_i2c_address);
+    Wire.write((unsigned char*) &out, sizeof(out));
+    Wire.endTransmission();
+}
+
+void motor::force_resend()
+{
+    // By changing the current direction / speed forcing the resend of motor values
+
+    char save_current_speed = current_speed;
+
+    current_speed = current_speed + 1;
+
+    move(save_current_speed);
+}
+#endif

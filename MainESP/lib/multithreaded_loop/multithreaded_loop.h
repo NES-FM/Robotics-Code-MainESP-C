@@ -27,7 +27,6 @@ void multithreaded_loop(void* parameters) {
         // #endif
 
         #ifdef DRIVE_IN_MAIN
-
             cuart.tick();
 
             robot.tick();
@@ -68,6 +67,7 @@ void main_loop()
 
 void init_multithreaded_loop()
 {
+    logln("init_multithreaded_loop");
     // Secondary loop on low power core
     xTaskCreatePinnedToCore(multithreaded_loop, /* Function to implement the task */
                             "Multithreaded Loop", /* Name of the task */

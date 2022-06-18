@@ -55,8 +55,12 @@ void Robot::init()
     motor_left->init(1);
     motor_right->init(2);
 
+    logln("After motors");
+
     accel_sensor->init();
+    logln("After accel_sensor");
     compass->init(accel_sensor);
+    logln("After compass");
 
     pos.x_mm = 500;
     pos.y_mm = 400;
@@ -92,12 +96,21 @@ void Robot::PlayBeginSound()
 
 void Robot::move(int speed_left, int speed_right)
 {
-    #ifdef EXTENSIVE_DEBUG
-    logln("L:%d, R:%d", speed_left, speed_right);
-    #endif
-    motor_left->move(speed_left);
-    motor_right->move(speed_right);
-    // resend_motor_timer.reset();
+    if (!is_control_on_user)
+    {
+        #ifdef EXTENSIVE_DEBUG
+        logln("L:%d, R:%d", speed_left, speed_right);
+        #endif
+        motor_left->move(speed_left);
+        motor_right->move(speed_right);
+        // resend_motor_timer.reset();
+    }
+    else
+    {
+        #ifdef EXTENSIVE_DEBUG
+        logln("move function not activated because is_control_on_user is true");
+        #endif
+    }
 }
 
 void Robot::greifer_home()
@@ -226,13 +239,10 @@ String Robot::get_command(String sensor, String subsensor)
     char out[255];
     sprintf(out, "unknown error");
 
-    logln("Inside Get");
-
     if (sensor == "")
         sprintf(out, "too few arguments");
     else if (sensor == "help")
     {
-        logln("Inside help");
         String ret = "";
         ret += "--get--\r\n";
         ret += "battery\r\n";
@@ -244,7 +254,6 @@ String Robot::get_command(String sensor, String subsensor)
         ret += "-------\r\n";
 
         sprintf(out, "%s", ret.c_str());
-        logln("After sprintf");
     }
     else if (sensor == "battery")
         sprintf(out, "%fV", bat_voltage->convert_to_battery_voltage());
@@ -293,24 +302,53 @@ String Robot::get_command(String sensor, String subsensor)
         else
             sprintf(out, "unknown drive mode");
     }
-    logln("Before return");
     // ToDo: Taster
     return out;
 }
 
 String Robot::move_command(String l, String r)
 {
+    if (!is_control_on_user)
+    {
+        return "User is not in control! Type \"control on\"";
+    }
     
+    this->motor_left->move(l.toInt());
+    this->motor_right->move(r.toInt());
+
+    char out[64];
+    sprintf(out, "Succesfully moved with L:%d, R:%d", l.toInt(), r.toInt());
+    return out;
+}
+
+String Robot::control_command(String on_off)
+{
+    if (on_off == "")
+    {
+        is_control_on_user = !is_control_on_user;
+        if (is_control_on_user)
+            return "User is now in control of robot";
+        else
+            return "Robot is now in control of itself, User not anymore!";
+    }
+    else if (on_off == "on")
+    {
+        is_control_on_user = true;
+        return "User is now in control of robot";
+    }
+    else
+    {
+        is_control_on_user = false;
+        return "Robot is now in control of itself, User not anymore!";
+    }
 }
 
 void Robot::parse_command(String command)
 {
     command.trim();
-    logln("Parsing Command: %s", command.c_str());
+    // logln("Parsing Command: %s", command.c_str());
 
     splitstring splitted = split_string_at_space(command);
-
-    logln("String Split");
 
     String top_level_command = splitted.data[0];
     String first_arg = "";
@@ -327,14 +365,14 @@ void Robot::parse_command(String command)
     first_arg.toLowerCase();
     second_arg.toLowerCase();
 
-    logln("Vars initialized");
-
     if (top_level_command == "help")
         out = this->help_command();
     else if (top_level_command == "get")
         out = this->get_command(first_arg, second_arg);
-
-    logln("Before logln");
+    else if (top_level_command == "move")
+        out = this->move_command(first_arg, second_arg);
+    else if (top_level_command == "control")
+        out = this->control_command(first_arg);
 
     logln("%s", out.c_str());
 }
