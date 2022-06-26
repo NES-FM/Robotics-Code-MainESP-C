@@ -101,20 +101,17 @@ void motor::move(int speed)
     logln("move motor %d with speed %d", motor_num, speed);
     if (speed != current_speed)
     {
-        logln("Actually moving");
         current_speed = speed;
 
         if (speed == 0)
         {
-            stop_command out;
-            out.motor_num = motor_num;
-            out.type = stop_type_stop;
+            stop_command stop_send;
+            stop_send.motor_num = motor_num;
+            stop_send.type = stop_type_stop;
 
-            logln("Before wire");
             Wire.beginTransmission(_i2c_address);
-            Wire.write((unsigned char*) &out, sizeof(out));
+            Wire.write((unsigned char*) &stop_send, sizeof(stop_send));
             Wire.endTransmission();
-            logln("After wire");
         }
         else
         {
@@ -124,16 +121,14 @@ void motor::move(int speed)
             else if (speed > 0)
                 direction = move_direction_forward;
 
-            drive_command out;
-            out.motor_num = motor_num;
-            out.direction = direction;
-            out.speed = (uint8_t) abs(speed);
+            drive_command drive_send;
+            drive_send.motor_num = motor_num;
+            drive_send.direction = direction;
+            drive_send.speed = (uint8_t) abs(speed);
 
-            logln("Before wire");
             Wire.beginTransmission(_i2c_address);
-            Wire.write((unsigned char*) &out, sizeof(out));
+            Wire.write((unsigned char*) &drive_send, sizeof(drive_send));
             Wire.endTransmission();
-            logln("After wire");
         }
     }
 }

@@ -3,64 +3,34 @@
 
 TaskHandle_t multithreaded_loop_handle;
 
-#define DRIVE_IN_MAIN
-// #define DRIVE_IN_THREAD
-
 // Secondary loop running on core 0
 void multithreaded_loop(void* parameters) { 
     logln("multithreaded_loop running on core %u", xPortGetCoreID());
     while(true)
     {
-        // #ifdef DRIVE_IN_THREAD
-            // display.tick();
+        cuart.tick();
 
-            // // cuart.debugPrintArray();
-
-            // if (motor_left.is_enabled() && motor_right.is_enabled())
-            // {
-            //     drive();
-            // }
-
-            // // delay(10);
-
-            // // cuart.debugPrint();
-        // #endif
-
-        #ifdef DRIVE_IN_MAIN
-            cuart.tick();
-
+        if (!robot.is_control_on_user)
             robot.tick();
-
-            // accel_sensor.print_values();
-            // compass.tick();
-            // display.tick();
-        #endif
     }
 }
 
 // Main loop running on core 1
 void main_loop()
 {
-    // #ifdef DRIVE_IN_THREAD
-        // cuart.tick();
-        // compass.tick();
-    // #endif
+    display.tick();
 
-    #ifdef DRIVE_IN_MAIN
-        display.tick();
-
+    if (!robot.is_control_on_user)
+    {
         if (robot.motor_left->is_enabled() && robot.motor_right->is_enabled())
         {
             drive();
         }
-
-    #endif
-
-    // #ifdef OTA_BUILD
-    // ota.tick();
-    // #endif
-
-    // compass.tick();
+    }
+    else
+    {
+        robot.tick();
+    }
     
     // delay(10);
 }

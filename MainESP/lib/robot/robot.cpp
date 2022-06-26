@@ -55,12 +55,8 @@ void Robot::init()
     motor_left->init(1);
     motor_right->init(2);
 
-    logln("After motors");
-
     accel_sensor->init();
-    logln("After accel_sensor");
     compass->init(accel_sensor);
-    logln("After compass");
 
     pos.x_mm = 500;
     pos.y_mm = 400;
@@ -68,6 +64,7 @@ void Robot::init()
 
 void Robot::tick()
 {
+    // logln("Tick");
     if (cur_drive_mode == ROBOT_DRIVE_MODE_LINE)
     {
 
@@ -227,9 +224,12 @@ Robot::point Robot::rotate_point(point point_to_rotate, point pivot, float angle
 
 String Robot::help_command()
 {
-    String ret = "";
+    String ret = "\r\n";
     ret += "--Help--\r\n";
+    ret += "command [required arg] [<optional arg>] [<option_1/option_2>]\r\n";
     ret += "get [sensor] [<subsensor>]\r\n";
+    ret += "move [left] [right]\r\n";
+    ret += "control [<on/off>]\r\n";
     ret += "--------\r\n";
     return ret;
 }
@@ -343,6 +343,46 @@ String Robot::control_command(String on_off)
     }
 }
 
+String Robot::set_command(String first_arg, String second_arg, String third_arg)
+{
+    char out[64];
+    if (first_arg == "help")
+    {
+        String ret = "\r\n";
+        ret += "--set--\r\n";
+        ret += "drive mode [line\room]\r\n";
+        ret += "-------\r\n";
+    }
+    else if (first_arg == "drive" && second_arg == "mode")
+    {
+        if (third_arg == "room")
+        {
+            sprintf(out, "%s", "Setting Drive Mode to Room");
+            cur_drive_mode = ROBOT_DRIVE_MODE_ROOM;
+        }
+        else if (third_arg == "line")
+        {
+            sprintf(out, "%s", "Setting Drive Mode to Line");
+            cur_drive_mode = ROBOT_DRIVE_MODE_LINE;
+        }
+        else
+        {
+            sprintf(out, "%s", "Invalid Drive mode");
+        }
+    }
+    return out;
+}
+
+String Robot::comamnd_template(String arg)
+{
+    char out[64];
+    if (arg == "")
+    {
+        sprintf(out, "%s", "do sth");
+    }
+    return out;
+}
+
 void Robot::parse_command(String command)
 {
     command.trim();
@@ -353,11 +393,14 @@ void Robot::parse_command(String command)
     String top_level_command = splitted.data[0];
     String first_arg = "";
     String second_arg = "";
+    String third_arg = "";
 
     if (splitted.length > 1)
         first_arg = splitted.data[1];
     if (splitted.length > 2)
         second_arg = splitted.data[2];
+    if (splitted.length > 3)
+        third_arg = splitted.data[3];
 
     String out;
 
@@ -373,6 +416,8 @@ void Robot::parse_command(String command)
         out = this->move_command(first_arg, second_arg);
     else if (top_level_command == "control")
         out = this->control_command(first_arg);
+    else if (top_level_command == "set")
+        out = this->set_command(first_arg, second_arg, third_arg);
 
     logln("%s", out.c_str());
 }

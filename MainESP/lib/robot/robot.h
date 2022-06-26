@@ -81,12 +81,13 @@ class Robot
         };
         ROBOT_DRIVE_MODE cur_drive_mode = ROBOT_DRIVE_MODE_ROOM; // NEEDS TO BE CHANGED (Sets default drive mode)
 
+        bool is_control_on_user = false;
     private:
         void parse_command(String command);
         String help_command();
         String get_command(String sensor, String subsensor);
         String move_command(String left, String right);
         String control_command(String on_off);
-
-        bool is_control_on_user = false;
+        String set_command(String first_arg, String second_arg, String third_arg);
+        String comamnd_template(String arg);
 };

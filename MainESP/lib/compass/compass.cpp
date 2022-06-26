@@ -112,8 +112,6 @@ void compass_hmc::init()
         logln("Compass Initialized with: Offset[x,y,z]: %f, %f, %f", valueOffset->XAxis, valueOffset->YAxis, valueOffset->ZAxis);
 
         // this->calibrate();
-        cur_section = calculate_section();
-        setRelativeZero();
     }
 }
 
@@ -124,37 +122,41 @@ void compass_hmc::enable(bool enabled)
 
 float compass_hmc::get_angle()
 {
-    MagnetometerScaled scaled = compass->readScaledAxis();
-  
-    scaled.XAxis -= valueOffset->XAxis;
-    scaled.YAxis -= valueOffset->YAxis;
+    float headingDegrees = 0.0f;
+    if (_compass_enabled)
+    {
+        MagnetometerScaled scaled = compass->readScaledAxis();
+    
+        scaled.XAxis -= valueOffset->XAxis;
+        scaled.YAxis -= valueOffset->YAxis;
 
-    // Calculate heading when the magnetometer is level, then correct for signs of axis.
-    float heading = atan2(scaled.YAxis, scaled.XAxis);
-    
-    // float heading = yxHeading;
-    
-    // Once you have your heading, you must then add your 'Declination Angle', which is the 'Error' of the magnetic field in your location.
-    // Find yours here: http://www.magnetic-declination.com/
-    // Mine is: -2° 37' which is -2.617 Degrees, or (which we need) -0.0456752665 radians, I will use -0.0457
-    // If you cannot find your Declination, comment out these two lines, your compass will be slightly off.
-
-    // In Weingarten: 3° 20'  ->  3.33 Degrees  ->  0.05811946 Radians
-    float declinationAngle = 0.05811946;
-    heading += declinationAngle;
-    
-    // Correct for when signs are reversed.
-    if(heading < 0)
-        heading += 2*PI;
+        // Calculate heading when the magnetometer is level, then correct for signs of axis.
+        float heading = atan2(scaled.YAxis, scaled.XAxis);
         
-    // Check for wrap due to addition of declination.
-    if(heading > 2*PI)
-        heading -= 2*PI;
-    
-    // Convert radians to degrees for readability.
-    float headingDegrees = heading * 180/PI;
+        // float heading = yxHeading;
+        
+        // Once you have your heading, you must then add your 'Declination Angle', which is the 'Error' of the magnetic field in your location.
+        // Find yours here: http://www.magnetic-declination.com/
+        // Mine is: -2° 37' which is -2.617 Degrees, or (which we need) -0.0456752665 radians, I will use -0.0457
+        // If you cannot find your Declination, comment out these two lines, your compass will be slightly off.
 
-    // this->output(compass->readRawAxis(), scaled, heading, headingDegrees);
+        // In Weingarten: 3° 20'  ->  3.33 Degrees  ->  0.05811946 Radians
+        float declinationAngle = 0.05811946;
+        heading += declinationAngle;
+        
+        // Correct for when signs are reversed.
+        if(heading < 0)
+            heading += 2*PI;
+            
+        // Check for wrap due to addition of declination.
+        if(heading > 2*PI)
+            heading -= 2*PI;
+        
+        // Convert radians to degrees for readability.
+        headingDegrees = heading * 180/PI;
+
+        // this->output(compass->readRawAxis(), scaled, heading, headingDegrees);
+    }
 
     return headingDegrees; 
 }
@@ -162,48 +164,55 @@ float compass_hmc::get_angle()
 void compass_hmc::calibrate()
 {
     logln("calibrate the compass");
-    MagnetometerScaled valueMax = {0, 0, 0};
-    MagnetometerScaled valueMin = {0, 0, 0};
-
-    MagnetometerScaled cur = {0,0,0};
-
-    for (int i = 0; i < (10000); i+=100)
+    if (_compass_enabled)
     {
-        cur = compass->readScaledAxis();
-        valueMax.XAxis = max(valueMax.XAxis, cur.XAxis);
-        valueMax.YAxis = max(valueMax.YAxis, cur.YAxis);
-        valueMax.ZAxis = max(valueMax.ZAxis, cur.ZAxis);
+        MagnetometerScaled valueMax = {0, 0, 0};
+        MagnetometerScaled valueMin = {0, 0, 0};
 
-        valueMin.XAxis = min(valueMin.XAxis, cur.XAxis);
-        valueMin.YAxis = min(valueMin.YAxis, cur.YAxis);
-        valueMin.ZAxis = min(valueMin.ZAxis, cur.ZAxis);
-        delay(100);
+        MagnetometerScaled cur = {0,0,0};
+
+        for (int i = 0; i < (10000); i+=100)
+        {
+            cur = compass->readScaledAxis();
+            valueMax.XAxis = max(valueMax.XAxis, cur.XAxis);
+            valueMax.YAxis = max(valueMax.YAxis, cur.YAxis);
+            valueMax.ZAxis = max(valueMax.ZAxis, cur.ZAxis);
+
+            valueMin.XAxis = min(valueMin.XAxis, cur.XAxis);
+            valueMin.YAxis = min(valueMin.YAxis, cur.YAxis);
+            valueMin.ZAxis = min(valueMin.ZAxis, cur.ZAxis);
+            delay(100);
+        }
+
+        valueOffset->XAxis = (valueMax.XAxis + valueMin.XAxis) / 2;
+        valueOffset->YAxis = (valueMax.YAxis + valueMin.YAxis) / 2;
+        valueOffset->ZAxis = (valueMax.ZAxis + valueMin.ZAxis) / 2;
+
+        logln("Compass: \r\nMax[x,y,z]: %f, %f, %f\r\nMin[x,y,z]: %f, %f, %f\r\nOffset[x,y,z]: %f, %f, %f", valueMax.XAxis, valueMax.YAxis, valueMax.ZAxis, valueMin.XAxis, valueMin.YAxis, valueMin.ZAxis, valueOffset->XAxis, valueOffset->YAxis, valueOffset->ZAxis);
+
+        compass_prefs->putFloat("offset.x", valueOffset->XAxis);
+        compass_prefs->putFloat("offset.y", valueOffset->YAxis);
+        compass_prefs->putFloat("offset.z", valueOffset->ZAxis);
+
+    /*
+        Serial.print("max: ");
+        Serial.print(valueMax.XAxis);
+        Serial.print(valueMax.YAxis);
+        Serial.println(valueMax.ZAxis);
+        Serial.print("min: ");
+        Serial.print(valueMin.XAxis);
+        Serial.print(valueMin.YAxis);
+        Serial.println(valueMin.ZAxis);
+        Serial.print("offset: ");
+        Serial.print(valueOffset->XAxis);
+        Serial.print(valueOffset->YAxis);
+        Serial.println(valueOffset->ZAxis);
+        */
     }
-
-    valueOffset->XAxis = (valueMax.XAxis + valueMin.XAxis) / 2;
-    valueOffset->YAxis = (valueMax.YAxis + valueMin.YAxis) / 2;
-    valueOffset->ZAxis = (valueMax.ZAxis + valueMin.ZAxis) / 2;
-
-    logln("Compass: \r\nMax[x,y,z]: %f, %f, %f\r\nMin[x,y,z]: %f, %f, %f\r\nOffset[x,y,z]: %f, %f, %f", valueMax.XAxis, valueMax.YAxis, valueMax.ZAxis, valueMin.XAxis, valueMin.YAxis, valueMin.ZAxis, valueOffset->XAxis, valueOffset->YAxis, valueOffset->ZAxis);
-
-    compass_prefs->putFloat("offset.x", valueOffset->XAxis);
-    compass_prefs->putFloat("offset.y", valueOffset->YAxis);
-    compass_prefs->putFloat("offset.z", valueOffset->ZAxis);
-
-/*
-    Serial.print("max: ");
-    Serial.print(valueMax.XAxis);
-    Serial.print(valueMax.YAxis);
-    Serial.println(valueMax.ZAxis);
-    Serial.print("min: ");
-    Serial.print(valueMin.XAxis);
-    Serial.print(valueMin.YAxis);
-    Serial.println(valueMin.ZAxis);
-    Serial.print("offset: ");
-    Serial.print(valueOffset->XAxis);
-    Serial.print(valueOffset->YAxis);
-    Serial.println(valueOffset->ZAxis);
-    */
+    else
+    {
+        logln("nvm, compass not enabled");
+    }
 }
 
 void compass_hmc::output(MagnetometerRaw raw, MagnetometerScaled scaled, float heading, float headingDegrees)
@@ -211,42 +220,9 @@ void compass_hmc::output(MagnetometerRaw raw, MagnetometerScaled scaled, float h
     logln("Raw: %h   %h   %h   \tScaled: %f   %f   %f   \tHeading: %f Radians   \t%f Degrees", raw.XAxis, raw.YAxis, raw.ZAxis, scaled.XAxis, scaled.YAxis, scaled.ZAxis, heading, headingDegrees);
 }
 
-int compass_hmc::calculate_section()
-{
-    float angle = get_angle();
-    if (0 < angle && angle <= 90)
-        return 0;
-    if (90 < angle && angle <= 180)
-        return 1;
-    if (180 < angle && angle <= 270)
-        return 2;
-    if (270 < angle && angle <= 360)
-        return 3;
-    return 0;
-}
-
-
 void compass_hmc::tick() 
 {
-    if (cur_section == 0 && calculate_section() == 3)
-    {
-        num_total_rotations -= 1;
-    }
-    else if (cur_section == 3 && calculate_section() == 0)
-    {
-        num_total_rotations += 1;
-    }
-    continuous_angle = (num_total_rotations * 360) + get_angle();
-    cur_section = calculate_section();
-    // Serial.printf("Section: %d, Rot: %d, Angle: %f\r\n", cur_section, num_total_rotations, continuous_angle);
-}
 
-bool compass_hmc::reachedRelativeGoal()
-{
-    if (relativeGoal > 0)
-        return this->getRelativeAngle() >= relativeGoal;
-    else
-        return this->getRelativeAngle() <= relativeGoal;
 }
 
 float compass_hmc::keep_in_360_range(float x)
