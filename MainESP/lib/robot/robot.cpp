@@ -21,11 +21,11 @@ void Robot::init_tof_xshut()
 void Robot::init()
 {
     // TOF
-    log_inline_begin();
-    log_inline(" Left: ");
-    tof_left->releaseReset(); // Unresetting left, so that left can be initialized
-    delay(1000);
-    tof_left->begin(I2C_ADDRESS_TOF_LEFT);
+    // log_inline_begin();
+    // log_inline(" Left: ");
+    // tof_left->releaseReset(); // Unresetting left, so that left can be initialized
+    // delay(1000);
+    // tof_left->begin(I2C_ADDRESS_TOF_LEFT);
 
     log_inline_begin();
     log_inline("Right: ");
@@ -39,13 +39,13 @@ void Robot::init()
     delay(1000);
     tof_back->begin(I2C_ADDRESS_TOF_BACK);
 
-    // tof_right->setLongRangeMode(true);
-    tof_right->setContinuous(true);
-    tof_right->setHighSpeed(true);
+    tof_right->setLongRangeMode(true);
+    tof_right->setContinuous(true); 
+    // tof_right->setHighSpeed(true);
 
     // tof_left->setLongRangeMode(true);
-    tof_left->setContinuous(true);
-    tof_left->setHighSpeed(true);
+    // tof_left->setContinuous(true);
+    // tof_left->setHighSpeed(true);
 
     // tof_back->setLongRangeMode(true);
     tof_back->setContinuous(true);
@@ -56,6 +56,7 @@ void Robot::init()
     motor_right->init(2);
 
     accel_sensor->init();
+    logln("After accel");
     compass->init(accel_sensor);
 
     pos.x_mm = 500;
@@ -71,13 +72,18 @@ void Robot::tick()
     }
     else if (cur_drive_mode == ROBOT_DRIVE_MODE_ROOM)
     {
-        // this->calculate_position();
+        this->calculate_position();
     }
     String logger_tick_return = logger_tick();
     if (logger_tick_return != "")
     {
         this->parse_command(logger_tick_return);
     }
+}
+
+void Robot::tickPinnedMain()
+{
+    this->calculate_position();
 }
 
 void Robot::PlayBeginSound()
@@ -123,7 +129,7 @@ void Robot::calculate_position()
 {
     this->angle = compass->keep_in_360_range(compass->get_angle() - room_beginning_angle);
 
-    int left_dis = tof_left->getMeasurement() + abs(tof_left->_offset_x);
+    // int left_dis = tof_left->getMeasurement() + abs(tof_left->_offset_x);
     int right_dis = tof_right->getMeasurement() + abs(tof_right->_offset_x);
     int back_dis = tof_back->getMeasurement() + abs(tof_back->_offset_x);
 
@@ -155,28 +161,28 @@ void Robot::calculate_position()
         logln("Error with Right Sensor: %s", tof_right->getMeasurementErrorString().c_str());
     }
 
-    if (tof_left->getMeasurementError() == tof_left->TOF_ERROR_NONE)
-    {
-        measurement_angle = compass->keep_in_360_range(this->angle + tof_left->_offset_a);
-        point_cloud_index = int(measurement_angle / 3);
+    // if (tof_left->getMeasurementError() == tof_left->TOF_ERROR_NONE)
+    // {
+    //     measurement_angle = compass->keep_in_360_range(this->angle + tof_left->_offset_a);
+    //     point_cloud_index = int(measurement_angle / 3);
 
-        measurement_old = point_cloud[point_cloud_index];
-        measurement.x_mm = left_dis + pos.x_mm;
-        measurement.y_mm = tof_left->_offset_y + pos.y_mm;
-        measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
+    //     measurement_old = point_cloud[point_cloud_index];
+    //     measurement.x_mm = left_dis + pos.x_mm;
+    //     measurement.y_mm = tof_left->_offset_y + pos.y_mm;
+    //     measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
 
-        if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
-        {
-            measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
-            measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
-        }
+    //     if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
+    //     {
+    //         measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
+    //         measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
+    //     }
 
-        point_cloud[point_cloud_index] = measurement;
-    }
-    else
-    {
-        logln("Error with Left Sensor: %s", tof_left->getMeasurementErrorString().c_str());
-    }
+    //     point_cloud[point_cloud_index] = measurement;
+    // }
+    // else
+    // {
+    //     logln("Error with Left Sensor: %s", tof_left->getMeasurementErrorString().c_str());
+    // }
 
     if (tof_back->getMeasurementError() == tof_back->TOF_ERROR_NONE)
     {
@@ -418,6 +424,8 @@ void Robot::parse_command(String command)
         out = this->control_command(first_arg);
     else if (top_level_command == "set")
         out = this->set_command(first_arg, second_arg, third_arg);
+    else
+        out = "Invalid command: " + top_level_command;
 
     logln("%s", out.c_str());
 }

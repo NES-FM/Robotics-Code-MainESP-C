@@ -21,6 +21,10 @@ void tof::begin(uint8_t address)
             _error = TOF_ERROR_FAILED_TO_INITIALIZE;
             return;
         }
+        else
+        {
+            logln("init successful!");
+        }
         delay(10);
         changeAddress(address);
         // setHighAccuracy(false);

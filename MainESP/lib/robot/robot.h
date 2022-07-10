@@ -27,6 +27,7 @@ class Robot
         void init();
 
         void tick();
+        void tickPinnedMain();
 
         void PlayBeginSound();
 
@@ -48,7 +49,7 @@ class Robot
         motor* motor_left = new motor();
         motor* motor_right = new motor();
 
-        tof* tof_right = new tof(PIN_SERVO1, 95, 22, 90);
+        tof* tof_right = new tof(PIN_SERVO1, 95, -60, 90);
         tof* tof_left = new tof(PIN_SERVO2, -95, 22, -90);
         tof* tof_back = new tof(PIN_SERVO3, 0, -90, 180);
 

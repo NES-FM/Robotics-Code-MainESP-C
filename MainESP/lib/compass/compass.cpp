@@ -96,14 +96,14 @@ void compass_hmc::init()
     if (_compass_enabled)
     {
         compass_prefs->begin("compass", false);
+        compass->initCompass();
+        // error = compass->setScale(1.3); // Set the scale of the compass.
+        // if(error != 0) // If there is an error, print it out.
+        //     logln("%s", compass->getErrorText(error));
 
-        error = compass->setScale(1.3); // Set the scale of the compass.
-        if(error != 0) // If there is an error, print it out.
-            logln("%s", compass->getErrorText(error));
-
-        error = compass->setMeasurementMode(MEASUREMENT_CONTINUOUS); // Set the measurement mode to Continuous
-        if(error != 0) // If there is an error, print it out.
-            logln("%s", compass->getErrorText(error));
+        // error = compass->setMeasurementMode(MEASUREMENT_CONTINUOUS); // Set the measurement mode to Continuous
+        // if(error != 0) // If there is an error, print it out.
+        //     logln("%s", compass->getErrorText(error));
 
         valueOffset->XAxis = compass_prefs->getFloat("offset.x", 0);
         valueOffset->YAxis = compass_prefs->getFloat("offset.y", 0);
@@ -126,7 +126,7 @@ float compass_hmc::get_angle()
     if (_compass_enabled)
     {
         MagnetometerScaled scaled = compass->readScaledAxis();
-    
+
         scaled.XAxis -= valueOffset->XAxis;
         scaled.YAxis -= valueOffset->YAxis;
 

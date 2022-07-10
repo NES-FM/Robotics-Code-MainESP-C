@@ -9,9 +9,6 @@ void multithreaded_loop(void* parameters) {
     while(true)
     {
         cuart.tick();
-
-        if (!robot.is_control_on_user)
-            robot.tick();
     }
 }
 
@@ -20,17 +17,12 @@ void main_loop()
 {
     display.tick();
 
-    if (!robot.is_control_on_user)
+    if (robot.motor_left->is_enabled() && robot.motor_right->is_enabled())
     {
-        if (robot.motor_left->is_enabled() && robot.motor_right->is_enabled())
-        {
-            drive();
-        }
+        drive();
     }
-    else
-    {
-        robot.tick();
-    }
+    
+    robot.tick();
     
     // delay(10);
 }

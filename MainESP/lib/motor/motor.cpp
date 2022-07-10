@@ -98,7 +98,9 @@ void motor::init(char mnum)
 
 void motor::move(int speed)
 {
+    #ifdef EXTENSIVE_DEBUG
     logln("move motor %d with speed %d", motor_num, speed);
+    #endif
     if (speed != current_speed)
     {
         current_speed = speed;

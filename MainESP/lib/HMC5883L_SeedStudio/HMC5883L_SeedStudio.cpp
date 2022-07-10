@@ -34,7 +34,6 @@ HMC5883L::HMC5883L(TwoWire& w) {
 void HMC5883L::initCompass() {
 
     delay(5);
-
     int error = setScale(1.3);                              // Set the scale of the compass.
 
     if (error != 0) {                                               // If there is an error, print it out.
@@ -114,7 +113,6 @@ MagnetometerScaled HMC5883L::readScaledAxis() {
 
 short HMC5883L::setScale(float gauss) {
     uint8_t regValue = 0x00;
-
     /*  Some of these values; e.g. 1.3 - cause comparison
         issues with the compiler that the Arduino IDE uses.
     */
@@ -151,6 +149,7 @@ short HMC5883L::setScale(float gauss) {
     // Setting is in the top 3 bits of the register.
     regValue = regValue << 5;
     write(CONFIGURATION_REGISTERB, regValue);
+    return 0;
 }
 
 short HMC5883L::setAverageSamples(uint8_t mode)
@@ -170,10 +169,12 @@ short HMC5883L::setAverageSamples(uint8_t mode)
     }
 
     write(CONFIGURATION_REGISTERA, regValue);
+    return 0;
 }
 
 short HMC5883L::setMeasurementMode(uint8_t mode) {
     write(MODE_REGISTER, mode);
+    return 0;
 }
 
 void HMC5883L::write(short address, short data) {

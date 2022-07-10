@@ -232,16 +232,16 @@ void debug_disp::draw_tof(int x, int y)
 {
     oled->setTextSize(1);
     oled->setCursor(x, y);
-    uint16_t left = _robot->tof_left->getMeasurement();
+    // uint16_t left = _robot->tof_left->getMeasurement();
     uint16_t right = _robot->tof_right->getMeasurement();
     uint16_t back = _robot->tof_back->getMeasurement();
 
-    if (_robot->tof_left->getMeasurementError() == _robot->tof_left->TOF_ERROR_NONE)
-        oled->print(left);
-    else
-        oled->print("Err");
+    // if (_robot->tof_left->getMeasurementError() == _robot->tof_left->TOF_ERROR_NONE)
+    //     oled->print(left);
+    // else
+    //     oled->print("Err");
 
-    oled->print("|");
+    // oled->print("|");
 
     if (_robot->tof_back->getMeasurementError() == _robot->tof_back->TOF_ERROR_NONE)
         oled->print(back);
@@ -255,8 +255,8 @@ void debug_disp::draw_tof(int x, int y)
     else
         oled->print("Err");
 
-    oled->print("=>");
-    oled->print(left+right);
+    // oled->print("=>");
+    // oled->print(left+right);
 }
 
 void debug_disp::draw_room(int x, int y, float conversion_factor)

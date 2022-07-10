@@ -1,5 +1,3 @@
-// #define EXTENSIVE_DEBUG
-
 #include <Arduino.h>
 #include <Wire.h>
 
@@ -76,6 +74,8 @@ void setup()
     cuart.init();
 
     display.init(&cuart, &robot, &driving_interesting_situation, &driving_interesting_bias_left, &driving_interesting_bias_right, &driving_interesting_bias_both);
+
+    logln("Test compass angle before init: %f", robot.compass->get_angle());
 
     init_multithreaded_loop();
 
