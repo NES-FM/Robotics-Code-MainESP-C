@@ -21,12 +21,6 @@ void Robot::init_tof_xshut()
 void Robot::init()
 {
     // TOF
-    // log_inline_begin();
-    // log_inline(" Left: ");
-    // tof_left->releaseReset(); // Unresetting left, so that left can be initialized
-    // delay(1000);
-    // tof_left->begin(I2C_ADDRESS_TOF_LEFT);
-
     log_inline_begin();
     log_inline("Right: ");
     tof_right->releaseReset(); // Unresetting right, so that right can be initialized
@@ -39,12 +33,18 @@ void Robot::init()
     delay(1000);
     tof_back->begin(I2C_ADDRESS_TOF_BACK);
 
+    log_inline_begin();
+    log_inline("Left: ");
+    tof_left->releaseReset(); // Unresetting left, so that left can be initialized
+    delay(1000);
+    tof_left->begin(I2C_ADDRESS_TOF_LEFT);
+
     tof_right->setLongRangeMode(true);
     tof_right->setContinuous(true); 
     // tof_right->setHighSpeed(true);
 
-    // tof_left->setLongRangeMode(true);
-    // tof_left->setContinuous(true);
+    tof_left->setLongRangeMode(true);
+    tof_left->setContinuous(true);
     // tof_left->setHighSpeed(true);
 
     // tof_back->setLongRangeMode(true);
@@ -68,16 +68,22 @@ void Robot::tick()
     // logln("Tick");
     if (cur_drive_mode == ROBOT_DRIVE_MODE_LINE)
     {
-
+        
     }
     else if (cur_drive_mode == ROBOT_DRIVE_MODE_ROOM)
     {
         this->calculate_position();
     }
+
     String logger_tick_return = logger_tick();
     if (logger_tick_return != "")
     {
         this->parse_command(logger_tick_return);
+    }
+
+    if (compass_calibration_background_task_enabled)
+    {
+        compass->calibrate_background_task();
     }
 }
 
@@ -125,6 +131,25 @@ void Robot::greifer_home()
     greifer_up->write(ANGLE_GREIFER_UP); //NEEDS TO BE CHANGED
 }
 
+void Robot::compass_start_calibration_background_task()
+{
+    if (!compass_calibration_background_task_enabled)
+    {
+        compass_calibration_background_task_enabled = true;
+        compass->start_calibrate_background_task();
+    }
+}
+
+void Robot::compass_stop_calibration_background_task()
+{
+    if (compass_calibration_background_task_enabled)
+    {
+        compass_calibration_background_task_enabled = false;
+        compass->stop_calibrate_background_task();
+    }
+}
+
+
 void Robot::calculate_position()
 {
     this->angle = compass->keep_in_360_range(compass->get_angle() - room_beginning_angle);
@@ -158,7 +183,7 @@ void Robot::calculate_position()
     }
     else
     {
-        logln("Error with Right Sensor: %s", tof_right->getMeasurementErrorString().c_str());
+        // logln("Error with Right Sensor: %s", tof_right->getMeasurementErrorString().c_str());
     }
 
     // if (tof_left->getMeasurementError() == tof_left->TOF_ERROR_NONE)
@@ -204,7 +229,7 @@ void Robot::calculate_position()
     }
     else
     {
-        logln("Error with Back Sensor: %s", tof_back->getMeasurementErrorString().c_str());
+        // logln("Error with Back Sensor: %s", tof_back->getMeasurementErrorString().c_str());
     }
 }
 
@@ -236,6 +261,7 @@ String Robot::help_command()
     ret += "get [sensor] [<subsensor>]\r\n";
     ret += "move [left] [right]\r\n";
     ret += "control [<on/off>]\r\n";
+    ret += "set [sensor] [<subsensor>] [value]\r\n";
     ret += "--------\r\n";
     return ret;
 }
@@ -291,11 +317,11 @@ String Robot::get_command(String sensor, String subsensor)
         if (subsensor == "")
             sprintf(out, "Specifying of subsensor needed");
         else if (subsensor == "right")
-            sprintf(out, "%f", tof_right->getMeasurement());
+            sprintf(out, "%d", tof_right->getMeasurement());
         else if (subsensor == "left")
-            sprintf(out, "%f", tof_left->getMeasurement());
+            sprintf(out, "%d", tof_left->getMeasurement());
         else if (subsensor == "back")
-            sprintf(out, "%f", tof_back->getMeasurement());
+            sprintf(out, "%d", tof_back->getMeasurement());
         else
             sprintf(out, "subsensor not found");
     }
@@ -312,18 +338,36 @@ String Robot::get_command(String sensor, String subsensor)
     return out;
 }
 
-String Robot::move_command(String l, String r)
+String Robot::move_command(String first_arg, String second_arg, String third_arg)
 {
     if (!is_control_on_user)
     {
         return "User is not in control! Type \"control on\"";
     }
-    
-    this->motor_left->move(l.toInt());
-    this->motor_right->move(r.toInt());
 
     char out[64];
-    sprintf(out, "Succesfully moved with L:%d, R:%d", l.toInt(), r.toInt());
+
+    if (first_arg == "help")
+    {
+        String ret = "\r\n";
+        ret += "--move--\r\n";
+        ret += "[l speed] [r speed]\r\n";
+        ret += "steps [speed] [steps]";
+        ret += "--------\r\n";
+        return ret;
+    }
+    else if (first_arg == "steps")
+    {
+        sprintf(out, "Moving in steps mode with speed: %d and steps: %d", second_arg.toInt(), third_arg.toInt());
+        this->motor_left->move_steps(second_arg.toInt(), third_arg.toInt());
+        this->motor_right->move_steps(second_arg.toInt(), third_arg.toInt());
+        return out;
+    }
+    
+    this->motor_left->move(first_arg.toInt());
+    this->motor_right->move(second_arg.toInt());
+
+    sprintf(out, "Succesfully moved with L:%d, R:%d", first_arg.toInt(), second_arg.toInt());
     return out;
 }
 
@@ -356,7 +400,8 @@ String Robot::set_command(String first_arg, String second_arg, String third_arg)
     {
         String ret = "\r\n";
         ret += "--set--\r\n";
-        ret += "drive mode [line\room]\r\n";
+        ret += "drive mode [line/room]\r\n";
+        ret += "compass calib(ration) [on/off]\r\n";
         ret += "-------\r\n";
     }
     else if (first_arg == "drive" && second_arg == "mode")
@@ -374,6 +419,27 @@ String Robot::set_command(String first_arg, String second_arg, String third_arg)
         else
         {
             sprintf(out, "%s", "Invalid Drive mode");
+        }
+    }
+    else if (first_arg == "compass" && (second_arg == "calib" || second_arg == "calibration"))
+    {
+        if (third_arg == "")
+        {
+            if (compass_calibration_background_task_enabled)
+                third_arg = "off";
+            else
+                third_arg = "on";
+        }
+
+        if (third_arg == "on")
+        {
+            sprintf(out, "%s", "Setting calibration background task to ON");
+            compass_start_calibration_background_task();
+        }
+        else if (third_arg == "off")
+        {
+            sprintf(out, "%s", "Setting calibration background task to OFF");
+            compass_stop_calibration_background_task();
         }
     }
     return out;
@@ -419,7 +485,7 @@ void Robot::parse_command(String command)
     else if (top_level_command == "get")
         out = this->get_command(first_arg, second_arg);
     else if (top_level_command == "move")
-        out = this->move_command(first_arg, second_arg);
+        out = this->move_command(first_arg, second_arg, third_arg);
     else if (top_level_command == "control")
         out = this->control_command(first_arg);
     else if (top_level_command == "set")

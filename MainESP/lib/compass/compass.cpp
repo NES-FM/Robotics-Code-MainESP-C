@@ -105,6 +105,8 @@ void compass_hmc::init()
         // if(error != 0) // If there is an error, print it out.
         //     logln("%s", compass->getErrorText(error));
 
+        compass->setAverageSamples(2);
+
         valueOffset->XAxis = compass_prefs->getFloat("offset.x", 0);
         valueOffset->YAxis = compass_prefs->getFloat("offset.y", 0);
         valueOffset->ZAxis = compass_prefs->getFloat("offset.z", 0);
@@ -213,6 +215,40 @@ void compass_hmc::calibrate()
     {
         logln("nvm, compass not enabled");
     }
+}
+
+void compass_hmc::calibrate_background_task()
+{
+    if (_compass_enabled)
+    {
+        MagnetometerScaled cur = {0,0,0};
+        cur = compass->readScaledAxis();
+        calibrate_background_task_valueMax.XAxis = max(calibrate_background_task_valueMax.XAxis, cur.XAxis);
+        calibrate_background_task_valueMax.YAxis = max(calibrate_background_task_valueMax.YAxis, cur.YAxis);
+        calibrate_background_task_valueMax.ZAxis = max(calibrate_background_task_valueMax.ZAxis, cur.ZAxis);
+
+        calibrate_background_task_valueMin.XAxis = min(calibrate_background_task_valueMin.XAxis, cur.XAxis);
+        calibrate_background_task_valueMin.YAxis = min(calibrate_background_task_valueMin.YAxis, cur.YAxis);
+        calibrate_background_task_valueMin.ZAxis = min(calibrate_background_task_valueMin.ZAxis, cur.ZAxis);
+    }
+}
+
+void compass_hmc::start_calibrate_background_task()
+{
+    // later doing some init stuff lol
+}
+
+void compass_hmc::stop_calibrate_background_task()
+{
+    valueOffset->XAxis = (calibrate_background_task_valueMax.XAxis + calibrate_background_task_valueMin.XAxis) / 2;
+    valueOffset->YAxis = (calibrate_background_task_valueMax.YAxis + calibrate_background_task_valueMin.YAxis) / 2;
+    valueOffset->ZAxis = (calibrate_background_task_valueMax.ZAxis + calibrate_background_task_valueMin.ZAxis) / 2;
+
+    logln("Compass Background Calibrated with: \r\nMax[x,y,z]: %f, %f, %f\r\nMin[x,y,z]: %f, %f, %f\r\nOffset[x,y,z]: %f, %f, %f", calibrate_background_task_valueMax.XAxis, calibrate_background_task_valueMax.YAxis, calibrate_background_task_valueMax.ZAxis, calibrate_background_task_valueMin.XAxis, calibrate_background_task_valueMin.YAxis, calibrate_background_task_valueMin.ZAxis, valueOffset->XAxis, valueOffset->YAxis, valueOffset->ZAxis);
+
+    compass_prefs->putFloat("offset.x", valueOffset->XAxis);
+    compass_prefs->putFloat("offset.y", valueOffset->YAxis);
+    compass_prefs->putFloat("offset.z", valueOffset->ZAxis);
 }
 
 void compass_hmc::output(MagnetometerRaw raw, MagnetometerScaled scaled, float heading, float headingDegrees)

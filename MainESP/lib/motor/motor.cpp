@@ -135,6 +135,27 @@ void motor::move(int speed)
     }
 }
 
+void motor::move_steps(int speed, int steps)
+{
+    uint8_t direction = 0;
+    if (speed < 0)
+        direction = move_direction_backward;
+    else if (speed > 0)
+        direction = move_direction_forward;
+
+    move_steps_command steps_send;
+    steps_send.motor_num = motor_num;
+    steps_send.direction = direction;
+    steps_send.speed = (uint8_t) abs(speed);
+    steps_send.steps = (uint16_t) abs(steps);
+
+    logln("sending m_num: %d, dir: %d, speed: %d, steps: %d", motor_num, direction, abs(speed), abs(steps));
+
+    Wire.beginTransmission(_i2c_address);
+    Wire.write((unsigned char*) &steps_send, sizeof(steps_send));
+    Wire.endTransmission();
+}
+
 void motor::off() 
 { 
     stop_command out;

@@ -25,6 +25,9 @@ class compass_hmc {
         float get_angle();
         #if COMPASS_LIBRARY == 1
         void calibrate();
+        void calibrate_background_task();
+        void start_calibrate_background_task();
+        void stop_calibrate_background_task();        
         #endif
 
         static float keep_in_360_range(float alpha);
@@ -44,6 +47,9 @@ class compass_hmc {
         void output(MagnetometerRaw raw, MagnetometerScaled scaled, float heading, float headingDegrees);
 
         Preferences* compass_prefs = new Preferences();
+
+        MagnetometerScaled calibrate_background_task_valueMax = {0, 0, 0};
+        MagnetometerScaled calibrate_background_task_valueMin = {0, 0, 0};
 
         #endif
 };

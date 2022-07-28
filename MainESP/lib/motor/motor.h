@@ -21,6 +21,7 @@ class motor
         motor();
         void init(char mnum);
         void move(int speed);
+        void move_steps(int speed, int steps);
 
         #ifndef comm_v2
         void move_direction(int speed, int direction);
@@ -32,6 +33,13 @@ class motor
         bool is_enabled() { return _motor_i2c_enabled; }
         void force_resend();
         int motor_speed = 0;
+
+        #define stop_type_stop 0
+        #define stop_type_off 1
+
+        #define move_direction_forward 0
+        #define move_direction_backward 1
+
     private:
         #ifndef comm_v2
         const char _i2c_set_speed = 0x00;
@@ -56,12 +64,6 @@ class motor
 
         #ifdef comm_v2
 
-        #define stop_type_stop 0
-        #define stop_type_off 1
-
-        #define move_direction_forward 0
-        #define move_direction_backward 1
-
         struct stop_command {
             uint8_t motor_num;        // + 1 byte
             uint8_t type;             // + 1 byte
@@ -79,8 +81,8 @@ class motor
             uint8_t motor_num;        // + 1 byte
             uint8_t speed;            // + 1 byte
             uint8_t direction;        // + 1 byte
-            uint16_t steps;           // + 1 byte
-                                      // = 4 bytes
+            uint16_t steps;           // + 3 byte
+                                      // = 6 bytes
         };
 
         

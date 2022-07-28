@@ -50,7 +50,7 @@ class Robot
         motor* motor_right = new motor();
 
         tof* tof_right = new tof(PIN_SERVO1, 95, -60, 90);
-        tof* tof_left = new tof(PIN_SERVO2, -95, 22, -90);
+        tof* tof_left = new tof(PIN_SENS1, -95, -60, -90);
         tof* tof_back = new tof(PIN_SERVO3, 0, -90, 180);
 
         analog_sensor* bat_voltage = new analog_sensor(PIN_BATPROBE, true);
@@ -83,11 +83,15 @@ class Robot
         ROBOT_DRIVE_MODE cur_drive_mode = ROBOT_DRIVE_MODE_ROOM; // NEEDS TO BE CHANGED (Sets default drive mode)
 
         bool is_control_on_user = false;
+
+        bool compass_calibration_background_task_enabled = false;
+        void compass_start_calibration_background_task();
+        void compass_stop_calibration_background_task();
     private:
         void parse_command(String command);
         String help_command();
         String get_command(String sensor, String subsensor);
-        String move_command(String left, String right);
+        String move_command(String left, String right, String third_arg);
         String control_command(String on_off);
         String set_command(String first_arg, String second_arg, String third_arg);
         String comamnd_template(String arg);
