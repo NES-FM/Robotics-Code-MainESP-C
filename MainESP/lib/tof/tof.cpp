@@ -4,8 +4,16 @@ void tof::init()
 {
     if (_xshut != -1) 
     {
-        pinMode(_xshut, OUTPUT);
-        digitalWrite(_xshut, LOW);
+        if (_io_ext_mode)
+        {
+            pinMode(_xshut_io_ext_mode, OUTPUT);
+            digitalWrite(_xshut_io_ext_mode, LOW);
+        }
+        else
+        {
+            pinMode(_xshut, OUTPUT);
+            digitalWrite(_xshut, LOW);
+        }
     }
 }
 
@@ -157,7 +165,10 @@ void tof::holdReset()
 {
     if (_xshut != -1)
     {
-        digitalWrite(_xshut, LOW);
+        if (_io_ext_mode)
+            digitalWrite(_xshut_io_ext_mode, LOW);
+        else
+        	digitalWrite(_xshut, LOW);
     }
 }
 
@@ -165,7 +176,10 @@ void tof::releaseReset()
 {
     if (_xshut != -1)
     {
-        digitalWrite(_xshut, HIGH);
+        if (_io_ext_mode)
+            digitalWrite(_xshut_io_ext_mode, HIGH);
+        else
+            digitalWrite(_xshut, HIGH);
     }
 }
 

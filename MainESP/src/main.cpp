@@ -11,6 +11,7 @@
 #include "cuart_line_types.h"
 #include "drive_speeds.h"
 
+#include "io_extender.h"
 #include "logger.h"
 
 #include "debug_disp.h"

@@ -15,6 +15,7 @@
 #include "buzz.h"
 #include "../../include/i2c_addresses.h"
 #include "tof.h"
+#include "io_extender.h"
 
 #include "logger.h"
 #include "command_parser.h"
@@ -49,9 +50,9 @@ class Robot
         motor* motor_left = new motor();
         motor* motor_right = new motor();
 
-        tof* tof_right = new tof(PIN_SERVO1, 95, -60, 90);
-        tof* tof_left = new tof(PIN_SENS1, -95, -60, -90);
-        tof* tof_back = new tof(PIN_SERVO3, 0, -90, 180);
+        tof* tof_right = new tof(io_ext_pins::EXT_D6, 95, -60, 90);
+        tof* tof_left = new tof(io_ext_pins::EXT_D4, -95, -60, -90);
+        tof* tof_back = new tof(io_ext_pins::EXT_D2, 0, -90, 180);
 
         analog_sensor* bat_voltage = new analog_sensor(PIN_BATPROBE, true);
 

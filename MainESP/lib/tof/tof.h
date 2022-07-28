@@ -2,6 +2,7 @@
 
 #include "VL53L0X.h"
 #include "logger.h"
+#include "io_extender.h"
 
 #define TOF_MAX_VALID_DISTANCE 
 
@@ -16,6 +17,7 @@ class tof {
         };
 
         tof(uint8_t xshut, int offset_x, int offset_y, int offset_a) { _xshut = xshut; _offset_x = offset_x; _offset_y = offset_y; _offset_a = offset_a; };
+        tof(io_ext_pins xshut, int offset_x, int offset_y, int offset_a) { _xshut = (int)xshut; _xshut_io_ext_mode = xshut; _offset_x = offset_x; _offset_y = offset_y; _offset_a = offset_a; _io_ext_mode = true; };
         void init();
         void begin(uint8_t address = 0b0101001);
         void enable(bool enabled);
@@ -46,7 +48,9 @@ class tof {
 
         uint16_t last_measurement = 0;
 
+        bool _io_ext_mode = false;
         uint8_t _xshut = -1;
+        io_ext_pins _xshut_io_ext_mode;
         int _offset_x = 0;
         int _offset_y = 0;
         int _offset_a = 0;
