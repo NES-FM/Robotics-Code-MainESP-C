@@ -39,6 +39,10 @@ void tof::begin(uint8_t address)
         // setLongRangeMode(false);
         _error = TOF_ERROR_NONE;
     }
+    else
+    {
+        logln("Not Enabled!");
+    }
 }
 
 void tof::enable(bool enabled) {

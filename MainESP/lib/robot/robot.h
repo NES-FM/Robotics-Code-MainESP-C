@@ -53,6 +53,7 @@ class Robot
         tof* tof_right = new tof(io_ext_pins::EXT_D6, 95, -60, 90);
         tof* tof_left = new tof(io_ext_pins::EXT_D4, -95, -60, -90);
         tof* tof_back = new tof(io_ext_pins::EXT_D2, 0, -90, 180);
+        tof* tof_front = new tof(io_ext_pins::EXT_D7, 0, 90, 0);
 
         analog_sensor* bat_voltage = new analog_sensor(PIN_BATPROBE, true);
 
@@ -88,6 +89,8 @@ class Robot
         bool compass_calibration_background_task_enabled = false;
         void compass_start_calibration_background_task();
         void compass_stop_calibration_background_task();
+
+        bool serial_lidar_mode = false;
     private:
         void parse_command(String command);
         String help_command();

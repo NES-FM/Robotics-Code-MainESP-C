@@ -165,7 +165,7 @@ float compass_hmc::get_angle()
 
 void compass_hmc::calibrate()
 {
-    logln("calibrate the compass");
+    logln("calibrate the compass! please move robot around z axis...");
     if (_compass_enabled)
     {
         MagnetometerScaled valueMax = {0, 0, 0};

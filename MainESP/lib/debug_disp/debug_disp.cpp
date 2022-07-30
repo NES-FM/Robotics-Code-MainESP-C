@@ -232,16 +232,19 @@ void debug_disp::draw_tof(int x, int y)
 {
     oled->setTextSize(1);
     oled->setCursor(x, y);
-    // uint16_t left = _robot->tof_left->getMeasurement();
+    uint16_t left = _robot->tof_left->getMeasurement();
     uint16_t right = _robot->tof_right->getMeasurement();
     uint16_t back = _robot->tof_back->getMeasurement();
+    uint16_t front = _robot->tof_front->getMeasurement();
 
-    // if (_robot->tof_left->getMeasurementError() == _robot->tof_left->TOF_ERROR_NONE)
-    //     oled->print(left);
-    // else
-    //     oled->print("Err");
+    oled->print("L|B|R|F:");
 
-    // oled->print("|");
+    if (_robot->tof_left->getMeasurementError() == _robot->tof_left->TOF_ERROR_NONE)
+        oled->print(left);
+    else
+        oled->print("Err");
+
+    oled->print("|");
 
     if (_robot->tof_back->getMeasurementError() == _robot->tof_back->TOF_ERROR_NONE)
         oled->print(back);
@@ -252,6 +255,13 @@ void debug_disp::draw_tof(int x, int y)
 
     if (_robot->tof_right->getMeasurementError() == _robot->tof_right->TOF_ERROR_NONE)
         oled->print(right);
+    else
+        oled->print("Err");
+
+    oled->print("|");
+
+    if (_robot->tof_front->getMeasurementError() == _robot->tof_front->TOF_ERROR_NONE)
+        oled->print(front);
     else
         oled->print("Err");
 

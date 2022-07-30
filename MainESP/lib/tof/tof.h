@@ -24,6 +24,9 @@ class tof {
         void setLongRangeMode(bool mode);
         void setHighAccuracy(bool mode);
         void setHighSpeed(bool mode);
+        bool getLongRangeMode() { return _long_range; }
+        bool getHighAccuracy() { return _high_accuracy; }
+        bool getHighSpeed() { return _high_speed; }
         void setContinuous(bool mode, uint32_t period_ms = 0);
         inline bool timeoutOccurred() { return sensor->timeoutOccurred(); }
 

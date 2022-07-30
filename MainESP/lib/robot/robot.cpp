@@ -9,47 +9,61 @@ void Robot::init_tof_xshut()
     tof_right->enable(true);
     tof_left->enable(true);
     tof_back->enable(true);
+    tof_front->enable(false);
     tof_left->init(); // Setting Pinmodes
     tof_right->init();
     tof_back->init();
+    tof_front->init();
     tof_left->holdReset(); // Resetting all sensors
     tof_right->holdReset();
     tof_back->holdReset();
+    tof_front->holdReset();
     delay(20);
 }
 
 void Robot::init()
 {
+    delay(500); // Let IO Extender fully initialize
     // TOF
     log_inline_begin();
     log_inline("Right: ");
     tof_right->releaseReset(); // Unresetting right, so that right can be initialized
-    delay(1000);
+    delay(500);
     tof_right->begin(I2C_ADDRESS_TOF_RIGHT);
 
     log_inline_begin();
     log_inline("Back: ");
     tof_back->releaseReset(); // Unresetting back, so that back can be initialized
-    delay(1000);
+    delay(500);
     tof_back->begin(I2C_ADDRESS_TOF_BACK);
 
     log_inline_begin();
     log_inline("Left: ");
     tof_left->releaseReset(); // Unresetting left, so that left can be initialized
-    delay(1000);
+    delay(500);
     tof_left->begin(I2C_ADDRESS_TOF_LEFT);
 
+    log_inline_begin();
+    log_inline("Front: ");
+    tof_front->releaseReset(); // Unresetting left, so that left can be initialized
+    delay(1000);
+    tof_front->begin(I2C_ADDRESS_TOF_FRONT);
+
     tof_right->setLongRangeMode(true);
-    tof_right->setContinuous(true); 
+    tof_right->setContinuous(false); 
     // tof_right->setHighSpeed(true);
 
     tof_left->setLongRangeMode(true);
     tof_left->setContinuous(true);
     // tof_left->setHighSpeed(true);
 
-    // tof_back->setLongRangeMode(true);
+    tof_back->setLongRangeMode(true);
     tof_back->setContinuous(true);
-    tof_back->setHighSpeed(true);
+    // tof_back->setHighSpeed(true);
+
+    tof_front->setLongRangeMode(true);
+    tof_front->setContinuous(true);
+    // tof_front->setHighSpeed(true);
 
     // Others
     motor_left->init(1);
@@ -154,7 +168,7 @@ void Robot::calculate_position()
 {
     this->angle = compass->keep_in_360_range(compass->get_angle() - room_beginning_angle);
 
-    // int left_dis = tof_left->getMeasurement() + abs(tof_left->_offset_x);
+    int left_dis = tof_left->getMeasurement() + abs(tof_left->_offset_x);
     int right_dis = tof_right->getMeasurement() + abs(tof_right->_offset_x);
     int back_dis = tof_back->getMeasurement() + abs(tof_back->_offset_x);
 
@@ -163,73 +177,87 @@ void Robot::calculate_position()
     point measurement;
     point measurement_old;
 
-    if (tof_right->getMeasurementError() == tof_right->TOF_ERROR_NONE)
+    if (serial_lidar_mode)
     {
-        measurement_angle = compass->keep_in_360_range(this->angle + tof_right->_offset_a);
-        point_cloud_index = int(measurement_angle / 3);
+        if (tof_right->getMeasurementError() != tof_right->TOF_ERROR_NONE)
+            right_dis = -1;
+        if (tof_back->getMeasurementError() != tof_back->TOF_ERROR_NONE)
+            back_dis = -1;
+        if (tof_left->getMeasurementError() != tof_left->TOF_ERROR_NONE)
+            left_dis = -1;
 
-        measurement_old = point_cloud[point_cloud_index];
-        measurement.x_mm = right_dis + pos.x_mm;
-        measurement.y_mm = tof_right->_offset_y + pos.y_mm;
-        measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
-
-        if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
-        {
-            measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
-            measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
-        }
-
-        point_cloud[point_cloud_index] = measurement;
+        Serial.printf("%f;%d;%d;%d\r\n", this->angle, left_dis, back_dis, right_dis);
     }
     else
     {
-        // logln("Error with Right Sensor: %s", tof_right->getMeasurementErrorString().c_str());
-    }
-
-    // if (tof_left->getMeasurementError() == tof_left->TOF_ERROR_NONE)
-    // {
-    //     measurement_angle = compass->keep_in_360_range(this->angle + tof_left->_offset_a);
-    //     point_cloud_index = int(measurement_angle / 3);
-
-    //     measurement_old = point_cloud[point_cloud_index];
-    //     measurement.x_mm = left_dis + pos.x_mm;
-    //     measurement.y_mm = tof_left->_offset_y + pos.y_mm;
-    //     measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
-
-    //     if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
-    //     {
-    //         measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
-    //         measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
-    //     }
-
-    //     point_cloud[point_cloud_index] = measurement;
-    // }
-    // else
-    // {
-    //     logln("Error with Left Sensor: %s", tof_left->getMeasurementErrorString().c_str());
-    // }
-
-    if (tof_back->getMeasurementError() == tof_back->TOF_ERROR_NONE)
-    {
-        measurement_angle = compass->keep_in_360_range(this->angle + tof_back->_offset_a);
-        point_cloud_index = int(measurement_angle / 3);
-
-        measurement_old = point_cloud[point_cloud_index];
-        measurement.x_mm = back_dis + pos.x_mm;
-        measurement.y_mm = tof_back->_offset_y + pos.y_mm;
-        measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
-
-        if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
+        if (tof_right->getMeasurementError() == tof_right->TOF_ERROR_NONE)
         {
-            measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
-            measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
+            measurement_angle = compass->keep_in_360_range(this->angle + tof_right->_offset_a);
+            point_cloud_index = int(measurement_angle / 3);
+
+            measurement_old = point_cloud[point_cloud_index];
+            measurement.x_mm = right_dis + pos.x_mm;
+            measurement.y_mm = tof_right->_offset_y + pos.y_mm;
+            measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
+
+            if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
+            {
+                measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
+                measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
+            }
+
+            point_cloud[point_cloud_index] = measurement;
+        }
+        else
+        {
+            // logln("Error with Right Sensor: %s", tof_right->getMeasurementErrorString().c_str());
         }
 
-        point_cloud[point_cloud_index] = measurement;
-    }
-    else
-    {
-        // logln("Error with Back Sensor: %s", tof_back->getMeasurementErrorString().c_str());
+        if (tof_left->getMeasurementError() == tof_left->TOF_ERROR_NONE)
+        {
+            measurement_angle = compass->keep_in_360_range(this->angle + tof_left->_offset_a);
+            point_cloud_index = int(measurement_angle / 3);
+
+            measurement_old = point_cloud[point_cloud_index];
+            measurement.x_mm = left_dis + pos.x_mm;
+            measurement.y_mm = tof_left->_offset_y + pos.y_mm;
+            measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
+
+            if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
+            {
+                measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
+                measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
+            }
+
+            point_cloud[point_cloud_index] = measurement;
+        }
+        else
+        {
+            // logln("Error with Left Sensor: %s", tof_left->getMeasurementErrorString().c_str());
+        }
+
+        if (tof_back->getMeasurementError() == tof_back->TOF_ERROR_NONE)
+        {
+            measurement_angle = compass->keep_in_360_range(this->angle + tof_back->_offset_a);
+            point_cloud_index = int(measurement_angle / 3);
+
+            measurement_old = point_cloud[point_cloud_index];
+            measurement.x_mm = back_dis + pos.x_mm;
+            measurement.y_mm = tof_back->_offset_y + pos.y_mm;
+            measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
+
+            if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
+            {
+                measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
+                measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
+            }
+
+            point_cloud[point_cloud_index] = measurement;
+        }
+        else
+        {
+            // logln("Error with Back Sensor: %s", tof_back->getMeasurementErrorString().c_str());
+        }
     }
 }
 
@@ -256,13 +284,13 @@ Robot::point Robot::rotate_point(point point_to_rotate, point pivot, float angle
 String Robot::help_command()
 {
     String ret = "\r\n";
-    ret += "--Help--\r\n";
     ret += "command [required arg] [<optional arg>] [<option_1/option_2>]\r\n";
     ret += "get [sensor] [<subsensor>]\r\n";
     ret += "move [left] [right]\r\n";
     ret += "control [<on/off>]\r\n";
     ret += "set [sensor] [<subsensor>] [value]\r\n";
-    ret += "--------\r\n";
+    ret += "calibrate_compass\r\n";
+    ret += "serial_lidar_mode\r\n";
     return ret;
 }
 
@@ -402,7 +430,9 @@ String Robot::set_command(String first_arg, String second_arg, String third_arg)
         ret += "--set--\r\n";
         ret += "drive mode [line/room]\r\n";
         ret += "compass calib(ration) [on/off]\r\n";
+        ret += "tof <left/back/right> <highspeed/highaccuracy/longrange>\r\n";
         ret += "-------\r\n";
+        return ret;
     }
     else if (first_arg == "drive" && second_arg == "mode")
     {
@@ -440,6 +470,63 @@ String Robot::set_command(String first_arg, String second_arg, String third_arg)
         {
             sprintf(out, "%s", "Setting calibration background task to OFF");
             compass_stop_calibration_background_task();
+        }
+    }
+    else if (first_arg == "tof")
+    {
+        if (second_arg == "left")
+        {
+            if (third_arg == "longrange")
+            {
+                tof_left->setLongRangeMode(!tof_left->getLongRangeMode());
+                sprintf(out, "Sensor.longrange is now %s", tof_left->getLongRangeMode() ? "true" : "false");
+            }
+            else if (third_arg == "highaccuracy")
+            {
+                tof_left->setHighAccuracy(!tof_left->getHighAccuracy());
+                sprintf(out, "Sensor.highaccuracy is now %s", tof_left->getHighAccuracy() ? "true" : "false");
+            }
+            else if (third_arg == "highspeed")
+            {
+                tof_left->setHighSpeed(!tof_left->getHighSpeed());
+                sprintf(out, "Sensor.highspeed is now %s", tof_left->getHighSpeed() ? "true" : "false");
+            }
+        }
+        else if (second_arg == "back")
+        {
+            if (third_arg == "longrange")
+            {
+                tof_back->setLongRangeMode(!tof_back->getLongRangeMode());
+                sprintf(out, "Sensor.longrange is now %s", tof_back->getLongRangeMode() ? "true" : "false");
+            }
+            else if (third_arg == "highaccuracy")
+            {
+                tof_back->setHighAccuracy(!tof_back->getHighAccuracy());
+                sprintf(out, "Sensor.highaccuracy is now %s", tof_back->getHighAccuracy() ? "true" : "false");
+            }
+            else if (third_arg == "highspeed")
+            {
+                tof_back->setHighSpeed(!tof_back->getHighSpeed());
+                sprintf(out, "Sensor.highspeed is now %s", tof_back->getHighSpeed() ? "true" : "false");
+            }
+        }
+        else if (second_arg == "right")
+        {
+            if (third_arg == "longrange")
+            {
+                tof_right->setLongRangeMode(!tof_right->getLongRangeMode());
+                sprintf(out, "Sensor.longrange is now %s", tof_right->getLongRangeMode() ? "true" : "false");
+            }
+            else if (third_arg == "highaccuracy")
+            {
+                tof_right->setHighAccuracy(!tof_right->getHighAccuracy());
+                sprintf(out, "Sensor.highaccuracy is now %s", tof_right->getHighAccuracy() ? "true" : "false");
+            }
+            else if (third_arg == "highspeed")
+            {
+                tof_right->setHighSpeed(!tof_right->getHighSpeed());
+                sprintf(out, "Sensor.highspeed is now %s", tof_right->getHighSpeed() ? "true" : "false");
+            }
         }
     }
     return out;
@@ -490,6 +577,24 @@ void Robot::parse_command(String command)
         out = this->control_command(first_arg);
     else if (top_level_command == "set")
         out = this->set_command(first_arg, second_arg, third_arg);
+    else if (top_level_command == "calibrate_compass")
+    {
+        this->compass->calibrate();
+        out = "Done!";
+    }
+    else if (top_level_command == "serial_lidar_mode")
+    {
+        serial_lidar_mode = !serial_lidar_mode;
+        if (serial_lidar_mode)
+        {
+            move(10, 10);
+            out = "Serial lidar mode is now enabled!";
+        }
+        else
+        {
+            out = "Serial lidar mode is now disabled";
+        }
+    }
     else
         out = "Invalid command: " + top_level_command;
 
