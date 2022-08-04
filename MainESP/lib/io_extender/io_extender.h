@@ -9,3 +9,5 @@ void digitalWrite(io_ext_pins pin, uint8_t value);
 int digitalRead(io_ext_pins pin);
 int analogRead(io_ext_pins pin);
 void analogWrite(io_ext_pins pin, uint8_t value);
+
+lc02_answer getArduinoLc02Distance();

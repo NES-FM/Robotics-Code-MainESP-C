@@ -16,6 +16,7 @@
 #include "../../include/i2c_addresses.h"
 #include "tof.h"
 #include "io_extender.h"
+#include "lc02.h"
 
 #include "logger.h"
 #include "command_parser.h"
@@ -54,6 +55,8 @@ class Robot
         tof* tof_left = new tof(io_ext_pins::EXT_D4, -95, -60, -90);
         tof* tof_back = new tof(io_ext_pins::EXT_D2, 0, -90, 180);
         tof* tof_front = new tof(io_ext_pins::EXT_D7, 0, 90, 0);
+
+        // lc02* lc02_right = new lc02(90, -76, 90);
 
         analog_sensor* bat_voltage = new analog_sensor(PIN_BATPROBE, true);
 

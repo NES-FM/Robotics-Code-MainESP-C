@@ -1,26 +1,22 @@
 #include "io_extender.h"
 
-struct digital_read_command {
-    uint8_t pin;              // + 1 byte
-                                // = 1 byte
-};
-
 struct digital_write_command {
     uint8_t pin;              // + 1 byte
     uint8_t value;            // + 1 byte
                                 // = 2 bytes
 };
 
-struct pin_mode_command {
+struct read_command {
+    uint8_t what_to_read;     // + 1 byte
     uint8_t pin;              // + 1 byte
-    uint8_t mode;             // + 1 byte
     byte padding[1];          // + 1 byte
                                 // = 3 bytes
 };
 
-struct analog_read_command {
+struct pin_mode_command {
     uint8_t pin;              // + 1 byte
-    byte padding[3];          // + 3 bytes
+    uint8_t mode;             // + 1 byte
+    byte padding[2];          // + 2 byte
                                 // = 4 bytes
 };
 
@@ -29,6 +25,23 @@ struct analog_write_command {
     uint8_t value;            // + 1 byte
     byte padding[3];          // + 3 bytes
                                 // = 5 bytes
+};
+
+enum read_types
+{
+    READ_TYPE_ANALOG = 0,
+    READ_TYPE_DIGITAL = 1,
+    READ_TYPE_LC02 = 2
+};
+
+struct analog_read_answer
+{
+    uint16_t value;
+};
+
+struct digital_read_answer
+{
+    uint8_t value;
 };
 
 void pinMode(io_ext_pins pin, uint8_t mode)
@@ -72,12 +85,40 @@ void digitalWrite(io_ext_pins pin, uint8_t value)
 
 int digitalRead(io_ext_pins pin)
 {
-    return -1;
+    // First sending the arduino what to read
+    read_command read_command_send;
+    read_command_send.what_to_read = read_types::READ_TYPE_DIGITAL;
+    read_command_send.pin = (uint8_t)pin;
+
+    Wire.beginTransmission(I2C_ADDRESS_IO_EXTENDER);
+    Wire.write((unsigned char*) &read_command_send, sizeof(read_command_send));
+    Wire.endTransmission();
+
+    // Then requesting the Data
+    digital_read_answer answer_received;
+    Wire.requestFrom(I2C_ADDRESS_IO_EXTENDER, sizeof(digital_read_answer));
+    Wire.readBytes((byte*) &answer_received, sizeof(digital_read_answer));
+
+    return answer_received.value;
 }
 
 int analogRead(io_ext_pins pin)
 {
-    return -1;
+    // First sending the arduino what to read
+    read_command read_command_send;
+    read_command_send.what_to_read = read_types::READ_TYPE_ANALOG;
+    read_command_send.pin = (uint8_t)pin;
+
+    Wire.beginTransmission(I2C_ADDRESS_IO_EXTENDER);
+    Wire.write((unsigned char*) &read_command_send, sizeof(read_command_send));
+    Wire.endTransmission();
+
+    // Then requesting the Data
+    analog_read_answer answer_received;
+    Wire.requestFrom(I2C_ADDRESS_IO_EXTENDER, sizeof(analog_read_answer));
+    Wire.readBytes((byte*) &answer_received, sizeof(analog_read_answer));
+
+    return answer_received.value;
 }
 
 void analogWrite(io_ext_pins pin_io, uint8_t value)
@@ -98,3 +139,23 @@ void analogWrite(io_ext_pins pin_io, uint8_t value)
         logln("Warning! Didnt do analogWrite, as the pin %d is invalid!", pin);
     }
 }
+
+lc02_answer getArduinoLc02Distance()
+{
+    // First sending the arduino what to read
+    read_command read_command_send;
+    read_command_send.what_to_read = read_types::READ_TYPE_LC02;
+    read_command_send.pin = 0;
+
+    Wire.beginTransmission(I2C_ADDRESS_IO_EXTENDER);
+    Wire.write((unsigned char*) &read_command_send, sizeof(read_command_send));
+    Wire.endTransmission();
+
+    // Then requesting the Data
+    lc02_answer answer_received;
+    Wire.requestFrom(I2C_ADDRESS_IO_EXTENDER, sizeof(lc02_answer));
+    Wire.readBytes((byte*) &answer_received, sizeof(lc02_answer));
+
+    return answer_received;
+}
+

@@ -16,6 +16,8 @@
 
 #include "debug_disp.h"
 
+#include "lc02.h"
+
 #include "cuart.h"
 #include "timer.h"
 #include <Preferences.h>

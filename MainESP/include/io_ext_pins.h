@@ -24,3 +24,9 @@ enum io_ext_pins {
     EXT_A6 = 20,
     EXT_A7 = 21
 };
+
+struct lc02_answer
+{
+    uint32_t distance;
+    uint8_t error_code;
+};

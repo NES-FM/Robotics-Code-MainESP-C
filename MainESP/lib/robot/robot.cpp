@@ -172,6 +172,8 @@ void Robot::calculate_position()
     int right_dis = tof_right->getMeasurement() + abs(tof_right->_offset_x);
     int back_dis = tof_back->getMeasurement() + abs(tof_back->_offset_x);
 
+    // int lc02_dis = lc02_right->getDistance_mm();
+
     float measurement_angle = 0.0f;
     int point_cloud_index = 0;
     point measurement;
@@ -185,6 +187,8 @@ void Robot::calculate_position()
             back_dis = -1;
         if (tof_left->getMeasurementError() != tof_left->TOF_ERROR_NONE)
             left_dis = -1;
+        // if (lc02_right->getErrorCode() != 0)
+            // lc02_dis = -1;
 
         Serial.printf("%f;%d;%d;%d\r\n", this->angle, left_dis, back_dis, right_dis);
     }
@@ -350,6 +354,8 @@ String Robot::get_command(String sensor, String subsensor)
             sprintf(out, "%d", tof_left->getMeasurement());
         else if (subsensor == "back")
             sprintf(out, "%d", tof_back->getMeasurement());
+        // else if (subsensor == "lc02")
+            // sprintf(out, "%d", lc02_right->getDistance_mm());
         else
             sprintf(out, "subsensor not found");
     }
