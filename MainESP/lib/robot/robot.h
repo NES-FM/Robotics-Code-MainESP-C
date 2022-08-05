@@ -51,10 +51,12 @@ class Robot
         motor* motor_left = new motor();
         motor* motor_right = new motor();
 
-        tof* tof_right = new tof(io_ext_pins::EXT_D6, 95, -60, 90);
-        tof* tof_left = new tof(io_ext_pins::EXT_D4, -95, -60, -90);
-        tof* tof_back = new tof(io_ext_pins::EXT_D2, 0, -90, 180);
-        tof* tof_front = new tof(io_ext_pins::EXT_D7, 0, 90, 0);
+        tof* tof_right = new tof(TOF_SENSOR_VL53L0X, 95, -60, 90, io_ext_pins::EXT_D6);
+        tof* tof_left = new tof(TOF_SENSOR_VL53L0X, -95, -60, -90, io_ext_pins::EXT_D4);
+        tof* tof_back = new tof(TOF_SENSOR_VL53L0X, 0, -90, 180, io_ext_pins::EXT_D2);
+        tof* tof_front = new tof(TOF_SENSOR_VL53L0X, 0, 90, 0, io_ext_pins::EXT_D7);
+
+        tof* tof_closerange = new tof(TOF_SENSOR_VL6180X, 90, 80, 90, io_ext_pins::EXT_D8);
 
         // lc02* lc02_right = new lc02(90, -76, 90);
 

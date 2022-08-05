@@ -9,15 +9,18 @@ void Robot::init_tof_xshut()
     tof_right->enable(true);
     tof_left->enable(true);
     tof_back->enable(true);
-    tof_front->enable(false);
+    tof_front->enable(true);
+    tof_closerange->enable(true);
     tof_left->init(); // Setting Pinmodes
     tof_right->init();
     tof_back->init();
     tof_front->init();
+    tof_closerange->init();
     tof_left->holdReset(); // Resetting all sensors
     tof_right->holdReset();
     tof_back->holdReset();
     tof_front->holdReset();
+    tof_closerange->holdReset();
     delay(20);
 }
 
@@ -44,9 +47,15 @@ void Robot::init()
     tof_left->begin(I2C_ADDRESS_TOF_LEFT);
 
     log_inline_begin();
+    log_inline("Closerange: ");
+    tof_closerange->releaseReset(); // Unresetting left, so that left can be initialized
+    delay(500);
+    tof_closerange->begin(I2C_ADDRESS_TOF_CLOSERANGE);
+
+    log_inline_begin();
     log_inline("Front: ");
     tof_front->releaseReset(); // Unresetting left, so that left can be initialized
-    delay(1000);
+    delay(500);
     tof_front->begin(I2C_ADDRESS_TOF_FRONT);
 
     tof_right->setLongRangeMode(true);
@@ -168,9 +177,11 @@ void Robot::calculate_position()
 {
     this->angle = compass->keep_in_360_range(compass->get_angle() - room_beginning_angle);
 
-    int left_dis = tof_left->getMeasurement() + abs(tof_left->_offset_x);
-    int right_dis = tof_right->getMeasurement() + abs(tof_right->_offset_x);
-    int back_dis = tof_back->getMeasurement() + abs(tof_back->_offset_x);
+    int left_dis = tof_left->getMeasurement();
+    int right_dis = tof_right->getMeasurement();
+    int back_dis = tof_back->getMeasurement();
+
+    int closerange_dis = tof_closerange->getMeasurement();
 
     // int lc02_dis = lc02_right->getDistance_mm();
 
@@ -187,10 +198,13 @@ void Robot::calculate_position()
             back_dis = -1;
         if (tof_left->getMeasurementError() != tof_left->TOF_ERROR_NONE)
             left_dis = -1;
+        if (tof_closerange->getMeasurementError() != tof_closerange->TOF_ERROR_NONE)
+            closerange_dis = -1;
+        
         // if (lc02_right->getErrorCode() != 0)
             // lc02_dis = -1;
 
-        Serial.printf("%f;%d;%d;%d\r\n", this->angle, left_dis, back_dis, right_dis);
+        Serial.printf("%f;%d;%d;%d;%d\r\n", this->angle, left_dis, back_dis, right_dis, closerange_dis);
     }
     else
     {
@@ -313,7 +327,7 @@ String Robot::get_command(String sensor, String subsensor)
         ret += "dip [<dip1/dip2/wettkampfmodus>]\r\n";
         ret += "accel\r\n";
         ret += "compass\r\n";
-        ret += "tof [<back/left/right>]\r\n";
+        ret += "tof [<back/left/right/closerange>]\r\n";
         ret += "drive mode\r\n";
         ret += "-------\r\n";
 
@@ -347,15 +361,41 @@ String Robot::get_command(String sensor, String subsensor)
     else if (sensor == "tof")
     {
         if (subsensor == "")
+        {
             sprintf(out, "Specifying of subsensor needed");
+        }
         else if (subsensor == "right")
-            sprintf(out, "%d", tof_right->getMeasurement());
+        {
+            uint16_t measurement = tof_right->getMeasurement();
+            if (tof_right->getMeasurementError() == tof::TOF_ERROR_NONE)
+                sprintf(out, "%d", measurement);
+            else
+                return tof_right->getMeasurementErrorString();
+        }
         else if (subsensor == "left")
-            sprintf(out, "%d", tof_left->getMeasurement());
+        {
+            uint16_t measurement = tof_left->getMeasurement();
+            if (tof_left->getMeasurementError() == tof::TOF_ERROR_NONE)
+                sprintf(out, "%d", measurement);
+            else
+                return tof_left->getMeasurementErrorString();        
+        }
         else if (subsensor == "back")
-            sprintf(out, "%d", tof_back->getMeasurement());
-        // else if (subsensor == "lc02")
-            // sprintf(out, "%d", lc02_right->getDistance_mm());
+        {
+            uint16_t measurement = tof_back->getMeasurement();
+            if (tof_back->getMeasurementError() == tof::TOF_ERROR_NONE)
+                sprintf(out, "%d", measurement);
+            else
+                return tof_back->getMeasurementErrorString();       
+        }
+        else if (subsensor == "closerange")
+        {
+            uint16_t measurement = tof_closerange->getMeasurement();
+            if (tof_closerange->getMeasurementError() == tof::TOF_ERROR_NONE)
+                sprintf(out, "%d", measurement);
+            else
+                return tof_closerange->getMeasurementErrorString();       
+        }
         else
             sprintf(out, "subsensor not found");
     }

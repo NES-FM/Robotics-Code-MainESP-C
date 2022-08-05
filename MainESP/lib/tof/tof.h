@@ -1,10 +1,14 @@
 #pragma once
 
 #include "VL53L0X.h"
+#include "Adafruit_VL6180X.h"
 #include "logger.h"
 #include "io_extender.h"
 
 #define TOF_MAX_VALID_DISTANCE 
+
+#define TOF_SENSOR_VL53L0X 0
+#define TOF_SENSOR_VL6180X 1
 
 class tof {
     public:
@@ -13,11 +17,16 @@ class tof {
             TOF_ERROR_TIMEOUT,
             TOF_ERROR_MAX_DISTANCE,
             TOF_ERROR_NOT_ENABLED,
-            TOF_ERROR_FAILED_TO_INITIALIZE
+            TOF_ERROR_FAILED_TO_INITIALIZE,
+            TOF_ERROR_MIN_DISTANCE,
+            TOF_ERROR_SYSERROR,
+            TOF_ERROR_ECE_ERROR,
+            TOF_ERROR_NOCONVERGENCE,
+            TOF_ERROR_SNR_ERROR,
         };
 
-        tof(uint8_t xshut, int offset_x, int offset_y, int offset_a) { _xshut = xshut; _offset_x = offset_x; _offset_y = offset_y; _offset_a = offset_a; };
-        tof(io_ext_pins xshut, int offset_x, int offset_y, int offset_a) { _xshut = (int)xshut; _xshut_io_ext_mode = xshut; _offset_x = offset_x; _offset_y = offset_y; _offset_a = offset_a; _io_ext_mode = true; };
+        tof(int sensor_type, int offset_x, int offset_y, int offset_a, int xshut = -1);
+        tof(int sensor_type, int offset_x, int offset_y, int offset_a, io_ext_pins xshut);
         void init();
         void begin(uint8_t address = 0b0101001);
         void enable(bool enabled);
@@ -28,7 +37,7 @@ class tof {
         bool getHighAccuracy() { return _high_accuracy; }
         bool getHighSpeed() { return _high_speed; }
         void setContinuous(bool mode, uint32_t period_ms = 0);
-        inline bool timeoutOccurred() { return sensor->timeoutOccurred(); }
+        bool timeoutOccurred();
 
         tof_error_types getMeasurementError() { return _error; };
         String getMeasurementErrorString();
@@ -41,7 +50,10 @@ class tof {
 
         uint16_t getMeasurement();
     private:
-        VL53L0X* sensor = new VL53L0X();
+        VL53L0X* vl53l0x_sensor;
+        Adafruit_VL6180X* vl6180x_sensor;
+
+        int _sensor_type;
 
         bool _long_range = false;
         bool _high_accuracy = false;
@@ -52,7 +64,7 @@ class tof {
         uint16_t last_measurement = 0;
 
         bool _io_ext_mode = false;
-        uint8_t _xshut = -1;
+        int _xshut = -1;
         io_ext_pins _xshut_io_ext_mode;
         int _offset_x = 0;
         int _offset_y = 0;
@@ -61,6 +73,20 @@ class tof {
         bool _enabled = false;
 
         tof_error_types _error = TOF_ERROR_NOT_ENABLED;
+
+        void _vl53l0x_begin(uint8_t address);
+        void _vl53l0x_setLongRangeMode(bool mode);
+        void _vl53l0x_setHighAccuracy(bool mode);
+        void _vl53l0x_setHighSpeed(bool mode);
+        void _vl53l0x_changeAddress(uint8_t address);
+        void _vl53l0x_setContinuous(bool mode, uint32_t period_ms);
+        uint16_t _vl53l0x_getMeasurement();
+        bool _vl53l0x_timeoutOccured();
+
+        void _vl6180x_begin(uint8_t address);
+        void _vl6180x_changeAddress(uint8_t address);
+        uint16_t _vl6180x_getMeasurement();
+
 
     friend class Robot;
 };
