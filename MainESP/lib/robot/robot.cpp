@@ -9,7 +9,7 @@ void Robot::init_tof_xshut()
     tof_right->enable(true);
     tof_left->enable(true);
     tof_back->enable(true);
-    tof_front->enable(true);
+    tof_front->enable(false);
     tof_closerange->enable(true);
     tof_left->init(); // Setting Pinmodes
     tof_right->init();
@@ -24,39 +24,57 @@ void Robot::init_tof_xshut()
     delay(20);
 }
 
+#define TOF_DELAY_BETWEEN_BEGIN 100
+
 void Robot::init()
 {
-    delay(500); // Let IO Extender fully initialize
+    // delay(500); // Let IO Extender fully initialize
+    digitalRead(io_ext_pins::EXT_D13); // Let IO Extender fully initialize
     // TOF
-    log_inline_begin();
-    log_inline("Right: ");
-    tof_right->releaseReset(); // Unresetting right, so that right can be initialized
-    delay(500);
-    tof_right->begin(I2C_ADDRESS_TOF_RIGHT);
+    if (tof_right->_enabled)
+    {
+        log_inline_begin();
+        log_inline("Right: ");
+        tof_right->releaseReset(); // Unresetting right, so that right can be initialized
+        delay(TOF_DELAY_BETWEEN_BEGIN);
+        tof_right->begin(I2C_ADDRESS_TOF_RIGHT);
+    }
 
-    log_inline_begin();
-    log_inline("Back: ");
-    tof_back->releaseReset(); // Unresetting back, so that back can be initialized
-    delay(500);
-    tof_back->begin(I2C_ADDRESS_TOF_BACK);
+    if (tof_back->_enabled)
+    {
+        log_inline_begin();
+        log_inline("Back: ");
+        tof_back->releaseReset(); // Unresetting back, so that back can be initialized
+        delay(TOF_DELAY_BETWEEN_BEGIN);
+        tof_back->begin(I2C_ADDRESS_TOF_BACK);
+    }
 
-    log_inline_begin();
-    log_inline("Left: ");
-    tof_left->releaseReset(); // Unresetting left, so that left can be initialized
-    delay(500);
-    tof_left->begin(I2C_ADDRESS_TOF_LEFT);
+    if (tof_left->_enabled)
+    {
+        log_inline_begin();
+        log_inline("Left: ");
+        tof_left->releaseReset(); // Unresetting left, so that left can be initialized
+        delay(TOF_DELAY_BETWEEN_BEGIN);
+        tof_left->begin(I2C_ADDRESS_TOF_LEFT);
+    }
 
-    log_inline_begin();
-    log_inline("Closerange: ");
-    tof_closerange->releaseReset(); // Unresetting left, so that left can be initialized
-    delay(500);
-    tof_closerange->begin(I2C_ADDRESS_TOF_CLOSERANGE);
+    if (tof_closerange->_enabled)
+    {
+        log_inline_begin();
+        log_inline("Closerange: ");
+        tof_closerange->releaseReset(); // Unresetting left, so that left can be initialized
+        delay(TOF_DELAY_BETWEEN_BEGIN);
+        tof_closerange->begin(I2C_ADDRESS_TOF_CLOSERANGE);
+    }
 
-    log_inline_begin();
-    log_inline("Front: ");
-    tof_front->releaseReset(); // Unresetting left, so that left can be initialized
-    delay(500);
-    tof_front->begin(I2C_ADDRESS_TOF_FRONT);
+    if (tof_front->_enabled)
+    {
+        log_inline_begin();
+        log_inline("Front: ");
+        tof_front->releaseReset(); // Unresetting left, so that left can be initialized
+        delay(TOF_DELAY_BETWEEN_BEGIN);
+        tof_front->begin(I2C_ADDRESS_TOF_FRONT);
+    }
 
     tof_right->setLongRangeMode(true);
     tof_right->setContinuous(false); 
