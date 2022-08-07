@@ -144,6 +144,13 @@ void Robot::PlayBeginSound()
     main_buzzer->tone(NOTE_B, 4, 100);
 }
 
+void Robot::startRoom()
+{
+    move(0, 0);
+    cur_drive_mode = ROBOT_DRIVE_MODE_ROOM;
+    main_buzzer->noTone();
+}
+
 void Robot::move(int speed_left, int speed_right)
 {
     if (!is_control_on_user)

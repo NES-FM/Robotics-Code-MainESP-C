@@ -269,6 +269,24 @@ void debug_disp::draw_tof(int x, int y)
     // oled->print(left+right);
 }
 
+void debug_disp::draw_closerange_tof(int x, int y)
+{
+    oled->setTextSize(1);
+    oled->setCursor(x, y);
+    uint16_t close = _robot->tof_closerange->getMeasurement();
+
+    tof::tof_error_types error = _robot->tof_closerange->getMeasurementError();
+
+    if (error == tof::tof_error_types::TOF_ERROR_MAX_DISTANCE || error == tof::tof_error_types::TOF_ERROR_NOCONVERGENCE)
+        oled->print("Max");
+    else if (error == tof::tof_error_types::TOF_ERROR_MIN_DISTANCE)
+        oled->print("Min");
+    else if (error == tof::tof_error_types::TOF_ERROR_NONE)
+        oled->print(close);
+    else
+        oled->print("Err");
+}
+
 void debug_disp::draw_room(int x, int y, float conversion_factor)
 {
     // Serial.printf("Drawing Room with: Conv: %f, w: %f, h: %f\r\n", conversion_factor, _robot->room_width / conversion_factor, _robot->room_height / conversion_factor);
@@ -420,6 +438,8 @@ void debug_disp::tick()
             else if (_robot->cur_drive_mode == Robot::ROBOT_DRIVE_MODE_ROOM)
             {
                 this->draw_tof(0, 0);
+
+                this->draw_closerange_tof(100, 10);
 
                 this->draw_room(0, 9, float(_robot->room_height) / float(SCREEN_HEIGHT-10));
                 

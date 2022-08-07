@@ -29,7 +29,7 @@ void drive()
     }
     else
     {
-        robot.move(10, -10);
+        // robot.move(10, -10);
     }
     // #elif DRIVING_TYPE == 1
     // drive_new();

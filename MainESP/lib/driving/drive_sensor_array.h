@@ -439,14 +439,12 @@ void drive_sensor_array()
         }
         else // Raum
         {
-            robot.move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
-            robot.cur_drive_mode = robot.ROBOT_DRIVE_MODE_ROOM;
+            robot.startRoom();
             return;
         }
         if (robot.dip->get_state(robot.dip->dip2))
         {
-            robot.move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
-            robot.cur_drive_mode = robot.ROBOT_DRIVE_MODE_ROOM;
+            robot.startRoom();
             return;
         }
     }
