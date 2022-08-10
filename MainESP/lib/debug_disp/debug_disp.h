@@ -6,6 +6,7 @@
 #include <Adafruit_SSD1306.h>
 #include "../../include/i2c_addresses.h"
 #include "../../include/cuart_line_types.h"
+#include "../../include/room_stuff.h"
 #include "compass.h"
 #include "accel.h"
 #include "analog_sensor.h"
@@ -61,6 +62,12 @@ class debug_disp {
         CUART_class* _cuart;
         Robot* _robot;
 
+        struct screen_point
+        {
+            float x;
+            float y;
+        };
+
         void draw_sensor_array(int x, int y, int element_width, int element_height);
         void draw_green_dots(int x, int y, int width, int height);
         void draw_ltype(int x, int y);
@@ -75,8 +82,33 @@ class debug_disp {
         void draw_taster(int x, int y, int w, int h);
         void draw_tof(int x, int y);
         void draw_closerange_tof(int x, int y);
-        void draw_room(int x, int y, float conv);
-        void draw_robot_in_room_coordinates(int bottom_left_x, int bottom_left_y, float conv);
+        void draw_room();
+        void draw_robot_in_room_coordinates();
+        void draw_room_corner();
+        void draw_room_wall();
+
+        void draw_room_space_line(Robot::point point_1, Robot::point point_2);
+        float room_conversion_factor;
+        float screen_space_50;
+        float screen_space_125;
+        float screen_space_250;
+        float screen_space_300;
+        const int room_bottom_left_x = 1;
+        const int room_bottom_left_y = 63;
+
+        bool room_entry_found_before = false;
+        bool room_exit_found_before = false;
+
+
+        struct wall_piece
+        {
+            Robot::point mid;
+            bool vertical = false;
+            bool entry = false;
+            bool exit = false;
+        };
+
+        wall_piece all_room_walls[14];
 
         bool heartbeat_state = false;
 

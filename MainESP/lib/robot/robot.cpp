@@ -1,7 +1,8 @@
 #include "robot.h"
 
-Robot::Robot()
+Robot::Robot(CUART_class* cuart)
 {
+    cuart_ref = cuart;
 }
 
 void Robot::init_tof_xshut()
@@ -144,13 +145,6 @@ void Robot::PlayBeginSound()
     main_buzzer->tone(NOTE_B, 4, 100);
 }
 
-void Robot::startRoom()
-{
-    move(0, 0);
-    cur_drive_mode = ROBOT_DRIVE_MODE_ROOM;
-    main_buzzer->noTone();
-}
-
 void Robot::move(int speed_left, int speed_right)
 {
     if (!is_control_on_user)
@@ -231,81 +225,82 @@ void Robot::calculate_position()
 
         Serial.printf("%f;%d;%d;%d;%d\r\n", this->angle, left_dis, back_dis, right_dis, closerange_dis);
     }
-    else
-    {
-        if (tof_right->getMeasurementError() == tof_right->TOF_ERROR_NONE)
-        {
-            measurement_angle = compass->keep_in_360_range(this->angle + tof_right->_offset_a);
-            point_cloud_index = int(measurement_angle / 3);
+    // else
+    // {
+        // if (tof_right->getMeasurementError() == tof_right->TOF_ERROR_NONE)
+        // {
+        //     measurement_angle = compass->keep_in_360_range(this->angle + tof_right->_offset_a);
+        //     point_cloud_index = int(measurement_angle / 3);
 
-            measurement_old = point_cloud[point_cloud_index];
-            measurement.x_mm = right_dis + pos.x_mm;
-            measurement.y_mm = tof_right->_offset_y + pos.y_mm;
-            measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
+        //     measurement_old = point_cloud[point_cloud_index];
+        //     measurement.x_mm = right_dis + pos.x_mm;
+        //     measurement.y_mm = tof_right->_offset_y + pos.y_mm;
+        //     measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
 
-            if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
-            {
-                measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
-                measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
-            }
+        //     if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
+        //     {
+        //         measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
+        //         measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
+        //     }
 
-            point_cloud[point_cloud_index] = measurement;
-        }
-        else
-        {
-            // logln("Error with Right Sensor: %s", tof_right->getMeasurementErrorString().c_str());
-        }
+        //     point_cloud[point_cloud_index] = measurement;
+        // }
+        // else
+        // {
+        //     // logln("Error with Right Sensor: %s", tof_right->getMeasurementErrorString().c_str());
+        // }
 
-        if (tof_left->getMeasurementError() == tof_left->TOF_ERROR_NONE)
-        {
-            measurement_angle = compass->keep_in_360_range(this->angle + tof_left->_offset_a);
-            point_cloud_index = int(measurement_angle / 3);
+        // if (tof_left->getMeasurementError() == tof_left->TOF_ERROR_NONE)
+        // {
+        //     measurement_angle = compass->keep_in_360_range(this->angle + tof_left->_offset_a);
+        //     point_cloud_index = int(measurement_angle / 3);
 
-            measurement_old = point_cloud[point_cloud_index];
-            measurement.x_mm = left_dis + pos.x_mm;
-            measurement.y_mm = tof_left->_offset_y + pos.y_mm;
-            measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
+        //     measurement_old = point_cloud[point_cloud_index];
+        //     measurement.x_mm = left_dis + pos.x_mm;
+        //     measurement.y_mm = tof_left->_offset_y + pos.y_mm;
+        //     measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
 
-            if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
-            {
-                measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
-                measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
-            }
+        //     if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
+        //     {
+        //         measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
+        //         measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
+        //     }
 
-            point_cloud[point_cloud_index] = measurement;
-        }
-        else
-        {
-            // logln("Error with Left Sensor: %s", tof_left->getMeasurementErrorString().c_str());
-        }
+        //     point_cloud[point_cloud_index] = measurement;
+        // }
+        // else
+        // {
+        //     // logln("Error with Left Sensor: %s", tof_left->getMeasurementErrorString().c_str());
+        // }
 
-        if (tof_back->getMeasurementError() == tof_back->TOF_ERROR_NONE)
-        {
-            measurement_angle = compass->keep_in_360_range(this->angle + tof_back->_offset_a);
-            point_cloud_index = int(measurement_angle / 3);
+        // if (tof_back->getMeasurementError() == tof_back->TOF_ERROR_NONE)
+        // {
+        //     measurement_angle = compass->keep_in_360_range(this->angle + tof_back->_offset_a);
+        //     point_cloud_index = int(measurement_angle / 3);
 
-            measurement_old = point_cloud[point_cloud_index];
-            measurement.x_mm = back_dis + pos.x_mm;
-            measurement.y_mm = tof_back->_offset_y + pos.y_mm;
-            measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
+        //     measurement_old = point_cloud[point_cloud_index];
+        //     measurement.x_mm = back_dis + pos.x_mm;
+        //     measurement.y_mm = tof_back->_offset_y + pos.y_mm;
+        //     measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
 
-            if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
-            {
-                measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
-                measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
-            }
+        //     if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
+        //     {
+        //         measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
+        //         measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
+        //     }
 
-            point_cloud[point_cloud_index] = measurement;
-        }
-        else
-        {
-            // logln("Error with Back Sensor: %s", tof_back->getMeasurementErrorString().c_str());
-        }
-    }
+        //     point_cloud[point_cloud_index] = measurement;
+        // }
+        // else
+        // {
+        //     // logln("Error with Back Sensor: %s", tof_back->getMeasurementErrorString().c_str());
+        // }
+    // }
 }
 
-Robot::point Robot::rotate_point(point point_to_rotate, point pivot, float angle)
+Robot::point Robot::rotate_point(point point_to_rotate, point pivot, float angle_degrees)
 {
+    float angle = DEG_TO_RAD * angle_degrees;
     float s = sin(angle);
     float c = cos(angle);
 
@@ -314,8 +309,8 @@ Robot::point Robot::rotate_point(point point_to_rotate, point pivot, float angle
     point_to_rotate.y_mm -= pivot.y_mm;
 
     // rotate point
-    float xnew = point_to_rotate.x_mm * c + point_to_rotate.y_mm * s;
-    float ynew = -point_to_rotate.x_mm * s + point_to_rotate.y_mm * c;
+    float xnew = float(point_to_rotate.x_mm) * c + float(point_to_rotate.y_mm) * s;
+    float ynew = float(-point_to_rotate.x_mm) * s + float(point_to_rotate.y_mm) * c;
 
     // translate point back:
     point_to_rotate.x_mm = xnew + pivot.x_mm;
@@ -470,6 +465,23 @@ String Robot::move_command(String first_arg, String second_arg, String third_arg
     return out;
 }
 
+String Robot::rotate_command(String degrees)
+{
+    if (!is_control_on_user)
+    {
+        return "User is not in control! Type \"control on\"";
+    }
+
+    is_control_on_user = false;
+    this->room_rotate_relative_degrees(degrees.toFloat());
+    move(0, 0);
+    is_control_on_user = true;
+
+    char out[64];
+    sprintf(out, "Succesfully rotated %f degrees", degrees.toFloat());
+    return out;
+}
+
 String Robot::control_command(String on_off)
 {
     if (on_off == "")
@@ -502,6 +514,7 @@ String Robot::set_command(String first_arg, String second_arg, String third_arg)
         ret += "drive mode [line/room]\r\n";
         ret += "compass calib(ration) [on/off]\r\n";
         ret += "tof <left/back/right> <highspeed/highaccuracy/longrange>\r\n";
+        ret += "corner <TL/TR/BL/BR>\r\n";
         ret += "-------\r\n";
         return ret;
     }
@@ -600,6 +613,38 @@ String Robot::set_command(String first_arg, String second_arg, String third_arg)
             }
         }
     }
+    else if (first_arg == "corner")
+    {
+        if (second_arg == "tr")
+        {
+            this->room_corner_found = true;
+            this->room_corner_pos.x_mm = ROOM_CORNER_POS_TR_X;
+            this->room_corner_pos.y_mm = ROOM_CORNER_POS_TR_Y;
+            return "Succesfully set corner to TR";
+        }
+        else if (second_arg == "tl")
+        {
+            this->room_corner_found = true;
+            this->room_corner_pos.x_mm = ROOM_CORNER_POS_TL_X;
+            this->room_corner_pos.y_mm = ROOM_CORNER_POS_TL_Y;
+            return "Succesfully set corner to TL";
+        }
+        else if (second_arg == "bl")
+        {
+            this->room_corner_found = true;
+            this->room_corner_pos.x_mm = ROOM_CORNER_POS_BL_X;
+            this->room_corner_pos.y_mm = ROOM_CORNER_POS_BL_Y;
+            return "Succesfully set corner to BL";
+        }
+        else if (second_arg == "br")
+        {
+            this->room_corner_found = true;
+            this->room_corner_pos.x_mm = ROOM_CORNER_POS_BR_X;
+            this->room_corner_pos.y_mm = ROOM_CORNER_POS_BR_Y;
+            return "Succesfully set corner to BR";
+        }
+        return "specify which corner (TR/TL/BL/BR)";
+    }
     return out;
 }
 
@@ -644,6 +689,8 @@ void Robot::parse_command(String command)
         out = this->get_command(first_arg, second_arg);
     else if (top_level_command == "move")
         out = this->move_command(first_arg, second_arg, third_arg);
+    else if (top_level_command == "rotate")
+        out = this->rotate_command(first_arg);
     else if (top_level_command == "control")
         out = this->control_command(first_arg);
     else if (top_level_command == "set")
@@ -672,3 +719,119 @@ void Robot::parse_command(String command)
     logln("%s", out.c_str());
 }
 
+
+// Room
+
+#define ROOM_MOVE_ALONG_WALL_DISTANCE 80
+#define ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR 0.43f
+
+void Robot::room_move_along_wall()
+{
+    //////// General todo: tof_closereange average
+
+    uint16_t closerange_dis = tof_closerange->getMeasurement();
+    if (tof_closerange->getMeasurementError() != tof::TOF_ERROR_MAX_DISTANCE) // Closerange needs to see the wall, or else it cant work
+    {
+        int motor_l_val = DRIVE_SPEED_RAUM;
+        int motor_r_val = DRIVE_SPEED_RAUM;
+
+        if (tof_closerange->getMeasurementError() == tof::TOF_ERROR_NONE)
+        {
+            float error = ROOM_MOVE_ALONG_WALL_DISTANCE - closerange_dis;
+
+            motor_l_val = float(DRIVE_SPEED_RAUM) - ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR * error;
+            motor_r_val = float(DRIVE_SPEED_RAUM) + ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR * error;
+        }
+
+        move(motor_l_val, motor_r_val);
+    }
+}
+
+void Robot::startRoom()
+{
+    move(0, 0);
+    cur_drive_mode = ROBOT_DRIVE_MODE_ROOM;
+    main_buzzer->noTone();
+    cuart_ref->silver_line = false;
+    cuart_ref->green_line = false;
+
+    cur_moving_wall = WALL_FIRST_UNKNOWN_WALL;
+
+    if (tof_closerange->getMeasurement() < 180 && tof_closerange->getMeasurementError() == tof::TOF_ERROR_NONE) // Entry right next to wall
+    {
+        
+    }
+
+    room_time_measure_start();
+}
+
+Robot::room_end_types Robot::room_has_reached_end()
+{
+    if (taster->get_state(taster->front_right))
+        return room_end_types::ROOM_HAS_REACHED_TASTER_RIGHT;
+    else if (taster->get_state(taster->front_left))
+        return room_end_types::ROOM_HAS_REACHED_TASTER_LEFT;
+    else if (cuart_ref->silver_line)
+        return room_end_types::ROOM_HAS_REACHED_SILVER_LINE;
+    else if (cuart_ref->green_line)
+        return room_end_types::ROOM_HAS_REACHED_GREEN_LINE;
+    return room_end_types::ROOM_HAS_NOT_REACHED_END;
+}
+
+void Robot::room_set_cur_pos(int x, int y)
+{
+    pos.x_mm = x;
+    pos.y_mm = y;
+}
+
+void Robot::room_rotate_to_degrees(float degrees, bool rotate_right)
+{
+    if (rotate_right) // rotate right
+    {
+        move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    }
+    else // rotate left
+    {
+        move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    }
+
+    while(abs(compass->get_angle() - degrees) > 10)
+    {
+        delay(5);
+    }
+}
+
+void Robot::room_rotate_relative_degrees(float degrees)
+{
+    // move(0, 0);
+
+    // float starting_point = compass->get_angle();
+
+    // int num_values = 1;
+    
+    // for (int i = 0; i < 200; i += 10)
+    // {
+    //     starting_point += compass->get_angle();
+    //     num_values += 1;
+    //     delay(10);
+    // }
+
+    // starting_point = (starting_point / num_values);
+
+    // float target_degrees = compass->keep_in_360_range(starting_point + degrees);
+
+    // logln("Rotating relative degrees: %f from start %f and target %f", degrees, starting_point, target_degrees);
+
+    // room_rotate_to_degrees(target_degrees, degrees > 0); // Rotate right if degrees > 0
+
+    if (degrees > 0) // rotate right
+    {
+        move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    }
+    else // rotate left
+    {
+        move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    }
+
+    delay((abs(degrees) / 360) * robot_millis_per_360_at_30_speed);
+}

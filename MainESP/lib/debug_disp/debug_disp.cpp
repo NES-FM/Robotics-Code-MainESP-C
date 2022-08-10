@@ -25,6 +25,56 @@ void debug_disp::init(CUART_class* c, Robot* r, bool* int_sit, bool* int_bi_left
         oled->clearDisplay();
         oled->display();
     }
+
+    // Room Wall pieces
+    // Bottom
+    all_room_walls[0].mid.x_mm = 125;
+    all_room_walls[0].mid.y_mm = 0;
+    all_room_walls[1].mid.x_mm = 425;
+    all_room_walls[1].mid.y_mm = 0;
+    all_room_walls[2].mid.x_mm = 725;
+    all_room_walls[2].mid.y_mm = 0;
+    all_room_walls[2].entry = true;
+    all_room_walls[3].mid.x_mm = 1025;
+    all_room_walls[3].mid.y_mm = 0;
+    // Right
+    all_room_walls[4].mid.x_mm = _robot->room_width;
+    all_room_walls[4].mid.y_mm = 125;
+    all_room_walls[4].vertical = true;
+    all_room_walls[5].mid.x_mm = _robot->room_width;
+    all_room_walls[5].mid.y_mm = 425;
+    all_room_walls[5].vertical = true;
+    all_room_walls[5].entry = true;
+    all_room_walls[6].mid.x_mm = _robot->room_width;
+    all_room_walls[6].mid.y_mm = 725;
+    all_room_walls[6].vertical = true;
+    // Top
+    all_room_walls[7].mid.x_mm = 1025;
+    all_room_walls[7].mid.y_mm = _robot->room_height;
+    all_room_walls[8].mid.x_mm = 725;
+    all_room_walls[8].mid.y_mm = _robot->room_height;
+    all_room_walls[9].mid.x_mm = 425;
+    all_room_walls[9].mid.y_mm = _robot->room_height;
+    all_room_walls[10].mid.x_mm = 125;
+    all_room_walls[10].mid.y_mm = _robot->room_height;
+    // Left
+    all_room_walls[11].mid.x_mm = 0;
+    all_room_walls[11].mid.y_mm = 725;
+    all_room_walls[11].vertical = true;
+    all_room_walls[12].mid.x_mm = 0;
+    all_room_walls[12].mid.y_mm = 425;
+    all_room_walls[12].vertical = true;
+    all_room_walls[12].entry = true;
+    all_room_walls[13].mid.x_mm = 0;
+    all_room_walls[13].mid.y_mm = 125;
+    all_room_walls[13].vertical = true;
+    all_room_walls[13].exit = true;
+
+    room_conversion_factor = float(_robot->room_height) / float(SCREEN_HEIGHT-10);
+    screen_space_50 = 50.0f / room_conversion_factor;
+    screen_space_125 = 125.0f / room_conversion_factor;
+    screen_space_250 = 250.0f / room_conversion_factor;
+    screen_space_300 = 300.0f / room_conversion_factor;
 }
 
 void debug_disp::draw_sensor_array(int x, int y, int element_width, int element_height)
@@ -287,112 +337,219 @@ void debug_disp::draw_closerange_tof(int x, int y)
         oled->print("Err");
 }
 
-void debug_disp::draw_room(int x, int y, float conversion_factor)
+void debug_disp::draw_room()
 {
     // Serial.printf("Drawing Room with: Conv: %f, w: %f, h: %f\r\n", conversion_factor, _robot->room_width / conversion_factor, _robot->room_height / conversion_factor);
-    int w = _robot->room_width / conversion_factor;
-    int h = _robot->room_height / conversion_factor;
+    // int w = _robot->room_width / conversion_factor;
+    // int h = _robot->room_height / conversion_factor;
 
-    oled->drawRect(x, y, w, h, SSD1306_WHITE);
+    // oled->drawRect(x, y, w, h, SSD1306_WHITE);
 
-    this->draw_robot_in_room_coordinates(x, y + h, conversion_factor);
+    this->draw_robot_in_room_coordinates();
 
-    for (Robot::point p: _robot->point_cloud)
-    {
-        if (p.x_mm != 0 || p.y_mm != 0)
-        {
-            int draw_x = x + (p.x_mm / conversion_factor);
-            int draw_y = (y + h) - (p.y_mm / conversion_factor);
-            // Serial.printf("Drawning Point on Screen at %d|%d\r\n", draw_x, draw_y);
-            oled->drawPixel(draw_x, draw_y, SSD1306_WHITE);
-        }
-    }
+    if (_robot->room_corner_found)
+        this->draw_room_corner();
+
+    draw_room_wall();
 }
 
-void debug_disp::draw_robot_in_room_coordinates(int bottom_left_x, int bottom_left_y, float conversion_factor)
+void debug_disp::draw_robot_in_room_coordinates()
 {
-    struct robot_edge_point
-    {
-        float x;
-        float y;
-    };
-
-    robot_edge_point r_center;
-    r_center.x = float(_robot->pos.x_mm);
-    r_center.y = float(_robot->pos.y_mm);
-    float robot_angle_rad = DEG_TO_RAD * _robot->angle;
-
-    robot_edge_point temp;
-    temp.x = 0.0f;
-    temp.y = 0.0f;
-
-    // https://gamedev.stackexchange.com/questions/86755/how-to-calculate-corner-positions-marks-of-a-rotated-tilted-rectangle
-    // robot_edge_point UL;
-    // UL.x = (r_center.x - (0.5 * float(_robot->width)) - r_center.x);  // Translate Center Point to Origin
-    // UL.y = (r_center.y + (0.5 * float(_robot->height)) - r_center.y);
-    // temp.x = UL.x*cos(robot_angle_rad) + UL.y*sin(robot_angle_rad);  // Apply Rotation
-    // temp.y = -UL.x*sin(robot_angle_rad) + UL.y*cos(robot_angle_rad);
-    // UL.x = temp.x + r_center.x;  // Translate Back
-    // UL.y = temp.y + r_center.y;
-    // UL.x = bottom_left_x + (UL.x / conversion_factor); // Translate to Screen space
-    // UL.y = bottom_left_y - (UL.y / conversion_factor);
-
     Robot::point UL;
     UL.x_mm = (_robot->pos.x_mm - (0.5 * _robot->width));
     UL.y_mm = (_robot->pos.y_mm + (0.5 * _robot->height));
-    UL = Robot::rotate_point(UL, _robot->pos, _robot->angle * DEG_TO_RAD);
-    UL.x_mm = bottom_left_x + (UL.x_mm / conversion_factor); // Translate to Screen space
-    UL.y_mm = bottom_left_y - (UL.y_mm / conversion_factor);
+    UL = Robot::rotate_point(UL, _robot->pos, _robot->angle);
+    // screen_point UL_screen;
+    // UL_screen.x = bottom_left_x + (UL.x_mm / conversion_factor); // Translate to Screen space
+    // UL_screen.y = bottom_left_y - (UL.y_mm / conversion_factor);
 
-    robot_edge_point UR;
-    UR.x = (r_center.x + (0.5 * float(_robot->width)) - r_center.x);  // Translate Center Point to Origin
-    UR.y = (r_center.y + (0.5 * float(_robot->height)) - r_center.y);
-    temp.x = UR.x*cos(robot_angle_rad) + UR.y*sin(robot_angle_rad);  // Apply Rotation
-    temp.y = -UR.x*sin(robot_angle_rad) + UR.y*cos(robot_angle_rad);
-    UR.x = temp.x + r_center.x;  // Translate Back
-    UR.y = temp.y + r_center.y;
-    UR.x = bottom_left_x + (UR.x / conversion_factor); // Translate to Screen space
-    UR.y = bottom_left_y - (UR.y / conversion_factor);
+    Robot::point UR;
+    UR.x_mm = (_robot->pos.x_mm + (0.5 * _robot->width));
+    UR.y_mm = (_robot->pos.y_mm + (0.5 * _robot->height));
+    UR = Robot::rotate_point(UR, _robot->pos, _robot->angle);
+    // screen_point UR_screen;
+    // UR_screen.x = bottom_left_x + (UR.x_mm / conversion_factor); // Translate to Screen space
+    // UR_screen.y = bottom_left_y - (UR.y_mm / conversion_factor);
 
-    robot_edge_point DL;
-    DL.x = (r_center.x - (0.5 * float(_robot->width)) - r_center.x);  // Translate Center Point to Origin
-    DL.y = (r_center.y - (0.5 * float(_robot->height)) - r_center.y);
-    temp.x = DL.x*cos(robot_angle_rad) + DL.y*sin(robot_angle_rad);  // Apply Rotation
-    temp.y = -DL.x*sin(robot_angle_rad) + DL.y*cos(robot_angle_rad);
-    DL.x = temp.x + r_center.x;  // Translate Back
-    DL.y = temp.y + r_center.y;
-    DL.x = bottom_left_x + (DL.x / conversion_factor); // Translate to Screen space
-    DL.y = bottom_left_y - (DL.y / conversion_factor);
+    Robot::point DL;
+    DL.x_mm = (_robot->pos.x_mm - (0.5 * _robot->width));
+    DL.y_mm = (_robot->pos.y_mm - (0.5 * _robot->height));
+    DL = Robot::rotate_point(DL, _robot->pos, _robot->angle);
+    // screen_point DL_screen;
+    // DL_screen.x = bottom_left_x + (DL.x_mm / conversion_factor); // Translate to Screen space
+    // DL_screen.y = bottom_left_y - (DL.y_mm / conversion_factor);
 
-    robot_edge_point DR;
-    DR.x = (r_center.x + (0.5 * float(_robot->width)) - r_center.x);  // Translate Center Point to Origin
-    DR.y = (r_center.y - (0.5 * float(_robot->height)) - r_center.y);
-    temp.x = DR.x*cos(robot_angle_rad) + DR.y*sin(robot_angle_rad);  // Apply Rotation
-    temp.y = -DR.x*sin(robot_angle_rad) + DR.y*cos(robot_angle_rad);
-    DR.x = temp.x + r_center.x;  // Translate Back
-    DR.y = temp.y + r_center.y;
-    DR.x = bottom_left_x + (DR.x / conversion_factor); // Translate to Screen space
-    DR.y = bottom_left_y - (DR.y / conversion_factor);
+    Robot::point DR;
+    DR.x_mm = (_robot->pos.x_mm + (0.5 * _robot->width));
+    DR.y_mm = (_robot->pos.y_mm - (0.5 * _robot->height));
+    DR = Robot::rotate_point(DR, _robot->pos, _robot->angle);
+    // screen_point DR_screen;
+    // DR_screen.x = bottom_left_x + (DR.x_mm / conversion_factor); // Translate to Screen space
+    // DR_screen.y = bottom_left_y - (DR.y_mm / conversion_factor);
 
+    Robot::point UM;
+    UM.x_mm = (UL.x_mm + UR.x_mm) / 2;
+    UM.y_mm = (UL.y_mm + UR.y_mm) / 2;
+    // screen_point UM_screen;
+    // UM_screen.x = (UL_screen.x + UR_screen.x) / 2; // UL and UR are already Screen space -> no need to convert again
+    // UM_screen.y = (UL_screen.y + UR_screen.y) / 2;
 
-    robot_edge_point UM;
-    UM.x = (UL.x_mm + UR.x) / 2; // UL and UR are already Screen space -> no need to convert again
-    UM.y = (UL.y_mm + UR.y) / 2;
+    draw_room_space_line(UL, UR);
+    draw_room_space_line(UR, DR);
+    draw_room_space_line(DR, DL);
+    draw_room_space_line(DL, UL);
+    draw_room_space_line(UM, DL);
+    draw_room_space_line(UM, DR);
 
-    oled->drawLine(UL.x_mm, UL.x_mm, UR.x, UR.y, SSD1306_WHITE);
-    oled->drawLine(UR.x, UR.y, DR.x, DR.y, SSD1306_WHITE);
-    oled->drawLine(DR.x, DR.y, DL.x, DL.y, SSD1306_WHITE);
-    oled->drawLine(DL.x, DL.y, UL.x_mm, UL.x_mm, SSD1306_WHITE);
-    oled->drawLine(UM.x, UM.y, DL.x, DL.y, SSD1306_WHITE);
-    oled->drawLine(UM.x, UM.y, DR.x, DR.y, SSD1306_WHITE);
-
-    // https://stackoverflow.com/questions/644378/drawing-a-rotated-rectangle
-    // UL  =  x + ( Width / 2 ) * cos A - ( Height / 2 ) * sin A ,  y + ( Height / 2 ) * cos A  + ( Width / 2 ) * sin A
-    // UR  =  x - ( Width / 2 ) * cos A - ( Height / 2 ) * sin A ,  y + ( Height / 2 ) * cos A  - ( Width / 2 ) * sin A
-    // BL =   x + ( Width / 2 ) * cos A + ( Height / 2 ) * sin A ,  y - ( Height / 2 ) * cos A  + ( Width / 2 ) * sin A
-    // BR  =  x - ( Width / 2 ) * cos A + ( Height / 2 ) * sin A ,  y - ( Height / 2 ) * cos A  - ( Width / 2 ) * sin A
+    // oled->drawLine(UL_screen.x, UL_screen.y, UR_screen.x, UR_screen.y, SSD1306_WHITE);
+    // oled->drawLine(UR_screen.x, UR_screen.y, DR_screen.x, DR_screen.y, SSD1306_WHITE);
+    // oled->drawLine(DR_screen.x, DR_screen.y, DL_screen.x, DL_screen.y, SSD1306_WHITE);
+    // oled->drawLine(DL_screen.x, DL_screen.y, UL_screen.x, UL_screen.y, SSD1306_WHITE);
+    // oled->drawLine(UM_screen.x, UM_screen.y, DL_screen.x, DL_screen.y, SSD1306_WHITE);
+    // oled->drawLine(UM_screen.x, UM_screen.y, DR_screen.x, DR_screen.y, SSD1306_WHITE);
 }
 
+void debug_disp::draw_room_corner()
+{
+    int corner_pos_x = _robot->room_corner_pos.x_mm;
+    int corner_pos_y = _robot->room_corner_pos.y_mm;
+
+    Robot::point corner_point_1;
+    Robot::point corner_point_2;
+
+    corner_point_1.x_mm = corner_pos_x - 150;
+    corner_point_2.x_mm = corner_pos_x + 150;
+
+    if ((corner_pos_x == ROOM_CORNER_POS_BL_X && corner_pos_y == ROOM_CORNER_POS_BL_Y) || (corner_pos_x == ROOM_CORNER_POS_TR_X && corner_pos_y == ROOM_CORNER_POS_TR_Y))
+    {
+        corner_point_1.y_mm = corner_pos_y + 150;
+        corner_point_2.y_mm = corner_pos_y - 150;
+    }
+    else if ((corner_pos_x == ROOM_CORNER_POS_BR_X && corner_pos_y == ROOM_CORNER_POS_BR_Y) || (corner_pos_x == ROOM_CORNER_POS_TL_X && corner_pos_y == ROOM_CORNER_POS_TL_Y))
+    {
+        corner_point_1.y_mm = corner_pos_y - 150;
+        corner_point_2.y_mm = corner_pos_y + 150;
+    }
+
+    draw_room_space_line(corner_point_1, corner_point_2);
+
+    // screen_point corner_point_1_screen;
+    // corner_point_1_screen.x = bottom_left_x + round(float(corner_point_1.x_mm) / conversion_factor); // Translate to Screen space
+    // corner_point_1_screen.y = bottom_left_y - round(float(corner_point_1.y_mm) / conversion_factor);
+    // screen_point corner_point_2_screen;
+    // corner_point_2_screen.x = bottom_left_x + round(float(corner_point_2.x_mm) / conversion_factor); // Translate to Screen space
+    // corner_point_2_screen.y = bottom_left_y - round(float(corner_point_2.y_mm) / conversion_factor);
+
+    // oled->drawLine(corner_point_1_screen.x-1, corner_point_1_screen.y-1, corner_point_2_screen.x-1, corner_point_2_screen.y-1, SSD1306_WHITE);
+}
+
+void debug_disp::draw_room_wall()
+{
+    Robot::point point_1;
+    Robot::point point_2;
+    for (wall_piece piece : all_room_walls)
+    {
+        // if (piece.entry || piece.exit)
+        // {
+        //     if (piece.vertical)
+        //     {
+        //         point_1.x_mm = piece.mid.x_mm;
+        //         point_2.x_mm = piece.mid.x_mm;
+
+        //         point_1.y_mm = constrain(piece.mid.y_mm - 125, 0, _robot->room_height);
+        //         point_2.y_mm = constrain(piece.mid.y_mm - 175, 0, _robot->room_height);
+        //         draw_room_space_line(point_1, point_2);
+
+        //         point_1.y_mm = constrain(piece.mid.y_mm + 125, 0, _robot->room_height);
+        //         point_2.y_mm = constrain(piece.mid.y_mm + 175, 0, _robot->room_height);
+        //         draw_room_space_line(point_1, point_2);
+        //     }
+        //     else
+        //     {
+        //         point_1.y_mm = piece.mid.y_mm;
+        //         point_2.y_mm = piece.mid.y_mm;
+
+        //         point_1.x_mm = constrain(piece.mid.x_mm - 125, 0, _robot->room_width);
+        //         point_2.x_mm = constrain(piece.mid.x_mm - 175, 0, _robot->room_width);
+        //         draw_room_space_line(point_1, point_2);
+
+        //         point_1.x_mm = constrain(piece.mid.x_mm + 125, 0, _robot->room_width);
+        //         point_2.x_mm = constrain(piece.mid.x_mm + 175, 0, _robot->room_width);
+        //         draw_room_space_line(point_1, point_2);
+        //     }
+        // }
+
+        if (_robot->room_entry_found && piece.mid.x_mm == _robot->room_entry_pos.x_mm && piece.mid.y_mm == _robot->room_entry_pos.y_mm) // Entry tile
+            continue;
+
+        if (_robot->room_exit_found && piece.mid.x_mm == _robot->room_exit_pos.x_mm && piece.mid.y_mm == _robot->room_exit_pos.y_mm) // Exit tile
+            continue;
+
+        // if (piece.entry)
+        //     continue;
+
+        // if (piece.exit)
+        //     continue; // Draw dotted line
+
+        if (piece.vertical)
+        {
+            point_1.x_mm = piece.mid.x_mm;
+            point_2.x_mm = piece.mid.x_mm;
+
+            point_1.y_mm = piece.mid.y_mm - 125;
+            point_2.y_mm = piece.mid.y_mm + 125;
+        }
+        else
+        {
+            point_1.x_mm = piece.mid.x_mm - 125;
+            point_2.x_mm = piece.mid.x_mm + 125;
+
+            point_1.y_mm = piece.mid.y_mm;
+            point_2.y_mm = piece.mid.y_mm;
+        }
+        draw_room_space_line(point_1, point_2);
+    }
+
+    // for (int i = 250; i < 900; i += 300)
+    // {
+    //     point_1.x_mm = i;
+    //     point_1.y_mm = 0;
+    //     point_2.x_mm = i + 50;
+    //     point_2.y_mm = 0;
+    //     draw_room_space_line(point_1, point_2);
+
+    //     point_1.y_mm = _robot->room_height;
+    //     point_2.y_mm = _robot->room_height;
+    //     draw_room_space_line(point_1, point_2);
+    // }
+
+    // // Bottom
+    // oled->drawFastHLine(bottom_left_x + round(screen_space_250), bottom_left_y, screen_space_50, SSD1306_WHITE);
+    // oled->drawFastHLine(bottom_left_x + round(2*screen_space_250) + round(screen_space_50), bottom_left_y, screen_space_50, SSD1306_WHITE);
+    // oled->drawFastHLine(bottom_left_x + round(3*screen_space_250) + round(2*screen_space_50), bottom_left_y, screen_space_50, SSD1306_WHITE);
+    // // Top
+    // oled->drawFastHLine(bottom_left_x + round(screen_space_250), bottom_left_y - round(float(_robot->room_width) / conversion_factor), screen_space_50, SSD1306_WHITE);
+    // oled->drawFastHLine(bottom_left_x + round(2*screen_space_250) + round(screen_space_50), bottom_left_y - round(float(_robot->room_width) / conversion_factor), screen_space_50, SSD1306_WHITE);
+    // oled->drawFastHLine(bottom_left_x + round(3*screen_space_250) + round(2*screen_space_50), bottom_left_y - round(float(_robot->room_width) / conversion_factor), screen_space_50, SSD1306_WHITE);
+    // // Left
+    // oled->drawFastVLine(bottom_left_x, bottom_left_y - round(screen_space_250), screen_space_50, SSD1306_WHITE);
+    // oled->drawFastVLine(bottom_left_x, bottom_left_y - round(2*screen_space_250) - round(screen_space_50), screen_space_50, SSD1306_WHITE);
+    // // Right
+    // oled->drawFastVLine(bottom_left_x + round(float(_robot->room_width) / conversion_factor), bottom_left_y - round(screen_space_250), screen_space_50, SSD1306_WHITE);
+    // oled->drawFastVLine(bottom_left_x + round(float(_robot->room_width) / conversion_factor), bottom_left_y - round(2*screen_space_250) - round(screen_space_50), screen_space_50, SSD1306_WHITE);
+}
+
+void debug_disp::draw_room_space_line(Robot::point point_1, Robot::point point_2)
+{
+    screen_point point_1_screen;
+    point_1_screen.x = room_bottom_left_x + round(float(point_1.x_mm) / room_conversion_factor); // Translate to Screen space
+    point_1_screen.y = room_bottom_left_y - round(float(point_1.y_mm) / room_conversion_factor);
+    screen_point point_2_screen;
+    point_2_screen.x = room_bottom_left_x + round(float(point_2.x_mm) / room_conversion_factor); // Translate to Screen space
+    point_2_screen.y = room_bottom_left_y - round(float(point_2.y_mm) / room_conversion_factor);
+
+    oled->drawLine(point_1_screen.x, point_1_screen.y, point_2_screen.x, point_2_screen.y, SSD1306_WHITE);
+}
 
 void debug_disp::tick()
 {
@@ -437,11 +594,21 @@ void debug_disp::tick()
             }
             else if (_robot->cur_drive_mode == Robot::ROBOT_DRIVE_MODE_ROOM)
             {
+                if (room_entry_found_before != _robot->room_entry_found)
+                {
+                    room_entry_found_before = _robot->room_entry_found;
+                }
+                if (room_exit_found_before != _robot->room_exit_found)
+                {
+                    room_exit_found_before = _robot->room_exit_found;
+                }
+
+
                 this->draw_tof(0, 0);
 
                 this->draw_closerange_tof(100, 10);
 
-                this->draw_room(0, 9, float(_robot->room_height) / float(SCREEN_HEIGHT-10));
+                this->draw_room();
                 
                 this->draw_accel(100, 46);
                 this->draw_voltage_smol(100, 54);

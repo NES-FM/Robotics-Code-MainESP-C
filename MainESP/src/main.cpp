@@ -29,7 +29,7 @@ CUART_class cuart;
 debug_disp display;
 
 #include "robot.h"
-Robot robot;
+Robot robot(&cuart);
 
 #include "i2c_scanner.h"
 #include "driving.h"

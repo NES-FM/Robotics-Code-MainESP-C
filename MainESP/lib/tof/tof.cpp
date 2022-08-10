@@ -355,7 +355,11 @@ uint16_t tof::_vl6180x_getMeasurement()
     uint8_t status = vl6180x_sensor->readRangeStatus();
 
 
-    if (status == VL6180X_ERROR_NONE)
+    if (range > 150)
+    {
+        _error = TOF_ERROR_MAX_DISTANCE;
+    }
+    else if (status == VL6180X_ERROR_NONE)
     {
         _error = TOF_ERROR_NONE;
     }

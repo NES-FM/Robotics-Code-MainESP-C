@@ -20,17 +20,24 @@ bool in_raum = true; //NEEDS TO BE CHANGED
 #include "drive_new.h"
 #endif
 
+#include "drive_room.h"
+
 void drive()
 {
     // #if DRIVING_TYPE == 0
+
     if (robot.cur_drive_mode == robot.ROBOT_DRIVE_MODE_LINE)
     {
         drive_sensor_array();
     }
-    else
+
+    else if (robot.cur_drive_mode == robot.ROBOT_DRIVE_MODE_ROOM)
     {
-        // robot.move(10, -10);
+        drive_room();
     }
+
+
+
     // #elif DRIVING_TYPE == 1
     // drive_new();
     // #endif

@@ -12,11 +12,14 @@
 #include "taster.h"
 #include <Servo.h>
 #include "../../include/servo_angles.h"
-#include "buzz.h"
+#include "../../include/drive_speeds.h"
 #include "../../include/i2c_addresses.h"
+#include "../../include/room_stuff.h"
+#include "buzz.h"
 #include "tof.h"
 #include "io_extender.h"
 #include "lc02.h"
+#include "cuart.h"
 
 #include "logger.h"
 #include "command_parser.h"
@@ -24,7 +27,7 @@
 class Robot
 {
     public:
-        Robot();
+        Robot(CUART_class* cuart);
         void init_tof_xshut();
         void init();
 
@@ -40,6 +43,8 @@ class Robot
         void setRoomBeginningAngle() { room_beginning_angle = compass->get_angle(); }
 
         void startRoom();
+
+        CUART_class* cuart_ref;
 
         Servo* greifer_up = new Servo();
         Servo* greifer_zu = new Servo();
@@ -67,8 +72,10 @@ class Robot
         const int width = 180;
         const int height = 175;
 
-        const int room_width = 1235;
-        const int room_height = 950;
+        const int room_width = 1150;
+        const int room_height = 850;
+
+        int room_rotation = 0;
 
         struct point
         {
@@ -81,7 +88,7 @@ class Robot
         float room_beginning_angle = 0.0f;
         float angle = 0.0f;
         point pos;
-        static point rotate_point(point point_to_rotate, point pivot, float angle);
+        static point rotate_point(point point_to_rotate, point pivot, float angle_degrees);
 
         enum ROBOT_DRIVE_MODE
         {
@@ -89,7 +96,7 @@ class Robot
             ROBOT_DRIVE_MODE_ROOM
             //TBD: Different Steps of room
         };
-        ROBOT_DRIVE_MODE cur_drive_mode = ROBOT_DRIVE_MODE_LINE; // NEEDS TO BE CHANGED (Sets default drive mode)
+        ROBOT_DRIVE_MODE cur_drive_mode = ROBOT_DRIVE_MODE_ROOM; // NEEDS TO BE CHANGED (Sets default drive mode)
 
         bool is_control_on_user = false;
 
@@ -97,12 +104,63 @@ class Robot
         void compass_start_calibration_background_task();
         void compass_stop_calibration_background_task();
 
+
+        // Room
+        void room_move_along_wall();
+
+        enum room_end_types {
+            ROOM_HAS_NOT_REACHED_END,
+            ROOM_HAS_REACHED_TASTER_RIGHT,
+            ROOM_HAS_REACHED_TASTER_LEFT,
+            ROOM_HAS_REACHED_SILVER_LINE,
+            ROOM_HAS_REACHED_GREEN_LINE
+        };
+        room_end_types room_has_reached_end();
+
         bool serial_lidar_mode = false;
+
+        void room_set_cur_pos(int x, int y);
+
+        void room_rotate_to_degrees(float degrees, bool rotate_right);
+        void room_rotate_relative_degrees(float degrees);
+
+        unsigned long room_time_measure_start_time = 0u;
+        void room_time_measure_start() { room_time_measure_start_time = millis(); }
+        unsigned long room_time_measure_stop() { return millis() - room_time_measure_start_time; }
+
+        const unsigned int robot_millis_per_360_at_30_speed = 2650;
+
+        point room_entry_pos;
+        bool room_entry_found = false;
+        point room_exit_pos;
+        bool room_exit_found = false;
+        point room_corner_pos;
+        bool room_corner_found = false;
+
+        bool last_time_was_corner = false;
+
+        enum room_wall_types
+        {
+            WALL_FIRST_UNKNOWN_WALL,
+            WALL_2_LONG,
+            WALL_2_SHORT,
+            WALL_3_LONG,
+            WALL_3_SHORT,
+            WALL_4_LONG,
+            WALL_4_SHORT,
+            WALL_1_LONG,
+            WALL_1_SHORT,
+        };
+
+        room_wall_types cur_moving_wall;
+
+
     private:
         void parse_command(String command);
         String help_command();
         String get_command(String sensor, String subsensor);
         String move_command(String left, String right, String third_arg);
+        String rotate_command(String degrees);
         String control_command(String on_off);
         String set_command(String first_arg, String second_arg, String third_arg);
         String comamnd_template(String arg);
