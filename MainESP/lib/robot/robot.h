@@ -96,7 +96,7 @@ class Robot
             ROBOT_DRIVE_MODE_ROOM
             //TBD: Different Steps of room
         };
-        ROBOT_DRIVE_MODE cur_drive_mode = ROBOT_DRIVE_MODE_ROOM; // NEEDS TO BE CHANGED (Sets default drive mode)
+        ROBOT_DRIVE_MODE cur_drive_mode = ROBOT_DRIVE_MODE_LINE; // NEEDS TO BE CHANGED (Sets default drive mode)
 
         bool is_control_on_user = false;
 

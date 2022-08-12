@@ -17,12 +17,14 @@ void drive_room()
 
             if (robot.last_time_was_corner)
             {
+                logln("Last wall was corner (+1080)");
                 robot.last_time_was_corner = false;
                 wall_time += 1080; // Adds one tile of time to compensate for the corner
             }
 
             if (!robot.room_corner_found)
             {
+                logln("Corner not found");
                 robot.move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL); // Rotate 45 deg to be paralel to the might be corner
                 delay(400);
                 robot.room_rotate_relative_degrees(-50);
@@ -40,39 +42,47 @@ void drive_room()
 
                 if (CORNER) // Was corner
                 {
+                    logln("Was Corner (+1080)");
                     wall_time += 1080; // Adds one tile of time to compensate for the corner
                     robot.room_corner_found = true;
 
                     if (robot.cur_moving_wall == Robot::WALL_FIRST_UNKNOWN_WALL)
                     {
+                        logln("Unknown wall");
                         if (LONGWALL)
                         {
+                            logln("Corner in TL");
                             robot.room_corner_pos.x_mm = ROOM_CORNER_POS_TL_X;
                             robot.room_corner_pos.y_mm = ROOM_CORNER_POS_TL_Y;
                         }
                         else
                         {
+                            logln("Corner in TR");
                             robot.room_corner_pos.x_mm = ROOM_CORNER_POS_TR_X;
                             robot.room_corner_pos.y_mm = ROOM_CORNER_POS_TR_Y;
                         }
                     }
                     else if (robot.cur_moving_wall == Robot::WALL_2_LONG || robot.cur_moving_wall == Robot::WALL_1_LONG)
                     {
+                        logln("Corner in TL");
                         robot.room_corner_pos.x_mm = ROOM_CORNER_POS_TL_X;
                         robot.room_corner_pos.y_mm = ROOM_CORNER_POS_TL_Y;
                     }
                     else if (robot.cur_moving_wall == Robot::WALL_3_SHORT || robot.cur_moving_wall == Robot::WALL_2_SHORT)
                     {
+                        logln("Corner in BL");
                         robot.room_corner_pos.x_mm = ROOM_CORNER_POS_BL_X;
                         robot.room_corner_pos.y_mm = ROOM_CORNER_POS_BL_Y;
                     }
                     else if (robot.cur_moving_wall == Robot::WALL_4_LONG || robot.cur_moving_wall == Robot::WALL_3_LONG)
                     {
+                        logln("Corner in BR");
                         robot.room_corner_pos.x_mm = ROOM_CORNER_POS_BR_X;
                         robot.room_corner_pos.y_mm = ROOM_CORNER_POS_BR_Y;
                     }
                     else if (robot.cur_moving_wall == Robot::WALL_1_SHORT || robot.cur_moving_wall == Robot::WALL_4_SHORT)
                     {
+                        logln("Corner in TR");
                         robot.room_corner_pos.x_mm = ROOM_CORNER_POS_TR_X;
                         robot.room_corner_pos.y_mm = ROOM_CORNER_POS_TR_Y;
                     }
@@ -85,6 +95,7 @@ void drive_room()
             }
             else
             {
+                logln("Corner was already found -> 90 degrees");
                 robot.move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
                 delay(500);
                 robot.room_rotate_relative_degrees(-90);
@@ -93,8 +104,9 @@ void drive_room()
             
             if (robot.cur_moving_wall == Robot::WALL_FIRST_UNKNOWN_WALL)
             {
-                if (LONGWALL)
+                if (SHORTWALL)
                 {
+                    logln("Entry wall was short, setting entry pos to 1025|0");
                     robot.room_entry_found = true;
                     robot.room_entry_pos.x_mm = 1025/* - offset of room entry*/;
                     robot.room_entry_pos.y_mm = 0;
@@ -102,6 +114,7 @@ void drive_room()
                 }
                 else
                 {
+                    logln("Entry wall was long, setting entry pos to width|725");
                     robot.room_entry_found = true;
                     robot.room_entry_pos.x_mm = robot.room_width;
                     robot.room_entry_pos.y_mm = 725/* - offset of room entry*/;
@@ -139,6 +152,7 @@ void drive_room()
             // Here should be marked as entry / exit
             cuart.green_line = false;
             cuart.silver_line = false;
+            logln("Some line was triggered");
         }
         // else if (max_distance_of_closerange -> pause time measurement and explore hole in wall)
     }

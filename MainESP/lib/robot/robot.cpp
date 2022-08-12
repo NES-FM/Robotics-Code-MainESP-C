@@ -762,6 +762,8 @@ void Robot::startRoom()
         
     }
 
+    delay(2000); // NEEDS TO BE REMOVED
+
     room_time_measure_start();
 }
 
