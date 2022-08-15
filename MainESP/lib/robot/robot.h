@@ -39,11 +39,6 @@ class Robot
         void move(int speed_left, int speed_right);
         void greifer_home();
 
-        void calculate_position();
-        void setRoomBeginningAngle() { room_beginning_angle = compass->get_angle(); }
-
-        void startRoom();
-
         CUART_class* cuart_ref;
 
         Servo* greifer_up = new Servo();
@@ -85,7 +80,6 @@ class Robot
 
         point point_cloud[120];
 
-        float room_beginning_angle = 0.0f;
         float angle = 0.0f;
         point pos;
         static point rotate_point(point point_to_rotate, point pivot, float angle_degrees);
@@ -106,6 +100,18 @@ class Robot
 
 
         // Room
+        void calculate_position();
+
+        float room_beginning_angle = 0.0f;
+        void setRoomBeginningAngle() { room_beginning_angle = compass->get_angle(); }
+
+        float room_search_balls_beginning_angle = 0.0f;
+        void setRoomSearchBallsBeginningAngle() { room_search_balls_beginning_angle = compass->keep_in_360_range(compass->get_angle() - 90); }
+        
+        bool searching_balls_moving_backward = false;
+        
+        void startRoom();
+
         void room_move_along_wall();
 
         enum room_end_types {
