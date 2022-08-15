@@ -151,8 +151,15 @@ class Robot
             WALL_1_LONG,
             WALL_1_SHORT,
         };
-
         room_wall_types cur_moving_wall;
+
+        enum room_states
+        {
+            ROOM_STATE_INITAL_MOVE_AROUND_WALLS,
+            ROOM_STATE_SCAN_FOR_BALLS,
+            // ROOM_STATE_COLLECT_BALL, etc...
+        };
+        room_states cur_room_state;
 
 
     private:

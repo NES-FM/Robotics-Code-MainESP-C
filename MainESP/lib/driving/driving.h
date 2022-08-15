@@ -4,9 +4,9 @@
 #define DRIVING_TYPE 0
 
 #include "../../include/drive_speeds.h"
-#include "timer.h"
+#include "target_timer.h"
 
-timer resend_motor_timer(100);
+target_timer resend_motor_timer(100);
 
 #define DEBUG_MOTOR_VALUES 0
 

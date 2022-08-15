@@ -764,7 +764,9 @@ void Robot::startRoom()
 
     delay(2000); // NEEDS TO BE REMOVED
 
-    room_time_measure_start();
+    cur_room_state = ROOM_STATE_INITAL_MOVE_AROUND_WALLS;
+
+    // room_time_measure_start();
 }
 
 Robot::room_end_types Robot::room_has_reached_end()

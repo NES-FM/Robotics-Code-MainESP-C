@@ -2,11 +2,11 @@
 
 #include "Arduino.h"
 
-class timer
+class target_timer
 {
     public:
-        timer();
-        timer(int target);
+        target_timer();
+        target_timer(int target);
         void reset();
         void set_target(int t);
         bool has_reached_target();

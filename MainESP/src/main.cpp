@@ -19,7 +19,7 @@
 #include "lc02.h"
 
 #include "cuart.h"
-#include "timer.h"
+#include "target_timer.h"
 #include <Preferences.h>
 
 Preferences preferences;

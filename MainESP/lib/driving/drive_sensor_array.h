@@ -1,4 +1,4 @@
-#include "timer.h"
+#include "target_timer.h"
 
 bool driving_interesting_situation = false;
 bool driving_interesting_bias_left = false;  // If it is suspected to be either Tl or 90l, discard all right situations
@@ -7,8 +7,8 @@ bool driving_interesting_bias_both = false;  // ... or if the line is so wide, t
 int driving_interesting_actual_ltype = 0;
 bool driving_interesting_actual_ltype_override = false;
 
-timer white_timer(1500);
-timer silver_timer(3000);
+target_timer white_timer(1500);
+target_timer silver_timer(3000);
 #include "find_line.h"
 #include "ausweichen.h"
 
