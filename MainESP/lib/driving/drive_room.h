@@ -1,10 +1,24 @@
+#include "Timer.h"
+
+Timer wall_timer;
+Timer corner_timer;
+
 #define SHORTWALL (wall_time < 4000)
 #define LONGWALL (wall_time >= 4000)
 #define CORNER (corner_time >= 1000)
 #define NOCORNER (corner_time < 1000)
 
+#define TIME_ADD_FOR_CORNER 1080
+#define MILLIMETERS_PER_MILLISECOND 0.1770833333
+
 void drive_room()
 {
+
+    // if currently executing fisrt move around walls of room
+    if (wall_timer.state() == STOPPED)
+    {
+        wall_timer.start();
+    }
     robot.room_move_along_wall();
     Robot::room_end_types has_reached_end = robot.room_has_reached_end();
 
@@ -12,14 +26,15 @@ void drive_room()
     {
         if (has_reached_end == Robot::room_end_types::ROOM_HAS_REACHED_TASTER_LEFT || has_reached_end == Robot::room_end_types::ROOM_HAS_REACHED_TASTER_RIGHT)
         {
-            unsigned long wall_time = robot.room_time_measure_stop();
+            wall_timer.stop();
+            unsigned long wall_time = wall_timer.read();
             logln("Reached end with time of: %u", wall_time);
 
             if (robot.last_time_was_corner)
             {
                 logln("Last wall was corner (+1080)");
                 robot.last_time_was_corner = false;
-                wall_time += 1080; // Adds one tile of time to compensate for the corner
+                wall_time += TIME_ADD_FOR_CORNER; // Adds one tile of time to compensate for the corner
             }
 
             if (!robot.room_corner_found)
@@ -30,20 +45,21 @@ void drive_room()
                 robot.room_rotate_relative_degrees(-50);
                 robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
 
-                robot.room_time_measure_start(); // Measuring the time it takes to reach wall again
+                corner_timer.start(); // Measuring the time it takes to reach wall again
                 has_reached_end = robot.room_has_reached_end();
                 while (has_reached_end != Robot::room_end_types::ROOM_HAS_REACHED_TASTER_LEFT && has_reached_end != Robot::room_end_types::ROOM_HAS_REACHED_TASTER_RIGHT) // While no taster is hit
                 {
                     has_reached_end = robot.room_has_reached_end();
                     delay(5);
                 }
-                unsigned long corner_time = robot.room_time_measure_stop();
+                corner_timer.stop();
+                unsigned long corner_time = corner_timer.read();
                 logln("Corner took %u ms", corner_time);
 
                 if (CORNER) // Was corner
                 {
                     logln("Was Corner (+1080)");
-                    wall_time += 1080; // Adds one tile of time to compensate for the corner
+                    wall_time += TIME_ADD_FOR_CORNER; // Adds one tile of time to compensate for the corner
                     robot.room_corner_found = true;
 
                     if (robot.cur_moving_wall == Robot::WALL_FIRST_UNKNOWN_WALL)
@@ -144,8 +160,7 @@ void drive_room()
             else if (robot.cur_moving_wall == Robot::WALL_4_LONG)
                 robot.cur_moving_wall = Robot::WALL_1_SHORT;
 
-
-            robot.room_time_measure_start();
+            wall_timer.start();
         }
         else if (has_reached_end == Robot::room_end_types::ROOM_HAS_REACHED_GREEN_LINE || has_reached_end == Robot::room_end_types::ROOM_HAS_REACHED_SILVER_LINE) // For now just ignore silver and green lines
         {
@@ -154,6 +169,42 @@ void drive_room()
             cuart.silver_line = false;
             logln("Some line was triggered");
         }
-        // else if (max_distance_of_closerange -> pause time measurement and explore hole in wall)
     }
+    else
+    {
+        // if (max_distance_of_closerange)
+        // { -> pause time measurement and explore hole in wall
+        // }
+
+        if (robot.cur_moving_wall == Robot::WALL_2_LONG || robot.cur_moving_wall == Robot::WALL_1_LONG) // Top Wall
+        {
+            robot.pos.x_mm = robot.room_width - (0.5*robot.height) - 80 - how_far_have_i_traveled();
+            robot.pos.y_mm = robot.room_height - (0.5*robot.width) - 80;
+        }
+        else if (robot.cur_moving_wall == Robot::WALL_3_SHORT || robot.cur_moving_wall == Robot::WALL_2_SHORT) // Left Wall
+        {
+            robot.pos.x_mm = 0 + (0.5*robot.width) + 80;
+            robot.pos.y_mm = robot.room_height - (0.5*robot.height) - 80 - how_far_have_i_traveled();
+        }
+        else if (robot.cur_moving_wall == Robot::WALL_4_LONG || robot.cur_moving_wall == Robot::WALL_3_LONG) // Bottom Wall
+        {
+            robot.pos.x_mm = 0 + (0.5*robot.height) + 80 + how_far_have_i_traveled();
+            robot.pos.y_mm = 0 + (0.5*robot.width) + 80;
+        }
+        else if (robot.cur_moving_wall == Robot::WALL_1_SHORT || robot.cur_moving_wall == Robot::WALL_4_SHORT) // Right Wall
+        {
+            robot.pos.x_mm = robot.room_width - (0.5*robot.width) - 80;
+            robot.pos.y_mm = 0 + (0.5*robot.height) + 80 + how_far_have_i_traveled();
+        }
+    }
+    // endif currently executing fisrt move around walls of room
+}
+
+uint16_t how_far_have_i_traveled()
+{
+    uint32_t millisec = wall_timer.read();
+    if (robot.last_time_was_corner)
+        millisec += TIME_ADD_FOR_CORNER;
+    
+    return millisec * MILLIMETERS_PER_MILLISECOND;
 }
