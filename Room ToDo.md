@@ -11,5 +11,6 @@
 - Find balls directly on wall
 - count balls -> find exit
 - when on initial move around the end is not taster but line, currently ignored
+- retain information about room after lop
 
 ## Done:

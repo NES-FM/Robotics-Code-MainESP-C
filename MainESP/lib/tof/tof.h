@@ -49,6 +49,10 @@ class tof {
         void changeAddress(uint8_t address);
 
         uint16_t getMeasurement();
+        
+        int _offset_x = 0;
+        int _offset_y = 0;
+        int _offset_a = 0;
     private:
         VL53L0X* vl53l0x_sensor;
         Adafruit_VL6180X* vl6180x_sensor;
@@ -66,9 +70,6 @@ class tof {
         bool _io_ext_mode = false;
         int _xshut = -1;
         io_ext_pins _xshut_io_ext_mode;
-        int _offset_x = 0;
-        int _offset_y = 0;
-        int _offset_a = 0;
 
         bool _enabled = false;
 

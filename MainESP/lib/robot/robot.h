@@ -24,6 +24,8 @@
 #include "logger.h"
 #include "command_parser.h"
 
+#include <deque>
+
 class Robot
 {
     public:
@@ -166,6 +168,18 @@ class Robot
             // ROOM_STATE_COLLECT_BALL, etc...
         };
         room_states cur_room_state;
+
+        point room_tof_to_relative_point(tof* tof_sensor, float angle_degrees);
+
+        struct room_search_balls_vector
+        {
+            int_least16_t offset_x;
+            int_least16_t offset_y;
+        };
+
+        std::deque<room_search_balls_vector> room_search_balls_left_values;
+        std::deque<room_search_balls_vector> room_search_balls_right_values;
+        // room_search_balls_vector left_values[1000];
 
 
     private:

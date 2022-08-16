@@ -228,22 +228,36 @@ void drive_room()
         int right_dis = robot.tof_right->getMeasurement();
         int back_dis = robot.tof_back->getMeasurement();
 
-        Robot::room_end_types has_reached_end = robot.room_has_reached_end();
-        if (has_reached_end != Robot::ROOM_HAS_NOT_REACHED_END)
+        if (robot.tof_back->getMeasurementError() == tof::TOF_ERROR_NONE)
         {
-            // idk lol
-            robot.move(0, 0);
-        }
-        else if (back_dis > 600) // After half
-        {
-            // Turn around
-            robot.room_rotate_relative_degrees(180);
-            robot.move(-DRIVE_SPEED_HALF, -DRIVE_SPEED_HALF);
-            robot.searching_balls_moving_backward = true;
-        }
-        else
-        {
-            // Add points
+            robot.pos.x_mm = 420;
+            if (robot.searching_balls_moving_backward)
+            {
+                robot.pos.y_mm = robot.tof_back->_offset_y + back_dis;
+            }
+            else
+            {
+                robot.pos.y_mm = robot.room_width - robot.tof_back->_offset_y - back_dis;
+            }
+
+            Robot::room_end_types has_reached_end = robot.room_has_reached_end();
+            if ((has_reached_end != Robot::ROOM_HAS_NOT_REACHED_END || back_dis < 40) && robot.searching_balls_moving_backward)
+            {
+                // next step
+                robot.move(0, 0);
+            }
+            else if (back_dis > 600) // After half
+            {
+                // Turn around
+                robot.room_rotate_relative_degrees(180);
+                robot.move(-DRIVE_SPEED_HALF, -DRIVE_SPEED_HALF);
+                robot.searching_balls_moving_backward = true;
+            }
+            else
+            {
+                // Add points
+
+            }
         }
     }
 }

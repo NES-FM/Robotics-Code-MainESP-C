@@ -839,3 +839,34 @@ void Robot::room_rotate_relative_degrees(float degrees)
 
     delay((abs(degrees) / 360) * robot_millis_per_360_at_30_speed);
 }
+
+Robot::point Robot::room_tof_to_relative_point(tof* tof_sensor, float angle_degrees)
+{
+    int tof_value = tof_sensor->getMeasurement();
+    if (tof_sensor->getMeasurementError() == tof::TOF_ERROR_NONE)
+    {
+        point point_to_be_rotated;
+        point_to_be_rotated.x_mm = tof_sensor->_offset_x;
+        point_to_be_rotated.y_mm = tof_sensor->_offset_y + tof_value;
+
+        point rotate_around;
+        rotate_around.x_mm = tof_sensor->_offset_x;
+        rotate_around.y_mm = tof_sensor->_offset_y;
+
+        point left_point = rotate_point(point_to_be_rotated, rotate_around, tof_sensor->_offset_a);
+        point origin;
+        origin.x_mm = 0;
+        origin.y_mm = 0;
+
+        left_point = rotate_point(left_point, origin, angle_degrees);
+        return left_point;
+    }
+    else
+    {
+        point error;
+        error.x_mm = -1;
+        error.y_mm = -1;
+        return error;
+    }
+}
+
