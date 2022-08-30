@@ -658,6 +658,33 @@ String Robot::comamnd_template(String arg)
     return out;
 }
 
+String Robot::heartbeat_command(String arg)
+{
+    return "heartbeat " + arg;
+}
+
+String Robot::bluetooth_app_command(String on_off)
+{
+    if (on_off == "")
+    {
+        bluetooth_app_enabled = !bluetooth_app_enabled;
+        if (is_control_on_user)
+            return "bluetooth_app_enabled";
+        else
+            return "bluetooth_app_disabled";
+    }
+    else if (on_off == "on")
+    {
+        bluetooth_app_enabled = true;
+        return "bluetooth_app_enabled";
+    }
+    else
+    {
+        bluetooth_app_enabled = false;
+        return "bluetooth_app_disabled";
+    }
+}
+
 void Robot::parse_command(String command)
 {
     command.trim();
@@ -713,6 +740,10 @@ void Robot::parse_command(String command)
             out = "Serial lidar mode is now disabled";
         }
     }
+    else if (top_level_command == "heartbeat")
+        heartbeat_command(first_arg);
+    else if (top_level_command == "bluetooth_app")
+        bluetooth_app_command(first_arg);
     else
         out = "Invalid command: " + top_level_command;
 
@@ -869,4 +900,65 @@ Robot::point Robot::room_tof_to_relative_point(tof* tof_sensor, float angle_degr
         return error;
     }
 }
+
+void Robot::roomSetEntryPos(int x, int y)
+{
+    room_entry_found = true;
+    room_entry_pos.x_mm = x;
+    room_entry_pos.y_mm = y;
+    roomSendNewEntry();
+}
+
+void Robot::roomSetExitPos(int x, int y)
+{
+    room_exit_found = true;
+    room_exit_pos.x_mm = x;
+    room_exit_pos.y_mm = y;
+    roomSendNewExit();
+}
+
+void Robot::roomSetCornerPos(int x, int y)
+{
+    room_corner_found = true;
+    room_corner_pos.x_mm = x;
+    room_corner_pos.y_mm = y;
+    roomSendNewCorner();
+}
+
+
+void Robot::roomSendNewPoints()
+{
+    if (bluetooth_app_enabled)
+    {
+        room_search_balls_points leftBallPoint = room_search_balls_left_values.back();
+        room_search_balls_points rightBallPoint = room_search_balls_right_values.back();
+
+        log_inline("ANDROID::SEARCH_BALLS_POINTS(%d,%d,%d,%d);\r\n", leftBallPoint.x, leftBallPoint.y, rightBallPoint.x, rightBallPoint.y);
+    }
+}
+
+void Robot::roomSendNewEntry()
+{
+    if (bluetooth_app_enabled)
+    {
+        log_inline("ANDROID::SET_ENTRY(%d,%d);\r\n", room_entry_pos.x_mm, room_entry_pos.y_mm);
+    }
+}
+
+void Robot::roomSendNewExit()
+{
+    if (bluetooth_app_enabled)
+    {
+        log_inline("ANDROID::SET_EXIT(%d,%d);\r\n", room_exit_pos.x_mm, room_exit_pos.y_mm);
+    }
+}
+
+void Robot::roomSendNewCorner()
+{
+    if (bluetooth_app_enabled)
+    {
+        log_inline("ANDROID::SET_CORNER(%d,%d);\r\n", room_corner_pos.x_mm, room_corner_pos.y_mm);
+    }
+}
+
 

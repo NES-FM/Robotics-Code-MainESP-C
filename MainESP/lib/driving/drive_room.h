@@ -2,6 +2,7 @@
 
 Timer wall_timer;
 Timer corner_timer;
+Timer search_balls_interval_timer;
 
 #define SHORTWALL (wall_time < 4000)
 #define LONGWALL (wall_time >= 4000)
@@ -10,6 +11,8 @@ Timer corner_timer;
 
 #define TIME_ADD_FOR_CORNER 1080
 #define MILLIMETERS_PER_MILLISECOND 0.1770833333
+
+#define SEARCH_BALLS_INTERVAL_MS 50
 
 uint16_t how_far_have_i_traveled();
 
@@ -70,39 +73,33 @@ void drive_room()
                             if (LONGWALL)
                             {
                                 logln("Corner in TL");
-                                robot.room_corner_pos.x_mm = ROOM_CORNER_POS_TL_X;
-                                robot.room_corner_pos.y_mm = ROOM_CORNER_POS_TL_Y;
+                                robot.roomSetCornerPos(ROOM_CORNER_POS_TL_X, ROOM_CORNER_POS_TL_Y);
                             }
                             else
                             {
                                 logln("Corner in TR");
-                                robot.room_corner_pos.x_mm = ROOM_CORNER_POS_TR_X;
-                                robot.room_corner_pos.y_mm = ROOM_CORNER_POS_TR_Y;
+                                robot.roomSetCornerPos(ROOM_CORNER_POS_TR_X, ROOM_CORNER_POS_TR_Y);
                             }
                         }
                         else if (robot.cur_moving_wall == Robot::WALL_2_LONG || robot.cur_moving_wall == Robot::WALL_1_LONG)
                         {
                             logln("Corner in TL");
-                            robot.room_corner_pos.x_mm = ROOM_CORNER_POS_TL_X;
-                            robot.room_corner_pos.y_mm = ROOM_CORNER_POS_TL_Y;
+                            robot.roomSetCornerPos(ROOM_CORNER_POS_TL_X, ROOM_CORNER_POS_TL_Y);
                         }
                         else if (robot.cur_moving_wall == Robot::WALL_3_SHORT || robot.cur_moving_wall == Robot::WALL_2_SHORT)
                         {
                             logln("Corner in BL");
-                            robot.room_corner_pos.x_mm = ROOM_CORNER_POS_BL_X;
-                            robot.room_corner_pos.y_mm = ROOM_CORNER_POS_BL_Y;
+                            robot.roomSetCornerPos(ROOM_CORNER_POS_BL_X, ROOM_CORNER_POS_BL_Y);
                         }
                         else if (robot.cur_moving_wall == Robot::WALL_4_LONG || robot.cur_moving_wall == Robot::WALL_3_LONG)
                         {
                             logln("Corner in BR");
-                            robot.room_corner_pos.x_mm = ROOM_CORNER_POS_BR_X;
-                            robot.room_corner_pos.y_mm = ROOM_CORNER_POS_BR_Y;
+                            robot.roomSetCornerPos(ROOM_CORNER_POS_BR_X, ROOM_CORNER_POS_BR_Y);
                         }
                         else if (robot.cur_moving_wall == Robot::WALL_1_SHORT || robot.cur_moving_wall == Robot::WALL_4_SHORT)
                         {
                             logln("Corner in TR");
-                            robot.room_corner_pos.x_mm = ROOM_CORNER_POS_TR_X;
-                            robot.room_corner_pos.y_mm = ROOM_CORNER_POS_TR_Y;
+                            robot.roomSetCornerPos(ROOM_CORNER_POS_TR_X, ROOM_CORNER_POS_TR_Y);
                         }
                     }
 
@@ -125,17 +122,13 @@ void drive_room()
                     if (SHORTWALL)
                     {
                         logln("Entry wall was short, setting entry pos to 1025|0");
-                        robot.room_entry_found = true;
-                        robot.room_entry_pos.x_mm = 1025/* - offset of room entry*/;
-                        robot.room_entry_pos.y_mm = 0;
+                        robot.roomSetEntryPos(1025/* - offset of room entry*/, 0);
                         robot.cur_moving_wall = Robot::WALL_1_SHORT; // Was moving along short wall 1
                     }
                     else
                     {
                         logln("Entry wall was long, setting entry pos to width|725");
-                        robot.room_entry_found = true;
-                        robot.room_entry_pos.x_mm = robot.room_width;
-                        robot.room_entry_pos.y_mm = 725/* - offset of room entry*/;
+                        robot.roomSetEntryPos(robot.room_width, 725/* - offset of room entry*/);
                         robot.cur_moving_wall = Robot::WALL_1_LONG; // Was moving along long wall 1
                     }
                 }
@@ -223,7 +216,7 @@ void drive_room()
     }
     else if (robot.cur_room_state == Robot::ROOM_STATE_SCAN_FOR_BALLS)
     {
-        float angle = robot.compass->keep_in_360_range(robot.compass->get_angle() - robot.room_search_balls_beginning_angle);
+        float angle = robot.compass->keep_in_360_range(robot.compass->keep_in_360_range(robot.compass->get_angle() - robot.room_search_balls_beginning_angle) - 90);
         int left_dis = robot.tof_left->getMeasurement();
         int right_dis = robot.tof_right->getMeasurement();
         int back_dis = robot.tof_back->getMeasurement();
@@ -245,6 +238,26 @@ void drive_room()
             {
                 // next step
                 robot.move(0, 0);
+
+                log_inline_begin();log_inline("Left:\r\n");
+                for (Robot::room_search_balls_points p : robot.room_search_balls_left_values)
+                {
+                    log_inline("(%d|%d)\r\n", p.x, p.y);
+                }
+                log_inline_end();
+
+                log_inline_begin();log_inline("Right:\r\n");
+                for (Robot::room_search_balls_points p : robot.room_search_balls_right_values)
+                {
+                    log_inline("(%d|%d)\r\n", p.x, p.y);
+                }
+                log_inline_end();
+
+                while(true) // TO BE REMOVED
+                {
+                    display.tick();
+                    delay(5);
+                }
             }
             else if (back_dis > 600) // After half
             {
@@ -255,8 +268,25 @@ void drive_room()
             }
             else
             {
-                // Add points
+                if (search_balls_interval_timer.state() == STOPPED || (millis() - search_balls_interval_timer.read()) > SEARCH_BALLS_INTERVAL_MS)
+                {
+                    // Add points
+                    Robot::point leftPoint = robot.room_tof_to_relative_point(robot.tof_left, angle);
+                    Robot::point rightPoint = robot.room_tof_to_relative_point(robot.tof_right, angle);
+                    
+                    Robot::room_search_balls_points leftBallPoint;
+                    leftBallPoint.x = leftPoint.x_mm;
+                    leftBallPoint.y = leftPoint.y_mm;
+                    robot.room_search_balls_left_values.push_back(leftBallPoint);
 
+                    Robot::room_search_balls_points rightBallPoint;
+                    rightBallPoint.x = rightPoint.x_mm;
+                    rightBallPoint.y = rightPoint.y_mm;
+                    robot.room_search_balls_left_values.push_back(rightBallPoint);
+
+                    robot.roomSendNewPoints();
+                    search_balls_interval_timer.start();
+                }
             }
         }
     }

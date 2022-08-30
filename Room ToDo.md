@@ -12,5 +12,7 @@
 - count balls -> find exit
 - when on initial move around the end is not taster but line, currently ignored
 - retain information about room after lop
+- think about balls in the weirdest spots (that could throw us off)
+- can i calibrate my compass dynamically
 
 ## Done:

@@ -80,8 +80,6 @@ class Robot
             int y_mm = 0;
         };
 
-        point point_cloud[120];
-
         float angle = 0.0f;
         point pos;
         static point rotate_point(point point_to_rotate, point pivot, float angle_degrees);
@@ -105,7 +103,7 @@ class Robot
         void calculate_position();
 
         float room_beginning_angle = 0.0f;
-        void setRoomBeginningAngle() { room_beginning_angle = compass->get_angle(); }
+        void setRoomBeginningAngle(float offset = 0.0f) { room_beginning_angle = compass->keep_in_360_range(compass->get_angle() + offset); }
 
         float room_search_balls_beginning_angle = 0.0f;
         void setRoomSearchBallsBeginningAngle() { room_search_balls_beginning_angle = compass->keep_in_360_range(compass->get_angle() - 90); }
@@ -171,16 +169,27 @@ class Robot
 
         point room_tof_to_relative_point(tof* tof_sensor, float angle_degrees);
 
-        struct room_search_balls_vector
+        struct room_search_balls_points
         {
-            int_least16_t offset_x;
-            int_least16_t offset_y;
+            int_least16_t x;
+            int_least16_t y;
         };
 
-        std::deque<room_search_balls_vector> room_search_balls_left_values;
-        std::deque<room_search_balls_vector> room_search_balls_right_values;
+        std::deque<room_search_balls_points> room_search_balls_left_values;
+        std::deque<room_search_balls_points> room_search_balls_right_values;
         // room_search_balls_vector left_values[1000];
 
+        void roomSetEntryPos(int x, int y);
+        void roomSetExitPos(int x, int y);
+        void roomSetCornerPos(int x, int y);
+
+
+        // Bluetooth app stuff
+        bool bluetooth_app_enabled = false;
+        void roomSendNewPoints();
+        void roomSendNewEntry();
+        void roomSendNewExit();
+        void roomSendNewCorner();
 
     private:
         void parse_command(String command);
@@ -191,4 +200,6 @@ class Robot
         String control_command(String on_off);
         String set_command(String first_arg, String second_arg, String third_arg);
         String comamnd_template(String arg);
+        String heartbeat_command(String arg);
+        String bluetooth_app_command(String arg);
 };
