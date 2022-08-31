@@ -906,6 +906,7 @@ void Robot::roomSetEntryPos(int x, int y)
     room_entry_found = true;
     room_entry_pos.x_mm = x;
     room_entry_pos.y_mm = y;
+    logln("EntryPos: %d, %d", x, y);
     roomSendNewEntry();
 }
 
@@ -914,6 +915,7 @@ void Robot::roomSetExitPos(int x, int y)
     room_exit_found = true;
     room_exit_pos.x_mm = x;
     room_exit_pos.y_mm = y;
+    logln("ExitPos: %d, %d", x, y);
     roomSendNewExit();
 }
 
@@ -922,6 +924,7 @@ void Robot::roomSetCornerPos(int x, int y)
     room_corner_found = true;
     room_corner_pos.x_mm = x;
     room_corner_pos.y_mm = y;
+    logln("CornerPos: %d, %d", x, y);
     roomSendNewCorner();
 }
 
@@ -933,7 +936,7 @@ void Robot::roomSendNewPoints()
         room_search_balls_points leftBallPoint = room_search_balls_left_values.back();
         room_search_balls_points rightBallPoint = room_search_balls_right_values.back();
 
-        log_inline("ANDROID::SEARCH_BALLS_POINTS(%d,%d,%d,%d);\r\n", leftBallPoint.x, leftBallPoint.y, rightBallPoint.x, rightBallPoint.y);
+        log_inline("\r\nANDROID::SEARCH_BALLS_POINTS(%d,%d,%d,%d);\r\n", leftBallPoint.x, leftBallPoint.y, rightBallPoint.x, rightBallPoint.y);
     }
 }
 
@@ -941,7 +944,7 @@ void Robot::roomSendNewEntry()
 {
     if (bluetooth_app_enabled)
     {
-        log_inline("ANDROID::SET_ENTRY(%d,%d);\r\n", room_entry_pos.x_mm, room_entry_pos.y_mm);
+        log_inline("\r\nANDROID::SET_ENTRY(%d,%d);\r\n", room_entry_pos.x_mm, room_entry_pos.y_mm);
     }
 }
 
@@ -949,7 +952,7 @@ void Robot::roomSendNewExit()
 {
     if (bluetooth_app_enabled)
     {
-        log_inline("ANDROID::SET_EXIT(%d,%d);\r\n", room_exit_pos.x_mm, room_exit_pos.y_mm);
+        log_inline("\r\nANDROID::SET_EXIT(%d,%d);\r\n", room_exit_pos.x_mm, room_exit_pos.y_mm);
     }
 }
 
@@ -957,7 +960,7 @@ void Robot::roomSendNewCorner()
 {
     if (bluetooth_app_enabled)
     {
-        log_inline("ANDROID::SET_CORNER(%d,%d);\r\n", room_corner_pos.x_mm, room_corner_pos.y_mm);
+        log_inline("\r\nANDROID::SET_CORNER(%d,%d);\r\n", room_corner_pos.x_mm, room_corner_pos.y_mm);
     }
 }
 
