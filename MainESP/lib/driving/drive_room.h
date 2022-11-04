@@ -12,7 +12,7 @@ Timer search_balls_interval_timer;
 #define TIME_ADD_FOR_CORNER 1080
 #define MILLIMETERS_PER_MILLISECOND 0.1770833333
 
-#define SEARCH_BALLS_INTERVAL_MS 50
+#define SEARCH_BALLS_INTERVAL_MS 20
 
 uint16_t how_far_have_i_traveled();
 
@@ -240,21 +240,30 @@ void drive_room()
     }
     else if (robot.cur_room_state == Robot::ROOM_STATE_SCAN_FOR_BALLS)
     {
-        float angle = robot.compass->keep_in_360_range(robot.compass->keep_in_360_range(robot.compass->get_angle() - robot.room_search_balls_beginning_angle) - 90);
+        // float angle = robot.compass->keep_in_360_range(robot.compass->keep_in_360_range(robot.compass->get_angle() - robot.room_search_balls_beginning_angle) - 90);
+        float angle = 0.0f;
+        if (robot.searching_balls_moving_backward)
+        {
+            angle = robot.compass->keep_in_360_range(90);
+        }
+        else 
+        {
+            angle = robot.compass->keep_in_360_range(-90);
+        }
         int left_dis = robot.tof_left->getMeasurement();
         int right_dis = robot.tof_right->getMeasurement();
         int back_dis = robot.tof_back->getMeasurement();
 
         if (robot.tof_back->getMeasurementError() == tof::TOF_ERROR_NONE)
         {
-            robot.pos.x_mm = 420;
+            robot.pos.y_mm = 420;
             if (robot.searching_balls_moving_backward)
             {
-                robot.pos.y_mm = robot.tof_back->_offset_y + back_dis;
+                robot.pos.x_mm = abs(robot.tof_back->_offset_y) + back_dis;
             }
             else
             {
-                robot.pos.y_mm = robot.room_width - robot.tof_back->_offset_y - back_dis;
+                robot.pos.x_mm = robot.room_width - abs(robot.tof_back->_offset_y) - back_dis;
             }
 
             Robot::room_end_types has_reached_end = robot.room_has_reached_end();
@@ -277,7 +286,7 @@ void drive_room()
                 }
                 log_inline_end();
 
-                while(true) // TO BE REMOVED
+                while(true) // TODO: To be Removed
                 {
                     display.tick();
                     delay(5);
@@ -286,7 +295,7 @@ void drive_room()
             else if (back_dis > 600) // After half
             {
                 // Turn around
-                robot.room_rotate_relative_degrees(180);
+                robot.room_rotate_relative_degrees(200);
                 robot.move(-DRIVE_SPEED_HALF, -DRIVE_SPEED_HALF);
                 robot.searching_balls_moving_backward = true;
             }
@@ -294,19 +303,20 @@ void drive_room()
             {
                 if (search_balls_interval_timer.state() == STOPPED || (millis() - search_balls_interval_timer.read()) > SEARCH_BALLS_INTERVAL_MS)
                 {
+                    logln("Add Point: Angle:%f, left:%d, back:%d, right:%d", angle, left_dis, back_dis, right_dis);
                     // Add points
                     Robot::point leftPoint = robot.room_tof_to_relative_point(robot.tof_left, angle);
                     Robot::point rightPoint = robot.room_tof_to_relative_point(robot.tof_right, angle);
                     
                     Robot::room_search_balls_points leftBallPoint;
-                    leftBallPoint.x = leftPoint.x_mm;
-                    leftBallPoint.y = leftPoint.y_mm;
+                    leftBallPoint.x = leftPoint.x_mm + robot.pos.x_mm;
+                    leftBallPoint.y = leftPoint.y_mm + robot.pos.y_mm;
                     robot.room_search_balls_left_values.push_back(leftBallPoint);
 
                     Robot::room_search_balls_points rightBallPoint;
-                    rightBallPoint.x = rightPoint.x_mm;
-                    rightBallPoint.y = rightPoint.y_mm;
-                    robot.room_search_balls_left_values.push_back(rightBallPoint);
+                    rightBallPoint.x = rightPoint.x_mm + robot.pos.x_mm;
+                    rightBallPoint.y = rightPoint.y_mm + robot.pos.y_mm;
+                    robot.room_search_balls_right_values.push_back(rightBallPoint);
 
                     robot.roomSendNewPoints();
                     search_balls_interval_timer.start();
