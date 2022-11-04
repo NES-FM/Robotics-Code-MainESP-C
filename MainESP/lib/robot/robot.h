@@ -190,6 +190,7 @@ class Robot
         void roomSendNewEntry();
         void roomSendNewExit();
         void roomSendNewCorner();
+        void roomSendRobotData();
 
     private:
         void parse_command(String command);

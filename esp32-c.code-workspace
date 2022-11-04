@@ -46,6 +46,7 @@
 			"cmath": "cpp",
 			"chrono": "cpp"
 		},
-		"editor.defaultFormatter": "ms-vscode.cpptools"
+		"editor.defaultFormatter": "ms-vscode.cpptools",
+		"todo-tree.tree.showBadges": true
 	}
 }

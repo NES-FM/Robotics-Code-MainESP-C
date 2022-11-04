@@ -673,6 +673,11 @@ String Robot::bluetooth_app_command(String on_off)
         else
             return "bluetooth_app_disabled";
     }
+    else if (on_off == "test")
+    {
+        roomSendRobotData();
+        return "";
+    }
     else if (on_off == "on")
     {
         bluetooth_app_enabled = true;
@@ -961,6 +966,14 @@ void Robot::roomSendNewCorner()
     if (bluetooth_app_enabled)
     {
         log_inline("\r\nANDROID::SET_CORNER(%d,%d);\r\n", room_corner_pos.x_mm, room_corner_pos.y_mm);
+    }
+}
+
+void Robot::roomSendRobotData()
+{
+    if (bluetooth_app_enabled)
+    {
+        log_inline("\r\nANDROID::SET_ROBOT(%d,%d,%f);\r\n", pos.x_mm, pos.y_mm, angle);
     }
 }
 
