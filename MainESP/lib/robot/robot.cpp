@@ -1,8 +1,9 @@
 #include "robot.h"
 
-Robot::Robot(CUART_class* cuart)
+Robot::Robot(CUART_class* cuart, BCUART_class* bcuart)
 {
     cuart_ref = cuart;
+    bcuart_ref = bcuart;
 }
 
 void Robot::init_tof_xshut()
@@ -114,7 +115,7 @@ void Robot::tick()
     }
     else if (cur_drive_mode == ROBOT_DRIVE_MODE_ROOM)
     {
-        this->calculate_position();
+        // this->calculate_position();
     }
 
     String logger_tick_return = logger_tick();
@@ -123,9 +124,33 @@ void Robot::tick()
         this->parse_command(logger_tick_return);
     }
 
-    if (compass_calibration_background_task_enabled)
+    // if (compass_calibration_background_task_enabled)
+    // {
+    //     compass->calibrate_background_task();
+    // }
+
+    if (bcuart_ref->num_balls_in_array > 0) // TODO: Actually do sth with this instead of just printing
     {
-        compass->calibrate_background_task();
+        log_inline_begin();log_inline("Balls: ");
+        for (int i = 0; i < bcuart_ref->num_balls_in_array; i++)
+        {
+            auto b = bcuart_ref->received_balls[i];
+            log_inline("x%d y%d w%d h%d c%d %s  ", b.x, b.y, b.w, b.h, b.conf, b.black ? "black" : "silver");
+        }
+        log_inline_end();
+        bcuart_ref->reset_balls();
+    }
+    if (bcuart_ref->corner_valid)
+    {
+        auto b = bcuart_ref->received_corner;
+        logln("Corner: x%d y%d w%d h%d c%d", b.x, b.y, b.w, b.h, b.conf);
+        bcuart_ref->reset_corner();
+    }
+    if (bcuart_ref->exit_line_valid)
+    {
+        auto b = bcuart_ref->received_exit_line;
+        logln("Exit Line: x%d y%d w%d h%d c%d", b.x, b.y, b.w, b.h, b.conf);
+        bcuart_ref->reset_corner();
     }
 }
 

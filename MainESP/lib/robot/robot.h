@@ -20,6 +20,7 @@
 #include "io_extender.h"
 #include "lc02.h"
 #include "cuart.h"
+#include "bcuart.h"
 
 #include "logger.h"
 #include "command_parser.h"
@@ -29,7 +30,7 @@
 class Robot
 {
     public:
-        Robot(CUART_class* cuart);
+        Robot(CUART_class* cuart, BCUART_class* bcuart);
         void init_tof_xshut();
         void init();
 
@@ -42,6 +43,7 @@ class Robot
         void greifer_home();
 
         CUART_class* cuart_ref;
+        BCUART_class* bcuart_ref;
 
         Servo* greifer_up = new Servo();
         Servo* greifer_zu = new Servo();

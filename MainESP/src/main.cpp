@@ -19,17 +19,19 @@
 #include "lc02.h"
 
 #include "cuart.h"
+#include "bcuart.h"
 #include "target_timer.h"
 #include <Preferences.h>
 
 Preferences preferences;
 
 CUART_class cuart;
+BCUART_class bcuart;
 
 debug_disp display;
 
 #include "robot.h"
-Robot robot(&cuart);
+Robot robot(&cuart, &bcuart);
 
 #include "i2c_scanner.h"
 #include "driving.h"
@@ -75,6 +77,7 @@ void setup()
     print_i2c_addresses();
 
     cuart.init();
+    bcuart.init();
 
     display.init(&cuart, &robot, &driving_interesting_situation, &driving_interesting_bias_left, &driving_interesting_bias_right, &driving_interesting_bias_both);
 

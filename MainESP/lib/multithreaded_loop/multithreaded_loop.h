@@ -9,6 +9,7 @@ void multithreaded_loop(void* parameters) {
     while(true)
     {
         cuart.tick();
+        bcuart.tick();
     }
 }
 

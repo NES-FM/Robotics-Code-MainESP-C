@@ -15,8 +15,11 @@
 #define PIN_SDA 18
 #define PIN_SCL 19
 
-#define PIN_RX_CAM 21 // TX of Cam, RX of EXP
-#define PIN_TX_CAM 22 // RX of Cam, TX of EXP
+#define PIN_RX_CAM 21 // TX of Cam, RX of ESP
+#define PIN_TX_CAM 22 // RX of Cam, TX of ESP
+
+#define PIN_RX_ROOM_CAM PIN_SENS3
+#define PIN_TX_ROOM_CAM PIN_SENS4
 
 #define PIN_DIP1 15
 #define PIN_DIP2 23
