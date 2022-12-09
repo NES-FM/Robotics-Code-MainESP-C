@@ -53,9 +53,9 @@ void BCUART_class::balls_handler() // char rec_bytes[40] = {0x10, 0x2, 0x0, 0x0,
 
 void BCUART_class::corner_handler()
 {
-    if (_bytes_read == ( sizeof(corner) + 2 ) )
+    if (_bytes_read == ( sizeof(corner) + 1 ) )
     {
-        memcpy(&received_corner, &_received_bytes[2], sizeof(corner)); 
+        memcpy(&received_corner, &_received_bytes[1], sizeof(corner)); 
         corner_valid = true;
     }
     else
@@ -66,9 +66,9 @@ void BCUART_class::corner_handler()
 
 void BCUART_class::exit_line_handler()
 {
-    if (_bytes_read == ( sizeof(exit_line) + 2 ) )
+    if (_bytes_read == ( sizeof(exit_line) + 1 ) )
     {
-        memcpy(&received_exit_line, &_received_bytes[2], sizeof(exit_line)); 
+        memcpy(&received_exit_line, &_received_bytes[1], sizeof(exit_line)); 
         exit_line_valid = true;
     }
     else
@@ -86,7 +86,7 @@ void BCUART_class::reset_balls()
         b.w = 0;
         b.h = 0;
         b.conf = 0;
-        b.black = false;
+        b.black = false
     }
     num_balls_in_array = 0;
 }
