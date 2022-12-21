@@ -86,7 +86,7 @@ void BCUART_class::reset_balls()
         b.w = 0;
         b.h = 0;
         b.conf = 0;
-        b.black = false
+        b.black = false;
     }
     num_balls_in_array = 0;
 }
