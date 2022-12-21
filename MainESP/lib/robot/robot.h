@@ -10,7 +10,6 @@
 #include "analog_sensor.h"
 #include "dip.h"
 #include "taster.h"
-#include <Servo.h>
 #include "../../include/servo_angles.h"
 #include "../../include/drive_speeds.h"
 #include "../../include/i2c_addresses.h"
@@ -21,6 +20,7 @@
 #include "lc02.h"
 #include "cuart.h"
 #include "bcuart.h"
+#include "claw.h"
 
 #include "logger.h"
 #include "command_parser.h"
@@ -40,13 +40,10 @@ class Robot
         void PlayBeginSound();
 
         void move(int speed_left, int speed_right);
-        void greifer_home();
 
         CUART_class* cuart_ref;
         BCUART_class* bcuart_ref;
 
-        Servo* greifer_up = new Servo();
-        Servo* greifer_zu = new Servo();
         DIP* dip = new DIP();
         buzz* main_buzzer = new buzz(PIN_BUZZ1, 128, dip);
         taster_class* taster = new taster_class();
@@ -63,6 +60,8 @@ class Robot
         tof* tof_front = new tof(TOF_SENSOR_VL53L0X, 0, 90, 0, io_ext_pins::EXT_D7);
 
         tof* tof_closerange = new tof(TOF_SENSOR_VL6180X, 90, 80, 90, io_ext_pins::EXT_D8);
+
+        Claw* claw = new Claw();
 
         // lc02* lc02_right = new lc02(90, -76, 90);
 
@@ -92,7 +91,7 @@ class Robot
             ROBOT_DRIVE_MODE_ROOM
             //TBD: Different Steps of room
         };
-        ROBOT_DRIVE_MODE cur_drive_mode = ROBOT_DRIVE_MODE_LINE; // NEEDS TO BE CHANGED (Sets default drive mode)
+        ROBOT_DRIVE_MODE cur_drive_mode = ROBOT_DRIVE_MODE_ROOM; // NEEDS TO BE CHANGED (Sets default drive mode)
 
         bool is_control_on_user = false;
 

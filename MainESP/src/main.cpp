@@ -54,7 +54,7 @@ void setup()
     // robot.tof_left->init();
     // robot.tof_right->init();
 
-    robot.init_tof_xshut();
+    //robot.init_tof_xshut();  TODO Actually remove tofs, that are unneeded, this just disables them
 
     // I2C Enable
     scan_i2c_addresses();

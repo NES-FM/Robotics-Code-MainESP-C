@@ -47,6 +47,9 @@
 			"chrono": "cpp"
 		},
 		"editor.defaultFormatter": "ms-vscode.cpptools",
-		"todo-tree.tree.showBadges": true
+		"todo-tree.tree.showBadges": true,
+		"[cpp]": {
+			"editor.defaultFormatter": "ms-vscode.cpptools"
+		}
 	}
 }

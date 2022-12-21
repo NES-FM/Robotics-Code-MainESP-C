@@ -30,6 +30,8 @@ void Robot::init_tof_xshut()
 
 void Robot::init()
 {
+    claw->init(); // Initializing Claw Servos
+
     // delay(500); // Let IO Extender fully initialize
     digitalRead(io_ext_pins::EXT_D13); // Let IO Extender fully initialize
     // TOF
@@ -187,15 +189,6 @@ void Robot::move(int speed_left, int speed_right)
         logln("move function not activated because is_control_on_user is true");
         #endif
     }
-}
-
-void Robot::greifer_home()
-{
-    greifer_zu->attach(PIN_SERVO1);
-    greifer_zu->write(ANGLE_GREIFER_CLOSE_CUBE);
-    delay(300);
-    greifer_up->attach(PIN_SERVO2);
-    greifer_up->write(ANGLE_GREIFER_UP); //NEEDS TO BE CHANGED
 }
 
 void Robot::compass_start_calibration_background_task()
@@ -531,7 +524,7 @@ String Robot::control_command(String on_off)
 
 String Robot::set_command(String first_arg, String second_arg, String third_arg)
 {
-    char out[64];
+    char out[256];
     if (first_arg == "help")
     {
         String ret = "\r\n";
@@ -540,6 +533,8 @@ String Robot::set_command(String first_arg, String second_arg, String third_arg)
         ret += "compass calib(ration) [on/off]\r\n";
         ret += "tof <left/back/right> <highspeed/highaccuracy/longrange>\r\n";
         ret += "corner <TL/TR/BL/BR>\r\n";
+        ret += "claw <servo_up/servo_close> angle\r\n";
+        ret += "claw state <states>\r\n";
         ret += "-------\r\n";
         return ret;
     }
@@ -670,6 +665,52 @@ String Robot::set_command(String first_arg, String second_arg, String third_arg)
         }
         return "specify which corner (TR/TL/BL/BR)";
     }
+    else if (first_arg == "claw")
+    {
+        if (second_arg == "servo_up")
+        {
+            int angle = third_arg.toInt();
+            claw->_set_raw_servo_up_state(angle);
+            return "Successfully set Claw Up Servo!\r\n";
+        }
+        else if (second_arg == "servo_close")
+        {
+            int angle = third_arg.toInt(); 
+            claw->_set_raw_servo_close_state(angle);
+            return "Successfully set Claw Close Servo!\r\n";
+        }
+        else if (second_arg == "state")
+        {
+            // Map the string to the corresponding enum value
+            Claw::State state;
+            if (third_arg == "bottom_open")
+                state = Claw::BOTTOM_OPEN;
+            else if (third_arg == "bottom_closed")
+                state = Claw::BOTTOM_CLOSED;
+            else if (third_arg == "side_closed")
+                state = Claw::SIDE_CLOSED;
+            else if (third_arg == "top_closed")
+                state = Claw::TOP_CLOSED;
+            else if (third_arg == "top_open")
+                state = Claw::TOP_OPEN;
+            else
+            {
+                return "\r\nInvalid Input! Valid states are: BOTTOM_OPEN, BOTTOM_CLOSED, SIDE_CLOSED, TOP_CLOSED, TOP_OPEN\r\n";
+            }
+
+            // Set the claw state
+            claw->set_state(state);
+            return "Successfully set new Claw State!\r\n";
+        }
+        else
+        {
+            return "\r\nInvalid command! See Help:\r\n" + set_command("help", "", "");
+        }
+    }
+    else
+    {
+        return "\r\nInvalid command! See Help:\r\n" + set_command("help", "", "");
+    }
     return out;
 }
 
@@ -739,6 +780,7 @@ void Robot::parse_command(String command)
     top_level_command.toLowerCase();
     first_arg.toLowerCase();
     second_arg.toLowerCase();
+    third_arg.toLowerCase();
 
     if (top_level_command == "help")
         out = this->help_command();
