@@ -89,8 +89,6 @@ void setup()
     robot.PlayBeginSound();
 
     robot.setRoomBeginningAngle();
-
-    // robot.compass->calibrate();
 }
 
 void loop() 

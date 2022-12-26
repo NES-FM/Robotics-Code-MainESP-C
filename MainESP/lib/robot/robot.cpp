@@ -102,10 +102,7 @@ void Robot::init()
 
     accel_sensor->init();
     logln("After accel");
-    compass->init(accel_sensor);
-
-    pos.x_mm = 500;
-    pos.y_mm = 400;
+    compass->init();
 }
 
 void Robot::tick()
@@ -117,7 +114,30 @@ void Robot::tick()
     }
     else if (cur_drive_mode == ROBOT_DRIVE_MODE_ROOM)
     {
-        // this->calculate_position();
+        angle = compass->keep_in_360_range(compass->get_angle() - room_beginning_angle);
+        if (bcuart_ref->num_balls_in_array > 0) // TODO: Actually do sth with this instead of just printing
+        {
+            log_inline_begin();log_inline("Balls: ");
+            for (int i = 0; i < bcuart_ref->num_balls_in_array; i++)
+            {
+                auto b = bcuart_ref->received_balls[i];
+                log_inline("x%d y%d w%d h%d c%d %s  ", b.x, b.y, b.w, b.h, b.conf, b.black ? "black" : "silver");
+            }
+            log_inline_end();
+            bcuart_ref->reset_balls();
+        }
+        if (bcuart_ref->corner_valid)
+        {
+            auto b = bcuart_ref->received_corner;
+            logln("Corner: x%d y%d w%d h%d c%d", b.x, b.y, b.w, b.h, b.conf);
+            bcuart_ref->reset_corner();
+        }
+        if (bcuart_ref->exit_line_valid)
+        {
+            auto b = bcuart_ref->received_exit_line;
+            logln("Exit Line: x%d y%d w%d h%d c%d", b.x, b.y, b.w, b.h, b.conf);
+            bcuart_ref->reset_corner();
+        }
     }
 
     String logger_tick_return = logger_tick();
@@ -125,40 +145,6 @@ void Robot::tick()
     {
         this->parse_command(logger_tick_return);
     }
-
-    // if (compass_calibration_background_task_enabled)
-    // {
-    //     compass->calibrate_background_task();
-    // }
-
-    if (bcuart_ref->num_balls_in_array > 0) // TODO: Actually do sth with this instead of just printing
-    {
-        log_inline_begin();log_inline("Balls: ");
-        for (int i = 0; i < bcuart_ref->num_balls_in_array; i++)
-        {
-            auto b = bcuart_ref->received_balls[i];
-            log_inline("x%d y%d w%d h%d c%d %s  ", b.x, b.y, b.w, b.h, b.conf, b.black ? "black" : "silver");
-        }
-        log_inline_end();
-        bcuart_ref->reset_balls();
-    }
-    if (bcuart_ref->corner_valid)
-    {
-        auto b = bcuart_ref->received_corner;
-        logln("Corner: x%d y%d w%d h%d c%d", b.x, b.y, b.w, b.h, b.conf);
-        bcuart_ref->reset_corner();
-    }
-    if (bcuart_ref->exit_line_valid)
-    {
-        auto b = bcuart_ref->received_exit_line;
-        logln("Exit Line: x%d y%d w%d h%d c%d", b.x, b.y, b.w, b.h, b.conf);
-        bcuart_ref->reset_corner();
-    }
-}
-
-void Robot::tickPinnedMain()
-{
-    this->calculate_position();
 }
 
 void Robot::PlayBeginSound()
@@ -191,149 +177,35 @@ void Robot::move(int speed_left, int speed_right)
     }
 }
 
-void Robot::compass_start_calibration_background_task()
-{
-    if (!compass_calibration_background_task_enabled)
-    {
-        compass_calibration_background_task_enabled = true;
-        compass->start_calibrate_background_task();
-    }
-}
-
-void Robot::compass_stop_calibration_background_task()
-{
-    if (compass_calibration_background_task_enabled)
-    {
-        compass_calibration_background_task_enabled = false;
-        compass->stop_calibrate_background_task();
-    }
-}
-
-
-void Robot::calculate_position()
-{
-    this->angle = compass->keep_in_360_range(compass->get_angle() - room_beginning_angle);
-
-    int left_dis = tof_left->getMeasurement();
-    int right_dis = tof_right->getMeasurement();
-    int back_dis = tof_back->getMeasurement();
-
-    int closerange_dis = tof_closerange->getMeasurement();
-
-    // int lc02_dis = lc02_right->getDistance_mm();
-
-    float measurement_angle = 0.0f;
-    int point_cloud_index = 0;
-    point measurement;
-    point measurement_old;
-
-    if (serial_lidar_mode)
-    {
-        if (tof_right->getMeasurementError() != tof_right->TOF_ERROR_NONE)
-            right_dis = -1;
-        if (tof_back->getMeasurementError() != tof_back->TOF_ERROR_NONE)
-            back_dis = -1;
-        if (tof_left->getMeasurementError() != tof_left->TOF_ERROR_NONE)
-            left_dis = -1;
-        if (tof_closerange->getMeasurementError() != tof_closerange->TOF_ERROR_NONE)
-            closerange_dis = -1;
-        
-        // if (lc02_right->getErrorCode() != 0)
-            // lc02_dis = -1;
-
-        Serial.printf("%f;%d;%d;%d;%d\r\n", this->angle, left_dis, back_dis, right_dis, closerange_dis);
-    }
-    // else
-    // {
-        // if (tof_right->getMeasurementError() == tof_right->TOF_ERROR_NONE)
-        // {
-        //     measurement_angle = compass->keep_in_360_range(this->angle + tof_right->_offset_a);
-        //     point_cloud_index = int(measurement_angle / 3);
-
-        //     measurement_old = point_cloud[point_cloud_index];
-        //     measurement.x_mm = right_dis + pos.x_mm;
-        //     measurement.y_mm = tof_right->_offset_y + pos.y_mm;
-        //     measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
-
-        //     if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
-        //     {
-        //         measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
-        //         measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
-        //     }
-
-        //     point_cloud[point_cloud_index] = measurement;
-        // }
-        // else
-        // {
-        //     // logln("Error with Right Sensor: %s", tof_right->getMeasurementErrorString().c_str());
-        // }
-
-        // if (tof_left->getMeasurementError() == tof_left->TOF_ERROR_NONE)
-        // {
-        //     measurement_angle = compass->keep_in_360_range(this->angle + tof_left->_offset_a);
-        //     point_cloud_index = int(measurement_angle / 3);
-
-        //     measurement_old = point_cloud[point_cloud_index];
-        //     measurement.x_mm = left_dis + pos.x_mm;
-        //     measurement.y_mm = tof_left->_offset_y + pos.y_mm;
-        //     measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
-
-        //     if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
-        //     {
-        //         measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
-        //         measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
-        //     }
-
-        //     point_cloud[point_cloud_index] = measurement;
-        // }
-        // else
-        // {
-        //     // logln("Error with Left Sensor: %s", tof_left->getMeasurementErrorString().c_str());
-        // }
-
-        // if (tof_back->getMeasurementError() == tof_back->TOF_ERROR_NONE)
-        // {
-        //     measurement_angle = compass->keep_in_360_range(this->angle + tof_back->_offset_a);
-        //     point_cloud_index = int(measurement_angle / 3);
-
-        //     measurement_old = point_cloud[point_cloud_index];
-        //     measurement.x_mm = back_dis + pos.x_mm;
-        //     measurement.y_mm = tof_back->_offset_y + pos.y_mm;
-        //     measurement = rotate_point(measurement, pos, (measurement_angle - 90) * DEG_TO_RAD);
-
-        //     if (measurement_old.x_mm != 0 || measurement_old.y_mm != 0) // If the Value already exists, taking the average of current and old
-        //     {
-        //         measurement.x_mm = (measurement_old.x_mm + measurement.x_mm) / 2;
-        //         measurement.y_mm = (measurement_old.y_mm + measurement.y_mm) / 2;
-        //     }
-
-        //     point_cloud[point_cloud_index] = measurement;
-        // }
-        // else
-        // {
-        //     // logln("Error with Back Sensor: %s", tof_back->getMeasurementErrorString().c_str());
-        // }
-    // }
-}
-
 Robot::point Robot::rotate_point(point point_to_rotate, point pivot, float angle_degrees)
+{
+    // translate point back to rotate around origin:
+    point_to_rotate.x_mm -= pivot.x_mm;
+    point_to_rotate.y_mm -= pivot.y_mm;
+
+    point pnew = rotate_point_around_origin(point_to_rotate, angle_degrees);
+
+    // translate point back:
+    point_to_rotate.x_mm = pnew.x_mm + pivot.x_mm;
+    point_to_rotate.y_mm = pnew.y_mm + pivot.y_mm;
+    return point_to_rotate;
+}
+
+Robot::point Robot::rotate_point_around_origin(point point_to_rotate, float angle_degrees)
 {
     float angle = DEG_TO_RAD * angle_degrees;
     float s = sin(angle);
     float c = cos(angle);
 
-    // translate point back to origin:
-    point_to_rotate.x_mm -= pivot.x_mm;
-    point_to_rotate.y_mm -= pivot.y_mm;
-
     // rotate point
     float xnew = float(point_to_rotate.x_mm) * c + float(point_to_rotate.y_mm) * s;
     float ynew = float(-point_to_rotate.x_mm) * s + float(point_to_rotate.y_mm) * c;
 
-    // translate point back:
-    point_to_rotate.x_mm = xnew + pivot.x_mm;
-    point_to_rotate.y_mm = ynew + pivot.y_mm;
-    return point_to_rotate;
+    point pnew;
+    pnew.x_mm = xnew;
+    pnew.y_mm = ynew;
+
+    return pnew;
 }
 
 
@@ -555,27 +427,6 @@ String Robot::set_command(String first_arg, String second_arg, String third_arg)
             sprintf(out, "%s", "Invalid Drive mode");
         }
     }
-    else if (first_arg == "compass" && (second_arg == "calib" || second_arg == "calibration"))
-    {
-        if (third_arg == "")
-        {
-            if (compass_calibration_background_task_enabled)
-                third_arg = "off";
-            else
-                third_arg = "on";
-        }
-
-        if (third_arg == "on")
-        {
-            sprintf(out, "%s", "Setting calibration background task to ON");
-            compass_start_calibration_background_task();
-        }
-        else if (third_arg == "off")
-        {
-            sprintf(out, "%s", "Setting calibration background task to OFF");
-            compass_stop_calibration_background_task();
-        }
-    }
     else if (first_arg == "tof")
     {
         if (second_arg == "left")
@@ -632,38 +483,6 @@ String Robot::set_command(String first_arg, String second_arg, String third_arg)
                 sprintf(out, "Sensor.highspeed is now %s", tof_right->getHighSpeed() ? "true" : "false");
             }
         }
-    }
-    else if (first_arg == "corner")
-    {
-        if (second_arg == "tr")
-        {
-            this->room_corner_found = true;
-            this->room_corner_pos.x_mm = ROOM_CORNER_POS_TR_X;
-            this->room_corner_pos.y_mm = ROOM_CORNER_POS_TR_Y;
-            return "Succesfully set corner to TR";
-        }
-        else if (second_arg == "tl")
-        {
-            this->room_corner_found = true;
-            this->room_corner_pos.x_mm = ROOM_CORNER_POS_TL_X;
-            this->room_corner_pos.y_mm = ROOM_CORNER_POS_TL_Y;
-            return "Succesfully set corner to TL";
-        }
-        else if (second_arg == "bl")
-        {
-            this->room_corner_found = true;
-            this->room_corner_pos.x_mm = ROOM_CORNER_POS_BL_X;
-            this->room_corner_pos.y_mm = ROOM_CORNER_POS_BL_Y;
-            return "Succesfully set corner to BL";
-        }
-        else if (second_arg == "br")
-        {
-            this->room_corner_found = true;
-            this->room_corner_pos.x_mm = ROOM_CORNER_POS_BR_X;
-            this->room_corner_pos.y_mm = ROOM_CORNER_POS_BR_Y;
-            return "Succesfully set corner to BR";
-        }
-        return "specify which corner (TR/TL/BL/BR)";
     }
     else if (first_arg == "claw")
     {
@@ -729,33 +548,6 @@ String Robot::heartbeat_command(String arg)
     return "heartbeat " + arg;
 }
 
-String Robot::bluetooth_app_command(String on_off)
-{
-    if (on_off == "")
-    {
-        bluetooth_app_enabled = !bluetooth_app_enabled;
-        if (is_control_on_user)
-            return "bluetooth_app_enabled";
-        else
-            return "bluetooth_app_disabled";
-    }
-    else if (on_off == "test")
-    {
-        roomSendRobotData();
-        return "";
-    }
-    else if (on_off == "on")
-    {
-        bluetooth_app_enabled = true;
-        return "bluetooth_app_enabled";
-    }
-    else
-    {
-        bluetooth_app_enabled = false;
-        return "bluetooth_app_disabled";
-    }
-}
-
 void Robot::parse_command(String command)
 {
     command.trim();
@@ -794,11 +586,11 @@ void Robot::parse_command(String command)
         out = this->control_command(first_arg);
     else if (top_level_command == "set")
         out = this->set_command(first_arg, second_arg, third_arg);
-    else if (top_level_command == "calibrate_compass")
-    {
-        this->compass->calibrate();
-        out = "Done!";
-    }
+    // else if (top_level_command == "calibrate_compass")
+    // {
+    //     this->compass->calibrate();
+    //     out = "Done!";
+    // }
     else if (top_level_command == "serial_lidar_mode")
     {
         serial_lidar_mode = !serial_lidar_mode;
@@ -814,8 +606,6 @@ void Robot::parse_command(String command)
     }
     else if (top_level_command == "heartbeat")
         heartbeat_command(first_arg);
-    else if (top_level_command == "bluetooth_app")
-        bluetooth_app_command(first_arg);
     else
         out = "Invalid command: " + top_level_command;
 
@@ -858,16 +648,9 @@ void Robot::startRoom()
     cuart_ref->silver_line = false;
     cuart_ref->green_line = false;
 
-    cur_moving_wall = WALL_FIRST_UNKNOWN_WALL;
+    setRoomBeginningAngle();
 
-    if (tof_closerange->getMeasurement() < 180 && tof_closerange->getMeasurementError() == tof::TOF_ERROR_NONE) // Entry right next to wall
-    {
-        
-    }
-
-    delay(2000); // NEEDS TO BE REMOVED
-
-    cur_room_state = ROOM_STATE_INITAL_MOVE_AROUND_WALLS;
+    cur_room_state = ROOM_STATE_DEFAULT;
 
     // room_time_measure_start();
 }
@@ -883,12 +666,6 @@ Robot::room_end_types Robot::room_has_reached_end()
     else if (cuart_ref->green_line)
         return room_end_types::ROOM_HAS_REACHED_GREEN_LINE;
     return room_end_types::ROOM_HAS_NOT_REACHED_END;
-}
-
-void Robot::room_set_cur_pos(int x, int y)
-{
-    pos.x_mm = x;
-    pos.y_mm = y;
 }
 
 void Robot::room_rotate_to_degrees(float degrees, bool rotate_right)
@@ -942,106 +719,3 @@ void Robot::room_rotate_relative_degrees(float degrees)
 
     delay((abs(degrees) / 360) * robot_millis_per_360_at_30_speed);
 }
-
-Robot::point Robot::room_tof_to_relative_point(tof* tof_sensor, float angle_degrees)
-{
-    int tof_value = tof_sensor->getMeasurement();
-    if (tof_sensor->getMeasurementError() == tof::TOF_ERROR_NONE)
-    {
-        point point_to_be_rotated;
-        point_to_be_rotated.x_mm = tof_sensor->_offset_x;
-        point_to_be_rotated.y_mm = tof_sensor->_offset_y + tof_value;
-
-        point rotate_around;
-        rotate_around.x_mm = tof_sensor->_offset_x;
-        rotate_around.y_mm = tof_sensor->_offset_y;
-
-        point left_point = rotate_point(point_to_be_rotated, rotate_around, tof_sensor->_offset_a);
-        point origin;
-        origin.x_mm = 0;
-        origin.y_mm = 0;
-
-        left_point = rotate_point(left_point, origin, angle_degrees);
-        return left_point;
-    }
-    else
-    {
-        point error;
-        error.x_mm = -1;
-        error.y_mm = -1;
-        return error;
-    }
-}
-
-void Robot::roomSetEntryPos(int x, int y)
-{
-    room_entry_found = true;
-    room_entry_pos.x_mm = x;
-    room_entry_pos.y_mm = y;
-    logln("EntryPos: %d, %d", x, y);
-    roomSendNewEntry();
-}
-
-void Robot::roomSetExitPos(int x, int y)
-{
-    room_exit_found = true;
-    room_exit_pos.x_mm = x;
-    room_exit_pos.y_mm = y;
-    logln("ExitPos: %d, %d", x, y);
-    roomSendNewExit();
-}
-
-void Robot::roomSetCornerPos(int x, int y)
-{
-    room_corner_found = true;
-    room_corner_pos.x_mm = x;
-    room_corner_pos.y_mm = y;
-    logln("CornerPos: %d, %d", x, y);
-    roomSendNewCorner();
-}
-
-
-void Robot::roomSendNewPoints()
-{
-    if (bluetooth_app_enabled)
-    {
-        room_search_balls_points leftBallPoint = room_search_balls_left_values.back();
-        room_search_balls_points rightBallPoint = room_search_balls_right_values.back();
-
-        log_inline("\r\nANDROID::SEARCH_BALLS_POINTS(%d,%d,%d,%d);\r\n", leftBallPoint.x, leftBallPoint.y, rightBallPoint.x, rightBallPoint.y);
-    }
-}
-
-void Robot::roomSendNewEntry()
-{
-    if (bluetooth_app_enabled)
-    {
-        log_inline("\r\nANDROID::SET_ENTRY(%d,%d);\r\n", room_entry_pos.x_mm, room_entry_pos.y_mm);
-    }
-}
-
-void Robot::roomSendNewExit()
-{
-    if (bluetooth_app_enabled)
-    {
-        log_inline("\r\nANDROID::SET_EXIT(%d,%d);\r\n", room_exit_pos.x_mm, room_exit_pos.y_mm);
-    }
-}
-
-void Robot::roomSendNewCorner()
-{
-    if (bluetooth_app_enabled)
-    {
-        log_inline("\r\nANDROID::SET_CORNER(%d,%d);\r\n", room_corner_pos.x_mm, room_corner_pos.y_mm);
-    }
-}
-
-void Robot::roomSendRobotData()
-{
-    if (bluetooth_app_enabled)
-    {
-        log_inline("\r\nANDROID::SET_ROBOT(%d,%d,%f);\r\n", pos.x_mm, pos.y_mm, angle);
-    }
-}
-
-

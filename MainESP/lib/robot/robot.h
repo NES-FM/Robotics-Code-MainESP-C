@@ -35,7 +35,6 @@ class Robot
         void init();
 
         void tick();
-        void tickPinnedMain();
 
         void PlayBeginSound();
 
@@ -49,7 +48,7 @@ class Robot
         taster_class* taster = new taster_class();
         
         accel* accel_sensor = new accel();
-        compass_hmc* compass = new compass_hmc();
+        compass_bmm* compass = new compass_bmm();
 
         motor* motor_left = new motor();
         motor* motor_right = new motor();
@@ -82,8 +81,9 @@ class Robot
         };
 
         float angle = 0.0f;
-        point pos;
+
         static point rotate_point(point point_to_rotate, point pivot, float angle_degrees);
+        static point rotate_point_around_origin(point point_to_rotate, float angle_degrees);
 
         enum ROBOT_DRIVE_MODE
         {
@@ -95,22 +95,10 @@ class Robot
 
         bool is_control_on_user = false;
 
-        bool compass_calibration_background_task_enabled = false;
-        void compass_start_calibration_background_task();
-        void compass_stop_calibration_background_task();
-
-
         // Room
-        void calculate_position();
-
         float room_beginning_angle = 0.0f;
         void setRoomBeginningAngle(float offset = 0.0f) { room_beginning_angle = compass->keep_in_360_range(compass->get_angle() + offset); }
 
-        float room_search_balls_beginning_angle = 0.0f;
-        void setRoomSearchBallsBeginningAngle() { room_search_balls_beginning_angle = compass->keep_in_360_range(compass->get_angle() - 90); }
-        
-        bool searching_balls_moving_backward = false;
-        
         void startRoom();
 
         void room_move_along_wall();
@@ -126,8 +114,6 @@ class Robot
 
         bool serial_lidar_mode = false;
 
-        void room_set_cur_pos(int x, int y);
-
         void room_rotate_to_degrees(float degrees, bool rotate_right);
         void room_rotate_relative_degrees(float degrees);
 
@@ -137,61 +123,11 @@ class Robot
 
         const unsigned int robot_millis_per_360_at_30_speed = 2650;
 
-        point room_entry_pos;
-        bool room_entry_found = false;
-        point room_exit_pos;
-        bool room_exit_found = false;
-        point room_corner_pos;
-        bool room_corner_found = false;
-
-        bool last_time_was_corner = false;
-
-        enum room_wall_types
-        {
-            WALL_FIRST_UNKNOWN_WALL,
-            WALL_2_LONG,
-            WALL_2_SHORT,
-            WALL_3_LONG,
-            WALL_3_SHORT,
-            WALL_4_LONG,
-            WALL_4_SHORT,
-            WALL_1_LONG,
-            WALL_1_SHORT,
-        };
-        room_wall_types cur_moving_wall;
-
         enum room_states
         {
-            ROOM_STATE_INITAL_MOVE_AROUND_WALLS,
-            ROOM_STATE_SCAN_FOR_BALLS,
-            // ROOM_STATE_COLLECT_BALL, etc...
+            ROOM_STATE_DEFAULT
         };
         room_states cur_room_state;
-
-        point room_tof_to_relative_point(tof* tof_sensor, float angle_degrees);
-
-        struct room_search_balls_points
-        {
-            int_least16_t x;
-            int_least16_t y;
-        };
-
-        std::deque<room_search_balls_points> room_search_balls_left_values;
-        std::deque<room_search_balls_points> room_search_balls_right_values;
-        // room_search_balls_vector left_values[1000];
-
-        void roomSetEntryPos(int x, int y);
-        void roomSetExitPos(int x, int y);
-        void roomSetCornerPos(int x, int y);
-
-
-        // Bluetooth app stuff
-        bool bluetooth_app_enabled = false;
-        void roomSendNewPoints();
-        void roomSendNewEntry();
-        void roomSendNewExit();
-        void roomSendNewCorner();
-        void roomSendRobotData();
 
     private:
         void parse_command(String command);
@@ -203,5 +139,4 @@ class Robot
         String set_command(String first_arg, String second_arg, String third_arg);
         String comamnd_template(String arg);
         String heartbeat_command(String arg);
-        String bluetooth_app_command(String arg);
 };
