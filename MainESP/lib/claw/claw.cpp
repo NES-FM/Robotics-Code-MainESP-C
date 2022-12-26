@@ -2,27 +2,40 @@
 
 Claw::Claw()
 {
-    _state = TOP_OPEN;
+    _last_state = TOP_OPEN;
 }
 
 void Claw::init()
 {
+    claw_prefs->begin("claw");
+    _last_state = (State)claw_prefs->getUChar("last_state", TOP_OPEN);
+
     enable_close_servo();
-    // _set_raw_servo_close_state(initial_angle_close_servo);
     claw_up_servo->attach(PIN_SERVO2, -1, 0, 180, 530, 2450); // default: pin, -1, 0, 544, 2400
-    // _set_raw_servo_up_state(initial_angle_up_servo);
-    this->set_state(Claw::BOTTOM_OPEN);
+    
+    if (_last_state == BOTTOM_OPEN)
+    {
+        _set_raw_servo_up_state(servo_up_down);
+        delay(safety_delay);
+        _set_raw_servo_close_state(servo_close_open);
+        delay(safety_delay);
+        disable_close_servo();
+    }
+    else
+    {
+        this->set_state(Claw::BOTTOM_OPEN);
+    }
 }
 
 void Claw::set_state(State target_state)
 {
-    if (target_state == _state)  // Same state requested, that claw already is at
+    if (target_state == _last_state)  // Same state requested, that claw already is at
     {
         goto end;
     }
-    else if (target_state > _state)  // Claw should go up in hirarchie
+    else if (target_state > _last_state)  // Claw should go up in hirarchie
     {
-        if (_state == BOTTOM_OPEN)
+        if (_last_state == BOTTOM_OPEN)
         {
             enable_close_servo();
             close_claw();
@@ -51,15 +64,15 @@ void Claw::set_state(State target_state)
                 }
             }
         }
-        else if (_state == BOTTOM_CLOSED)
+        else if (_last_state == BOTTOM_CLOSED)
         {
             goto claw_moving_up_bottom_already_closed;
         }
-        else if (_state == SIDE_CLOSED)
+        else if (_last_state == SIDE_CLOSED)
         {
             goto claw_moving_up_target_not_side_pos;
         }
-        else if (_state == TOP_CLOSED)
+        else if (_last_state == TOP_CLOSED)
         {
             goto claw_moving_up_target_top_open;
         }
@@ -68,9 +81,9 @@ void Claw::set_state(State target_state)
             logln("[target_state > _state][else] ERROR! THIS SHOULD NEVER BE REACHED!");
         }
     }
-    else if (target_state < _state)
+    else if (target_state < _last_state)
     {
-        if (_state == TOP_OPEN)
+        if (_last_state == TOP_OPEN)
         {
             close_claw();
             if (target_state == TOP_CLOSED)
@@ -99,15 +112,15 @@ void Claw::set_state(State target_state)
                 }
             }
         }
-        else if (_state == TOP_CLOSED)
+        else if (_last_state == TOP_CLOSED)
         {
             goto claw_moving_down_top_already_closed;
         }
-        else if (_state == SIDE_CLOSED)
+        else if (_last_state == SIDE_CLOSED)
         {
             goto claw_moving_down_target_not_side_pos;
         }
-        else if (_state == BOTTOM_CLOSED)
+        else if (_last_state == BOTTOM_CLOSED)
         {
             goto claw_moving_down_target_bottom_open;
         }
@@ -123,12 +136,13 @@ void Claw::set_state(State target_state)
 
 
     end:
-    _state = target_state;
+    _last_state = target_state;
+    claw_prefs->putUChar("last_state", (uint8_t)_last_state);
 }
 
 Claw::State Claw::get_state()
 {
-    return _state;
+    return _last_state;
 }
 
 void Claw::open_claw()
@@ -218,7 +232,7 @@ void Claw::claw_to_up_pos()
 
 void Claw::disable_close_servo()
 {
-    claw_close_servo->detach();
+    claw_close_servo->detach(); // TODO: Sometimes closes the servo a little bit
 }
 
 void Claw::enable_close_servo()

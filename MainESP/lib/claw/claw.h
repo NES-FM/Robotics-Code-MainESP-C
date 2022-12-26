@@ -5,17 +5,18 @@
 #include <Servo.h>
 #include "../../include/pin_definitions.h"
 #include "logger.h"
+#include <Preferences.h>
 
 class Claw
 {
     public:
         enum State
         {
-            BOTTOM_OPEN,
-            BOTTOM_CLOSED,
-            SIDE_CLOSED,
-            TOP_CLOSED,
-            TOP_OPEN
+            BOTTOM_OPEN = 0,
+            BOTTOM_CLOSED = 1,
+            SIDE_CLOSED = 2,
+            TOP_CLOSED = 3,
+            TOP_OPEN = 4
         };
 
         Claw();
@@ -27,7 +28,7 @@ class Claw
         void _set_raw_servo_close_state(int degrees) {claw_close_servo->write(degrees);}
 
     private:
-        State _state;
+        State _last_state;
         Servo* claw_up_servo = new Servo();
         Servo* claw_close_servo = new Servo();
         void open_claw();
@@ -52,6 +53,8 @@ class Claw
         const uint8_t servo_up_down = 0;
         const uint8_t servo_up_side = 90;
         const uint8_t servo_up_up = 180;
+
+        Preferences* claw_prefs = new Preferences();
 };
 
 #endif

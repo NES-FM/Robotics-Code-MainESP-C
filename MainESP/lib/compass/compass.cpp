@@ -1,6 +1,6 @@
 #include "compass.h"
 
-compass_bmm::compass_bmm() { }
+compass_bmm::compass_bmm() {}
 
 void compass_bmm::enable(bool enabled)
 {
@@ -22,6 +22,10 @@ void compass_bmm::init()
             bmm150->setPresetMode(BMM150_PRESETMODE_HIGHACCURACY);
             bmm150->setRate(BMM150_DATA_RATE_30HZ);
             bmm150->setMeasurementXYZ(MEASUREMENT_X_ENABLE, MEASUREMENT_Y_ENABLE, MEASUREMENT_Z_DISABLE);
+
+            compass_prefs->begin("compass");
+            value_offset_x = compass_prefs->getFloat("offset.x", 0.0);
+            value_offset_y = compass_prefs->getFloat("offset.y", 0.0);
         }
     }
 }
@@ -29,9 +33,69 @@ void compass_bmm::init()
 float compass_bmm::get_angle()
 {
     if (_compass_enabled)
-        return bmm150->getCompassDegree();
+    {
+        sBmm150MagData_t magData = bmm150->getGeomagneticData();
+        float heading = atan2(magData.x - value_offset_x, magData.y - value_offset_y);
+        if (heading < 0)
+            heading += 2 * PI;
+        if (heading > 2 * PI)
+            heading -= 2 * PI;
+        return heading * 180 / M_PI;
+    }
     else
-        return 0;
+        return 0.0;
+}
+
+void compass_bmm::calibrate(uint32_t timeout)
+{
+    int16_t value_x_min = 0;
+    int16_t value_x_max = 0;
+    int16_t value_y_min = 0;
+    int16_t value_y_max = 0;
+    uint32_t timeStart = 0;
+
+    sBmm150MagData_t magData = bmm150->getGeomagneticData();
+    value_x_min = magData.x;
+    value_x_max = magData.x;
+    value_y_min = magData.y;
+    value_y_max = magData.y;
+    delay(100);
+
+    timeStart = millis();
+
+    while ((millis() - timeStart) < timeout)
+    {
+        magData = bmm150->getGeomagneticData();
+
+        /* Update x-Axis max/min value */
+        if (value_x_min > magData.x)
+        {
+            value_x_min = magData.x;
+        }
+        else if (value_x_max < magData.x)
+        {
+            value_x_max = magData.x;
+        }
+
+        /* Update y-Axis max/min value */
+        if (value_y_min > magData.y)
+        {
+            value_y_min = magData.y;
+        }
+        else if (value_y_max < magData.y)
+        {
+            value_y_max = magData.y;
+        }
+
+        log_inline(".");
+        delay(100);
+    }
+
+    value_offset_x = value_x_min + (value_x_max - value_x_min) / 2;
+    value_offset_y = value_y_min + (value_y_max - value_y_min) / 2;
+
+    compass_prefs->putFloat("offset.x", value_offset_x);
+    compass_prefs->putFloat("offset.y", value_offset_y);
 }
 
 float compass_bmm::keep_in_360_range(float x)
@@ -50,7 +114,7 @@ float compass_bmm::keep_in_360_range(float x)
 // compass_hmc::compass_hmc() {};
 
 // #if COMPASS_LIBRARY == 0
-// void compass_hmc::init(accel* ac_pointer) 
+// void compass_hmc::init(accel* ac_pointer)
 // {
 //     ac = ac_pointer;
 //     if (_compass_enabled)
@@ -113,17 +177,17 @@ float compass_bmm::keep_in_360_range(float x)
 //     {
 //         return this->noTiltCompensation();
 //     }
-    
+
 //     // Some of these are used twice, so rather than computing them twice in the algorithm we precompute them beforehand.
 //     float cosRoll = cos(roll);
-//     float sinRoll = sin(roll);  
+//     float sinRoll = sin(roll);
 //     float cosPitch = cos(pitch);
 //     float sinPitch = sin(pitch);
-    
+
 //     // Tilt compensation
 //     float Xh = mag.XAxis * cosPitch + mag.ZAxis * sinPitch;
 //     float Yh = mag.XAxis * sinRoll * sinPitch + mag.YAxis * cosRoll - mag.ZAxis * sinRoll * cosPitch;
-        
+
 //     return atan2(Yh, Xh);;
 // }
 // float compass_hmc::correctAngle(float heading)
@@ -134,7 +198,7 @@ float compass_bmm::keep_in_360_range(float x)
 //     return heading;
 // }
 // #elif COMPASS_LIBRARY == 1
-// void compass_hmc::init(accel* ac_pointer) 
+// void compass_hmc::init(accel* ac_pointer)
 // {
 //     this->init();
 // }
@@ -181,9 +245,9 @@ float compass_bmm::keep_in_360_range(float x)
 
 //         // Calculate heading when the magnetometer is level, then correct for signs of axis.
 //         float heading = atan2(scaled.YAxis, scaled.XAxis);
-        
+
 //         // float heading = yxHeading;
-        
+
 //         // Once you have your heading, you must then add your 'Declination Angle', which is the 'Error' of the magnetic field in your location.
 //         // Find yours here: http://www.magnetic-declination.com/
 //         // Mine is: -2° 37' which is -2.617 Degrees, or (which we need) -0.0456752665 radians, I will use -0.0457
@@ -192,22 +256,22 @@ float compass_bmm::keep_in_360_range(float x)
 //         // In Weingarten: 3° 20'  ->  3.33 Degrees  ->  0.05811946 Radians
 //         float declinationAngle = 0.05811946;
 //         heading += declinationAngle;
-        
+
 //         // Correct for when signs are reversed.
 //         if(heading < 0)
 //             heading += 2*PI;
-            
+
 //         // Check for wrap due to addition of declination.
 //         if(heading > 2*PI)
 //             heading -= 2*PI;
-        
+
 //         // Convert radians to degrees for readability.
 //         headingDegrees = heading * 180/PI;
 
 //         // this->output(compass->readRawAxis(), scaled, heading, headingDegrees);
 //     }
 
-//     return headingDegrees; 
+//     return headingDegrees;
 // }
 
 // void compass_hmc::calibrate()
@@ -303,7 +367,7 @@ float compass_bmm::keep_in_360_range(float x)
 //     logln("Raw: %h   %h   %h   \tScaled: %f   %f   %f   \tHeading: %f Radians   \t%f Degrees", raw.XAxis, raw.YAxis, raw.ZAxis, scaled.XAxis, scaled.YAxis, scaled.ZAxis, heading, headingDegrees);
 // }
 
-// void compass_hmc::tick() 
+// void compass_hmc::tick()
 // {
 
 // }

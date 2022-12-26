@@ -586,11 +586,12 @@ void Robot::parse_command(String command)
         out = this->control_command(first_arg);
     else if (top_level_command == "set")
         out = this->set_command(first_arg, second_arg, third_arg);
-    // else if (top_level_command == "calibrate_compass")
-    // {
-    //     this->compass->calibrate();
-    //     out = "Done!";
-    // }
+    else if (top_level_command == "calibrate_compass")
+    {
+        log_inline_begin(); log_inline("Calibrating compass:");
+        this->compass->calibrate();
+        out = "Done!";
+    }
     else if (top_level_command == "serial_lidar_mode")
     {
         serial_lidar_mode = !serial_lidar_mode;

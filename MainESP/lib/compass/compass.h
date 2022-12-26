@@ -4,6 +4,7 @@
 #include "DFRobot_BMM150.h"
 #include "../../include/i2c_addresses.h"
 #include "logger.h"
+#include <Preferences.h>
 
 class compass_bmm {
     public:
@@ -12,9 +13,15 @@ class compass_bmm {
         void init();
         static float keep_in_360_range(float alpha);
         void enable(bool enabled);
+        void calibrate(uint32_t timeout = 10000);
     private:
         bool _compass_enabled = false;
         DFRobot_BMM150_I2C* bmm150 = new DFRobot_BMM150_I2C(&Wire, I2C_ADDRESS_COMPASS);
+
+        float value_offset_x = 0.0;
+        float value_offset_y = 0.0;
+        
+        Preferences* compass_prefs = new Preferences();
 };
 
 // #define COMPASS_LIBRARY 1

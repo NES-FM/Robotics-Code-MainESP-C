@@ -233,7 +233,7 @@ void debug_disp::draw_taster(int x, int y, int w, int h)
 void debug_disp::draw_robot_in_room_coordinates()
 {
     Robot::point UL;
-    UL.x_mm = 0.5 * _robot->width;
+    UL.x_mm = -0.5 * _robot->width;
     UL.y_mm = 0.5 * _robot->height;
     UL = Robot::rotate_point_around_origin(UL, _robot->angle);
 
@@ -243,13 +243,13 @@ void debug_disp::draw_robot_in_room_coordinates()
     UR = Robot::rotate_point_around_origin(UR, _robot->angle);
 
     Robot::point DL;
-    DL.x_mm = 0.5 * _robot->width;
-    DL.y_mm = 0.5 * _robot->height;
+    DL.x_mm = -0.5 * _robot->width;
+    DL.y_mm = -0.5 * _robot->height;
     DL = Robot::rotate_point_around_origin(DL, _robot->angle);
 
     Robot::point DR;
     DR.x_mm = 0.5 * _robot->width;
-    DR.y_mm = 0.5 * _robot->height;
+    DR.y_mm = -0.5 * _robot->height;
     DR = Robot::rotate_point_around_origin(DR, _robot->angle);
 
     Robot::point UM;
