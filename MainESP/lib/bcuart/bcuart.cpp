@@ -81,10 +81,8 @@ void BCUART_class::reset_balls()
 {
     for (ball b : received_balls)
     {
-        b.x = 0;
-        b.y = 0;
-        b.w = 0;
-        b.h = 0;
+        b.x_offset = 0;
+        b.distance = 0;
         b.conf = 0;
         b.black = false;
     }
@@ -92,19 +90,15 @@ void BCUART_class::reset_balls()
 }
 void BCUART_class::reset_corner()
 {
-    received_corner.x = 0;
-    received_corner.y = 0;
-    received_corner.w = 0;
-    received_corner.h = 0;
+    received_corner.x_offset = 0;
+    received_corner.distance = 0;
     received_corner.conf = 0;
     corner_valid = false;
 }
 void BCUART_class::reset_exit_line()
 {
-    received_exit_line.x = 0;
-    received_exit_line.y = 0;
-    received_exit_line.w = 0;
-    received_exit_line.h = 0;
+    received_exit_line.x_offset = 0;
+    received_exit_line.distance = 0;
     received_exit_line.conf = 0;
     exit_line_valid = false;
 }

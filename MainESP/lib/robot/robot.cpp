@@ -121,7 +121,7 @@ void Robot::tick()
             for (int i = 0; i < bcuart_ref->num_balls_in_array; i++)
             {
                 auto b = bcuart_ref->received_balls[i];
-                log_inline("x%d y%d w%d h%d c%d %s  ", b.x, b.y, b.w, b.h, b.conf, b.black ? "black" : "silver");
+                log_inline("x_off%.3f dist%.3f c%.3f %s  ", b.x_offset, b.distance, b.conf, b.black ? "black" : "silver");
             }
             log_inline_end();
             bcuart_ref->reset_balls();
@@ -129,13 +129,13 @@ void Robot::tick()
         if (bcuart_ref->corner_valid)
         {
             auto b = bcuart_ref->received_corner;
-            logln("Corner: x%d y%d w%d h%d c%d", b.x, b.y, b.w, b.h, b.conf);
+            logln("Corner: x_off%.3f dist%.3f c%.3f", b.x_offset, b.distance, b.conf);
             bcuart_ref->reset_corner();
         }
         if (bcuart_ref->exit_line_valid)
         {
             auto b = bcuart_ref->received_exit_line;
-            logln("Exit Line: x%d y%d w%d h%d c%d", b.x, b.y, b.w, b.h, b.conf);
+            logln("Exit Line: x_off%.3f dist%.3f c%.3f", b.x_offset, b.distance, b.conf);
             bcuart_ref->reset_corner();
         }
     }

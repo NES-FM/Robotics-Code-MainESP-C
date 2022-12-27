@@ -18,27 +18,23 @@ class BCUART_class
         void init();
         void tick();
 
+        #pragma pack(1)
         struct ball {
-            uint8_t x;
-            uint8_t y;
-            uint8_t w;
-            uint8_t h;
-            uint8_t conf;
-            bool black;
+            float x_offset;
+            float distance;
+            float conf;
+            uint8_t black;
         };
+        #pragma pack()
         struct corner {
-            uint8_t x;
-            uint8_t y;
-            uint8_t w;
-            uint8_t h;
-            uint8_t conf;
+            float x_offset;
+            float distance;
+            float conf;
         };
         struct exit_line {
-            uint8_t x;
-            uint8_t y;
-            uint8_t w;
-            uint8_t h;
-            uint8_t conf;
+            float x_offset;
+            float distance;
+            float conf;
         };
 
         ball received_balls[10];

@@ -18,8 +18,8 @@
 #define PIN_RX_CAM 21 // TX of Cam, RX of ESP
 #define PIN_TX_CAM 22 // RX of Cam, TX of ESP
 
-#define PIN_RX_ROOM_CAM PIN_SENS3
-#define PIN_TX_ROOM_CAM PIN_SENS4
+#define PIN_RX_ROOM_CAM PIN_SENS2 // TX of Cam, RX of ESP  -> 1pin
+#define PIN_TX_ROOM_CAM PIN_SENS1 // RX of Cam, TX of ESP  -> 4pin
 
 #define PIN_DIP1 15
 #define PIN_DIP2 23
