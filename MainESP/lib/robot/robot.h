@@ -84,6 +84,9 @@ class Robot
 
         static point rotate_point(point point_to_rotate, point pivot, float angle_degrees);
         static point rotate_point_around_origin(point point_to_rotate, float angle_degrees);
+        static float distance_between_points(point p1, point p2);
+        static float x_distance_between_points(point p1, point p2);
+        static float y_distance_between_points(point p1, point p2);
 
         enum ROBOT_DRIVE_MODE
         {
@@ -100,6 +103,15 @@ class Robot
         void setRoomBeginningAngle(float offset = 0.0f) { room_beginning_angle = compass->keep_in_360_range(compass->get_angle() + offset); }
 
         void startRoom();
+
+        struct ball {
+            point pos;
+            float conf = 0.0;
+            uint16_t num_hits = 0;
+            bool black = false;
+        };
+
+        ball test_ball;
 
         void room_move_along_wall();
 

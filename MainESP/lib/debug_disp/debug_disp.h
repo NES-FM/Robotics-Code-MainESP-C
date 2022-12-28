@@ -86,6 +86,7 @@ class debug_disp {
         void draw_taster(int x, int y, int w, int h);
 
         void draw_robot_in_room_coordinates();
+        void draw_balls_in_room_coordinates();
         void draw_room_space_line(Robot::point point_1, Robot::point point_2);
 
         float room_conversion_factor;

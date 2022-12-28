@@ -9,8 +9,8 @@
 
 #define LOGGER_BUFFLEN 256
 
-#define LOGGER_LOG_FORMAT(format) "[%s:%u] %s():\t\t" format "\r\n", pathToFileName(__FILE__), __LINE__, __FUNCTION__
-#define LOGGER_LOG_FORMAT_INLINE(format) "[%s:%u] %s():\t\t" format, pathToFileName(__FILE__), __LINE__, __FUNCTION__
+#define LOGGER_LOG_FORMAT(format) "[%s:%u] %s():\t" format "\r\n", pathToFileName(__FILE__), __LINE__, __FUNCTION__
+#define LOGGER_LOG_FORMAT_INLINE(format) "[%s:%u] %s():\t" format, pathToFileName(__FILE__), __LINE__, __FUNCTION__
 
 #define logln(format, ...) logger_log_formatted_string(LOGGER_LOG_FORMAT(format), ##__VA_ARGS__)
 

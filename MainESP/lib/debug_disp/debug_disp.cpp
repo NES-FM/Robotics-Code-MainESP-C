@@ -262,13 +262,19 @@ void debug_disp::draw_robot_in_room_coordinates()
     draw_room_space_line(DL, UL);
     draw_room_space_line(UM, DL);
     draw_room_space_line(UM, DR);
+}
 
-    // oled->drawLine(UL_screen.x, UL_screen.y, UR_screen.x, UR_screen.y, SSD1306_WHITE);
-    // oled->drawLine(UR_screen.x, UR_screen.y, DR_screen.x, DR_screen.y, SSD1306_WHITE);
-    // oled->drawLine(DR_screen.x, DR_screen.y, DL_screen.x, DL_screen.y, SSD1306_WHITE);
-    // oled->drawLine(DL_screen.x, DL_screen.y, UL_screen.x, UL_screen.y, SSD1306_WHITE);
-    // oled->drawLine(UM_screen.x, UM_screen.y, DL_screen.x, DL_screen.y, SSD1306_WHITE);
-    // oled->drawLine(UM_screen.x, UM_screen.y, DR_screen.x, DR_screen.y, SSD1306_WHITE);
+void debug_disp::draw_balls_in_room_coordinates()
+{
+    bool black = _robot->test_ball.black;
+    screen_point ball_point_screen;
+    ball_point_screen.x = SCREEN_MID_X + round(float(_robot->test_ball.pos.x_mm) / room_conversion_factor);
+    ball_point_screen.y = SCREEN_MID_Y - round(float(_robot->test_ball.pos.y_mm) / room_conversion_factor);
+
+    if (black)
+        oled->fillCircle(ball_point_screen.x, ball_point_screen.y, int(25.0 / room_conversion_factor), SSD1306_WHITE);
+    else
+        oled->drawCircle(ball_point_screen.x, ball_point_screen.y, int(25.0 / room_conversion_factor), SSD1306_WHITE);
 }
 
 void debug_disp::draw_room_space_line(Robot::point point_1, Robot::point point_2)
@@ -327,6 +333,7 @@ void debug_disp::tick()
             else if (_robot->cur_drive_mode == Robot::ROBOT_DRIVE_MODE_ROOM)
             {
                 this->draw_robot_in_room_coordinates();
+                this->draw_balls_in_room_coordinates();
                 
                 this->draw_compass(100, 46);
                 this->draw_voltage_smol(100, 54);

@@ -121,23 +121,52 @@ void Robot::tick()
             for (int i = 0; i < bcuart_ref->num_balls_in_array; i++)
             {
                 auto b = bcuart_ref->received_balls[i];
-                log_inline("x_off%.3f dist%.3f c%.3f %s  ", b.x_offset, b.distance, b.conf, b.black ? "black" : "silver");
+                point irl_pos;
+                irl_pos.x_mm = -b.x_offset*10; // *10, because x_offset is in cm, while irl_pos is in mm  // - because negative x_offset means right of robot, if robot is pointing forward
+                irl_pos.y_mm = -b.distance*10 - (0.5*height); // - because the robot detects balls towards the back  // + (0.5*height) because b.distance counts starting from the back edge of the robot
+                irl_pos = rotate_point_around_origin(irl_pos, angle);
+                // log_inline("x%d y%d c%.3f %s | ", irl_pos.x_mm, irl_pos.y_mm, b.conf, b.black ? "black" : "silver");
+                
+                if (test_ball.num_hits == 0)
+                {
+                    logln("New Ball");
+                    test_ball.pos = irl_pos;
+                    test_ball.black = b.black;
+                    test_ball.conf = b.conf;
+                    test_ball.num_hits = 1;
+                }
+                else
+                {
+                    log_inline("dx=%.2f dy=%.2f d=%.2f | ", x_distance_between_points(test_ball.pos, irl_pos), y_distance_between_points(test_ball.pos, irl_pos), distance_between_points(test_ball.pos, irl_pos));
+                    // if (distance_between_points(test_ball.pos, irl_pos) < 80)
+                    // {
+                    //     test_ball.pos = irl_pos;
+                    //     test_ball.black = b.black;
+                    //     test_ball.conf = b.conf;
+                    //     test_ball.num_hits += 1;
+                    //     logln("Same Ball");
+                    // }
+                    // else
+                    // {
+                    //     logln("Different Ball, d=%.3f", distance_between_points(test_ball.pos, irl_pos));
+                    // }
+                }
             }
             log_inline_end();
             bcuart_ref->reset_balls();
         }
-        if (bcuart_ref->corner_valid)
-        {
-            auto b = bcuart_ref->received_corner;
-            logln("Corner: x_off%.3f dist%.3f c%.3f", b.x_offset, b.distance, b.conf);
-            bcuart_ref->reset_corner();
-        }
-        if (bcuart_ref->exit_line_valid)
-        {
-            auto b = bcuart_ref->received_exit_line;
-            logln("Exit Line: x_off%.3f dist%.3f c%.3f", b.x_offset, b.distance, b.conf);
-            bcuart_ref->reset_corner();
-        }
+        // if (bcuart_ref->corner_valid)
+        // {
+        //     auto b = bcuart_ref->received_corner;
+        //     logln("Corner: x_off%.3f dist%.3f c%.3f", b.x_offset, b.distance, b.conf);
+        //     bcuart_ref->reset_corner();
+        // }
+        // if (bcuart_ref->exit_line_valid)
+        // {
+        //     auto b = bcuart_ref->received_exit_line;
+        //     logln("Exit Line: x_off%.3f dist%.3f c%.3f", b.x_offset, b.distance, b.conf);
+        //     bcuart_ref->reset_corner();
+        // }
     }
 
     String logger_tick_return = logger_tick();
@@ -208,6 +237,21 @@ Robot::point Robot::rotate_point_around_origin(point point_to_rotate, float angl
     return pnew;
 }
 
+float Robot::distance_between_points(point p1, point p2)
+{
+    float dx = p1.x_mm - p2.x_mm;
+    float dy = p1.y_mm - p2.y_mm;
+    return sqrtf(dx*dx + dy*dy);
+}
+
+float Robot::x_distance_between_points(point p1, point p2)
+{
+    return abs(p1.x_mm - p2.x_mm);
+}
+float Robot::y_distance_between_points(point p1, point p2)
+{
+    return abs(p1.y_mm - p2.y_mm);
+}
 
 String Robot::help_command()
 {
