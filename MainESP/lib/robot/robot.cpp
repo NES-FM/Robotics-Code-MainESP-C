@@ -115,46 +115,59 @@ void Robot::tick()
     else if (cur_drive_mode == ROBOT_DRIVE_MODE_ROOM)
     {
         angle = compass->keep_in_360_range(compass->get_angle() - room_beginning_angle);
-        if (bcuart_ref->num_balls_in_array > 0) // TODO: Actually do sth with this instead of just printing
+
+        if (detectingBallsEnabled && bcuart_ref->num_balls_in_array > 0)
         {
-            log_inline_begin();log_inline("Balls: ");
+            logln("Balls: ");
             for (int i = 0; i < bcuart_ref->num_balls_in_array; i++)
             {
-                auto b = bcuart_ref->received_balls[i];
+                log_inline_begin();
+                auto received_ball = bcuart_ref->received_balls[i];
                 point irl_pos;
-                irl_pos.x_mm = -b.x_offset*10; // *10, because x_offset is in cm, while irl_pos is in mm  // - because negative x_offset means right of robot, if robot is pointing forward
-                irl_pos.y_mm = -b.distance*10 - (0.5*height); // - because the robot detects balls towards the back  // + (0.5*height) because b.distance counts starting from the back edge of the robot
+                irl_pos.x_mm = -received_ball.x_offset*10; // *10, because x_offset is in cm, while irl_pos is in mm  // - because negative x_offset means right of robot, if robot is pointing forward
+                irl_pos.y_mm = -received_ball.distance*10 - (0.5*height); // - because the robot detects balls towards the back  // - (0.5*height) because b.distance counts starting from the back edge of the robot
                 irl_pos = rotate_point_around_origin(irl_pos, angle);
                 // log_inline("x%d y%d c%.3f %s | ", irl_pos.x_mm, irl_pos.y_mm, b.conf, b.black ? "black" : "silver");
-                
-                if (test_ball.num_hits == 0)
+
+                bool ball_found_before = false;       
+
+                if (num_detected_balls == (sizeof(detected_balls) / sizeof(detected_balls[0])))
                 {
-                    logln("New Ball");
-                    test_ball.pos = irl_pos;
-                    test_ball.black = b.black;
-                    test_ball.conf = b.conf;
-                    test_ball.num_hits = 1;
+                    log_inline("ERROR! TOO MANY DETECTED BALLS!!!");
                 }
                 else
                 {
-                    log_inline("dx=%.2f dy=%.2f d=%.2f | ", x_distance_between_points(test_ball.pos, irl_pos), y_distance_between_points(test_ball.pos, irl_pos), distance_between_points(test_ball.pos, irl_pos));
-                    // if (distance_between_points(test_ball.pos, irl_pos) < 80)
-                    // {
-                    //     test_ball.pos = irl_pos;
-                    //     test_ball.black = b.black;
-                    //     test_ball.conf = b.conf;
-                    //     test_ball.num_hits += 1;
-                    //     logln("Same Ball");
-                    // }
-                    // else
-                    // {
-                    //     logln("Different Ball, d=%.3f", distance_between_points(test_ball.pos, irl_pos));
-                    // }
+                    for (int b_num = 0; b_num < num_detected_balls; b_num++)
+                    {
+                        ball old_ball = detected_balls[b_num];
+                        if (distance_between_points(old_ball.pos, irl_pos) < (60 + old_ball.num_hits*5))// && old_ball.black == received_ball.black)
+                        {
+                            log_inline("Ball was found before!");
+                            detected_balls[b_num].conf = max(old_ball.conf, received_ball.conf);
+                            detected_balls[b_num].num_hits += 1;
+                            detected_balls[b_num].pos = irl_pos;
+                            ball_found_before = true;
+                            break;
+                        }
+                    }
+                    if (!ball_found_before)
+                    {
+                        log_inline("Ball not found before! Appending...");
+
+                        int b_num = num_detected_balls;
+                        num_detected_balls++;
+                        detected_balls[b_num].black = received_ball.black;
+                        detected_balls[b_num].conf = received_ball.conf;
+                        detected_balls[b_num].num_hits = 1;
+                        detected_balls[b_num].pos = irl_pos;
+                        log_inline(" Done!");
+                    }
                 }
+                log_inline_end();
             }
-            log_inline_end();
             bcuart_ref->reset_balls();
         }
+
         // if (bcuart_ref->corner_valid)
         // {
         //     auto b = bcuart_ref->received_corner;
@@ -174,6 +187,17 @@ void Robot::tick()
     {
         this->parse_command(logger_tick_return);
     }
+}
+
+void Robot::print_balls()
+{
+    logln("----- Balls -----");
+    for (int i = 0; i < num_detected_balls; i++)
+    {
+        ball b = detected_balls[i];
+        logln("%d: X=%d Y=%d C=%.2f N=%d %s", i, b.pos.x_mm, b.pos.y_mm, b.conf, b.num_hits, b.black ? "black" : "silver");
+    }
+    logln("-----------------");
 }
 
 void Robot::PlayBeginSound()
@@ -592,6 +616,27 @@ String Robot::heartbeat_command(String arg)
     return "heartbeat " + arg;
 }
 
+String Robot::balls_command(String arg)
+{
+    if (arg == "on")
+        detectingBallsEnabled = true;
+    else if (arg == "off")
+        detectingBallsEnabled = false;
+    else if (arg == "print")
+        this->print_balls();
+    else
+    {
+        String ret = "";
+        ret += "-- balls --\r\n";
+        ret += "balls <on/off>\r\n";
+        ret += "balls print\r\n";
+        ret += "\r\n";
+        return ret;
+    }
+    return "Success!";
+}
+
+
 void Robot::parse_command(String command)
 {
     command.trim();
@@ -630,6 +675,8 @@ void Robot::parse_command(String command)
         out = this->control_command(first_arg);
     else if (top_level_command == "set")
         out = this->set_command(first_arg, second_arg, third_arg);
+    else if (top_level_command == "balls")
+        out = this->balls_command(first_arg);
     else if (top_level_command == "calibrate_compass")
     {
         log_inline_begin(); log_inline("Calibrating compass:");

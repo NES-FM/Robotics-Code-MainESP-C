@@ -111,7 +111,10 @@ class Robot
             bool black = false;
         };
 
-        ball test_ball;
+        ball detected_balls[50];
+        uint8_t num_detected_balls = 0;
+        bool detectingBallsEnabled = false;
+        void print_balls();
 
         void room_move_along_wall();
 
@@ -151,4 +154,5 @@ class Robot
         String set_command(String first_arg, String second_arg, String third_arg);
         String comamnd_template(String arg);
         String heartbeat_command(String arg);
+        String balls_command(String arg);
 };
