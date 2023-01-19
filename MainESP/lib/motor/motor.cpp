@@ -133,6 +133,7 @@ void motor::move(int speed)
             Wire.endTransmission();
         }
     }
+    motor_speed = speed;
 }
 
 void motor::move_steps(int speed, int steps)

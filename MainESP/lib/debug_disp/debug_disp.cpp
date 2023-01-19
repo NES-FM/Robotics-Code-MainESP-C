@@ -266,9 +266,24 @@ void debug_disp::draw_robot_in_room_coordinates()
 
 void debug_disp::draw_balls_in_room_coordinates()
 {
-    for (int i = 0; i < _robot->num_detected_balls; i++)
+    if (_robot->cur_room_state == _robot->ROOM_STATE_ROTATE_TO_FIND_BALLS)
     {
-        Robot::ball b = _robot->detected_balls[i];
+        for (int i = 0; i < _robot->num_detected_balls; i++)
+        {
+            Robot::ball b = _robot->detected_balls[i];
+            screen_point ball_point_screen;
+            ball_point_screen.x = SCREEN_MID_X + round(float(b.pos.x_mm) / room_conversion_factor);
+            ball_point_screen.y = SCREEN_MID_Y - round(float(b.pos.y_mm) / room_conversion_factor);
+
+            if (b.black)
+                oled->fillCircle(ball_point_screen.x, ball_point_screen.y, int(25.0 / room_conversion_factor), SSD1306_WHITE);
+            else
+                oled->drawCircle(ball_point_screen.x, ball_point_screen.y, int(25.0 / room_conversion_factor), SSD1306_WHITE);
+        }
+    }
+    else if (_robot->cur_room_state == _robot->ROOM_STATE_MOVING_TO_BALL)
+    {
+        Robot::ball b = _robot->moving_to_balls_target;
         screen_point ball_point_screen;
         ball_point_screen.x = SCREEN_MID_X + round(float(b.pos.x_mm) / room_conversion_factor);
         ball_point_screen.y = SCREEN_MID_Y - round(float(b.pos.y_mm) / room_conversion_factor);

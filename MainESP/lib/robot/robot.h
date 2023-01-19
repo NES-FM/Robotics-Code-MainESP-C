@@ -79,6 +79,7 @@ class Robot
             int x_mm = 0;
             int y_mm = 0;
         };
+        point Origin;
 
         float angle = 0.0f;
 
@@ -116,6 +117,18 @@ class Robot
         bool detectingBallsEnabled = false;
         void print_balls();
 
+        struct moving_to_balls_step
+        {
+            int motor_left_speed;
+            int motor_right_speed;
+            uint32_t time_left;
+            float target_angle = -1;
+            bool follow_ball = false;
+        };
+        std::deque<moving_to_balls_step> moving_to_balls_queue;
+
+        ball moving_to_balls_target;
+
         void room_move_along_wall();
 
         enum room_end_types {
@@ -140,9 +153,14 @@ class Robot
 
         enum room_states
         {
-            ROOM_STATE_DEFAULT
+            ROOM_STATE_DEFAULT,
+            ROOM_STATE_ROTATE_TO_FIND_BALLS,
+            ROOM_STATE_MOVING_TO_BALL,
+            ROOM_STATE_PUTTING_BALL_IN_CORNER,
+            ROOM_STATE_SEARCHING_EXIT
         };
         room_states cur_room_state;
+        room_states prev_room_state;
 
     private:
         void parse_command(String command);

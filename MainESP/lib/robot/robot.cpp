@@ -168,6 +168,8 @@ void Robot::tick()
             bcuart_ref->reset_balls();
         }
 
+        // TODO: Save Corner Placement if founc
+
         // if (bcuart_ref->corner_valid)
         // {
         //     auto b = bcuart_ref->received_corner;
@@ -624,12 +626,15 @@ String Robot::balls_command(String arg)
         detectingBallsEnabled = false;
     else if (arg == "print")
         this->print_balls();
+    else if (arg == "auto")
+        cur_room_state = ROOM_STATE_ROTATE_TO_FIND_BALLS;
     else
     {
         String ret = "";
         ret += "-- balls --\r\n";
         ret += "balls <on/off>\r\n";
         ret += "balls print\r\n";
+        ret += "balls auto\r\n";
         ret += "\r\n";
         return ret;
     }
@@ -743,6 +748,7 @@ void Robot::startRoom()
     setRoomBeginningAngle();
 
     cur_room_state = ROOM_STATE_DEFAULT;
+    prev_room_state = ROOM_STATE_DEFAULT;
 
     // room_time_measure_start();
 }
