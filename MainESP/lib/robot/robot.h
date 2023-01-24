@@ -15,7 +15,6 @@
 #include "../../include/i2c_addresses.h"
 #include "../../include/room_stuff.h"
 #include "buzz.h"
-#include "tof.h"
 #include "io_extender.h"
 #include "lc02.h"
 #include "cuart.h"
@@ -31,7 +30,6 @@ class Robot
 {
     public:
         Robot(CUART_class* cuart, BCUART_class* bcuart);
-        void init_tof_xshut();
         void init();
 
         void tick();
@@ -52,13 +50,6 @@ class Robot
 
         motor* motor_left = new motor();
         motor* motor_right = new motor();
-
-        tof* tof_right = new tof(TOF_SENSOR_VL53L0X, 95, -60, 90, io_ext_pins::EXT_D6);
-        tof* tof_left = new tof(TOF_SENSOR_VL53L0X, -95, -60, -90, io_ext_pins::EXT_D4);
-        tof* tof_back = new tof(TOF_SENSOR_VL53L0X, 0, -90, 180, io_ext_pins::EXT_D2);
-        tof* tof_front = new tof(TOF_SENSOR_VL53L0X, 0, 90, 0, io_ext_pins::EXT_D7);
-
-        tof* tof_closerange = new tof(TOF_SENSOR_VL6180X, 90, 80, 90, io_ext_pins::EXT_D8);
 
         Claw* claw = new Claw();
 
@@ -112,7 +103,7 @@ class Robot
             bool black = false;
         };
 
-        ball detected_balls[50];
+        ball detected_balls[30];
         uint8_t num_detected_balls = 0;
         bool detectingBallsEnabled = false;
         void print_balls();
@@ -129,7 +120,7 @@ class Robot
 
         ball moving_to_balls_target;
 
-        void room_move_along_wall();
+        // void room_move_along_wall();
 
         enum room_end_types {
             ROOM_HAS_NOT_REACHED_END,

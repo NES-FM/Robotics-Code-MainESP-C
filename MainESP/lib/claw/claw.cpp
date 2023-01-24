@@ -25,6 +25,9 @@ void Claw::init()
     {
         this->set_state(Claw::BOTTOM_OPEN);
     }
+
+    tof_claw->init();
+    tof_claw->begin();
 }
 
 void Claw::set_state(State target_state)
@@ -38,31 +41,44 @@ void Claw::set_state(State target_state)
         if (_last_state == BOTTOM_OPEN)
         {
             enable_close_servo();
-            close_claw();
-            if (target_state == BOTTOM_CLOSED)
+            if (target_state == BOTTOM_MID)
+            {
+                claw_bottom_mid();
                 goto end;
+            }
             else
             {
-                claw_moving_up_bottom_already_closed:
-                if (target_state == SIDE_CLOSED)
-                {
-                    claw_to_side_pos();
+                claw_from_bottom_mid_to_closed:
+                close_claw();
+                if (target_state == BOTTOM_CLOSED)
                     goto end;
-                }
                 else
                 {
-                    claw_moving_up_target_not_side_pos:
-                    claw_to_up_pos();
-                    if (target_state == TOP_CLOSED)
+                    claw_moving_up_bottom_already_closed:
+                    if (target_state == SIDE_CLOSED)
+                    {
+                        claw_to_side_pos();
                         goto end;
+                    }
                     else
                     {
-                        claw_moving_up_target_top_open:
-                        open_claw();
-                        goto end;
+                        claw_moving_up_target_not_side_pos:
+                        claw_to_up_pos();
+                        if (target_state == TOP_CLOSED)
+                            goto end;
+                        else
+                        {
+                            claw_moving_up_target_top_open:
+                            open_claw();
+                            goto end;
+                        }
                     }
                 }
             }
+        }
+        else if (_last_state == BOTTOM_MID)
+        {
+            goto claw_from_bottom_mid_to_closed;
         }
         else if (_last_state == BOTTOM_CLOSED)
         {
@@ -102,6 +118,13 @@ void Claw::set_state(State target_state)
                     claw_to_down_pos();
                     if (target_state == BOTTOM_CLOSED)
                         goto end;
+
+                    claw_already_bottom_only_open:
+                    if (target_state == BOTTOM_MID)
+                    {
+                        claw_bottom_mid();
+                        goto end;
+                    }
                     else
                     {
                         claw_moving_down_target_bottom_open:
@@ -121,6 +144,10 @@ void Claw::set_state(State target_state)
             goto claw_moving_down_target_not_side_pos;
         }
         else if (_last_state == BOTTOM_CLOSED)
+        {
+            goto claw_already_bottom_only_open;
+        }
+        else if (_last_state == BOTTOM_MID)
         {
             goto claw_moving_down_target_bottom_open;
         }
@@ -149,16 +176,33 @@ void Claw::open_claw()
 {
     logln("Opening claw...");
     uint8_t angle = 0;
-    for (int i = 0; i < 500; i += 5)
+    uint8_t start_angle = claw_close_servo->read();
+    int time_to_take = abs(start_angle-servo_close_open)*(750/180);
+    for (int i = 0; i < time_to_take; i += 5)
     {
-        angle = map(i, 0, 500, servo_close_closed_second_step, servo_close_open);
+        angle = map(i, 0, time_to_take, start_angle, servo_close_open);
         _set_raw_servo_close_state(angle);
         delay(5);
     }
     _set_raw_servo_close_state(servo_close_open);
-    delay(100);
-    // _set_raw_servo_close_state(servo_close_open_second_step);
-    
+
+    delay(safety_delay);
+}
+
+void Claw::claw_bottom_mid()
+{
+    logln("Claw bottom mid...");
+    uint8_t angle = 0;
+    uint8_t start_angle = claw_close_servo->read();
+    int time_to_take = abs(start_angle-servo_close_mid)*(750/180);
+    for (int i = 0; i < time_to_take; i += 5)
+    {
+        angle = map(i, 0, time_to_take, start_angle, servo_close_mid);
+        _set_raw_servo_close_state(angle);
+        delay(5);
+    }
+    _set_raw_servo_close_state(servo_close_mid);
+
     delay(safety_delay);
 }
 
@@ -166,9 +210,11 @@ void Claw::close_claw()
 {
     logln("Closing claw...");
     uint8_t angle = 0;
-    for (int i = 0; i < 500; i += 5)
+    uint8_t start_angle = claw_close_servo->read();
+    int time_to_take = abs(start_angle-servo_close_closed_first_step)*(750/180);
+    for (int i = 0; i < time_to_take; i += 5)
     {
-        angle = map(i, 0, 500, servo_close_open_second_step, servo_close_closed_first_step);
+        angle = map(i, 0, time_to_take, start_angle, servo_close_closed_first_step);
         _set_raw_servo_close_state(angle);
         delay(5);
     }
@@ -238,5 +284,19 @@ void Claw::disable_close_servo()
 void Claw::enable_close_servo()
 {
     claw_close_servo->attach(PIN_SERVO1);
+}
+
+uint16_t Claw::get_ball_distance()
+{
+    uint16_t dis = tof_claw->getMeasurement();
+
+    if (tof_claw->getMeasurementError() == tof::TOF_ERROR_MAX_DISTANCE)
+        dis = 65535;
+    else if (tof_claw->getMeasurementError() == tof::TOF_ERROR_MIN_DISTANCE)
+        dis = 0;
+    else if (tof_claw->getMeasurementError() != tof::TOF_ERROR_NONE)
+        dis = 65534;
+        
+    return dis;
 }
 

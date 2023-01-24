@@ -51,11 +51,6 @@ void setup()
 
     preferences.begin("main_esp", false);
 
-    // robot.tof_left->init();
-    // robot.tof_right->init();
-
-    //robot.init_tof_xshut();  TODO Actually remove tofs, that are unneeded, this just disables them
-
     // I2C Enable
     scan_i2c_addresses();
     print_i2c_addresses();
@@ -68,6 +63,8 @@ void setup()
 
     robot.compass->enable(check_device_enabled(I2C_ADDRESS_COMPASS, "compass", "CO"));
     robot.accel_sensor->enable(check_device_enabled(I2C_ADDRESS_ACCELEROMETER, "accelerometer", "AC"));
+
+    robot.claw->enableTof(check_device_enabled(I2C_ADDRESS_TOF_DEFAULT, "claw_tof", "CT"));
 
     // Initialization of libs
     robot.init();

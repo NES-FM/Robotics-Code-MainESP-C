@@ -6,26 +6,6 @@ Robot::Robot(CUART_class* cuart, BCUART_class* bcuart)
     bcuart_ref = bcuart;
 }
 
-void Robot::init_tof_xshut()
-{
-    tof_right->enable(true);
-    tof_left->enable(true);
-    tof_back->enable(true);
-    tof_front->enable(false);
-    tof_closerange->enable(true);
-    tof_left->init(); // Setting Pinmodes
-    tof_right->init();
-    tof_back->init();
-    tof_front->init();
-    tof_closerange->init();
-    tof_left->holdReset(); // Resetting all sensors
-    tof_right->holdReset();
-    tof_back->holdReset();
-    tof_front->holdReset();
-    tof_closerange->holdReset();
-    delay(20);
-}
-
 #define TOF_DELAY_BETWEEN_BEGIN 100
 
 void Robot::init()
@@ -33,68 +13,7 @@ void Robot::init()
     claw->init(); // Initializing Claw Servos
 
     // delay(500); // Let IO Extender fully initialize
-    digitalRead(io_ext_pins::EXT_D13); // Let IO Extender fully initialize
-    // TOF
-    if (tof_right->_enabled)
-    {
-        log_inline_begin();
-        log_inline("Right: ");
-        tof_right->releaseReset(); // Unresetting right, so that right can be initialized
-        delay(TOF_DELAY_BETWEEN_BEGIN);
-        tof_right->begin(I2C_ADDRESS_TOF_RIGHT);
-    }
-
-    if (tof_back->_enabled)
-    {
-        log_inline_begin();
-        log_inline("Back: ");
-        tof_back->releaseReset(); // Unresetting back, so that back can be initialized
-        delay(TOF_DELAY_BETWEEN_BEGIN);
-        tof_back->begin(I2C_ADDRESS_TOF_BACK);
-    }
-
-    if (tof_left->_enabled)
-    {
-        log_inline_begin();
-        log_inline("Left: ");
-        tof_left->releaseReset(); // Unresetting left, so that left can be initialized
-        delay(TOF_DELAY_BETWEEN_BEGIN);
-        tof_left->begin(I2C_ADDRESS_TOF_LEFT);
-    }
-
-    if (tof_closerange->_enabled)
-    {
-        log_inline_begin();
-        log_inline("Closerange: ");
-        tof_closerange->releaseReset(); // Unresetting left, so that left can be initialized
-        delay(TOF_DELAY_BETWEEN_BEGIN);
-        tof_closerange->begin(I2C_ADDRESS_TOF_CLOSERANGE);
-    }
-
-    if (tof_front->_enabled)
-    {
-        log_inline_begin();
-        log_inline("Front: ");
-        tof_front->releaseReset(); // Unresetting left, so that left can be initialized
-        delay(TOF_DELAY_BETWEEN_BEGIN);
-        tof_front->begin(I2C_ADDRESS_TOF_FRONT);
-    }
-
-    tof_right->setLongRangeMode(true);
-    tof_right->setContinuous(false); 
-    // tof_right->setHighSpeed(true);
-
-    tof_left->setLongRangeMode(true);
-    tof_left->setContinuous(true);
-    // tof_left->setHighSpeed(true);
-
-    tof_back->setLongRangeMode(true);
-    tof_back->setContinuous(true);
-    // tof_back->setHighSpeed(true);
-
-    tof_front->setLongRangeMode(true);
-    tof_front->setContinuous(true);
-    // tof_front->setHighSpeed(true);
+    // digitalRead(io_ext_pins::EXT_D13); // Let IO Extender fully initialize
 
     // Others
     motor_left->init(1);
@@ -116,7 +35,7 @@ void Robot::tick()
     {
         angle = compass->keep_in_360_range(compass->get_angle() - room_beginning_angle);
 
-        if (detectingBallsEnabled && bcuart_ref->num_balls_in_array > 0)
+        if (detectingBallsEnabled && bcuart_ref->num_balls_in_array > 0)  // TODO: Bugs if balls are too close to robot
         {
             logln("Balls: ");
             for (int i = 0; i < bcuart_ref->num_balls_in_array; i++)
@@ -140,7 +59,7 @@ void Robot::tick()
                     for (int b_num = 0; b_num < num_detected_balls; b_num++)
                     {
                         ball old_ball = detected_balls[b_num];
-                        if (distance_between_points(old_ball.pos, irl_pos) < (60 + old_ball.num_hits*5))// && old_ball.black == received_ball.black)
+                        if (distance_between_points(old_ball.pos, irl_pos) < (60 + old_ball.num_hits*5) && old_ball.black == received_ball.black)
                         {
                             log_inline("Ball was found before!");
                             detected_balls[b_num].conf = max(old_ball.conf, received_ball.conf);
@@ -168,7 +87,9 @@ void Robot::tick()
             bcuart_ref->reset_balls();
         }
 
-        // TODO: Save Corner Placement if founc
+        // TODO: Save Corner Placement if found
+
+        // TODO: Turn On / Off features of cam to save framerate
 
         // if (bcuart_ref->corner_valid)
         // {
@@ -344,37 +265,10 @@ String Robot::get_command(String sensor, String subsensor)
         {
             sprintf(out, "Specifying of subsensor needed");
         }
-        else if (subsensor == "right")
+        else if (subsensor == "claw")
         {
-            uint16_t measurement = tof_right->getMeasurement();
-            if (tof_right->getMeasurementError() == tof::TOF_ERROR_NONE)
-                sprintf(out, "%d", measurement);
-            else
-                return tof_right->getMeasurementErrorString();
-        }
-        else if (subsensor == "left")
-        {
-            uint16_t measurement = tof_left->getMeasurement();
-            if (tof_left->getMeasurementError() == tof::TOF_ERROR_NONE)
-                sprintf(out, "%d", measurement);
-            else
-                return tof_left->getMeasurementErrorString();        
-        }
-        else if (subsensor == "back")
-        {
-            uint16_t measurement = tof_back->getMeasurement();
-            if (tof_back->getMeasurementError() == tof::TOF_ERROR_NONE)
-                sprintf(out, "%d", measurement);
-            else
-                return tof_back->getMeasurementErrorString();       
-        }
-        else if (subsensor == "closerange")
-        {
-            uint16_t measurement = tof_closerange->getMeasurement();
-            if (tof_closerange->getMeasurementError() == tof::TOF_ERROR_NONE)
-                sprintf(out, "%d", measurement);
-            else
-                return tof_closerange->getMeasurementErrorString();       
+            uint16_t measurement = claw->get_ball_distance();
+            sprintf(out, "%d", measurement);
         }
         else
             sprintf(out, "subsensor not found");
@@ -473,7 +367,6 @@ String Robot::set_command(String first_arg, String second_arg, String third_arg)
         ret += "--set--\r\n";
         ret += "drive mode [line/room]\r\n";
         ret += "compass calib(ration) [on/off]\r\n";
-        ret += "tof <left/back/right> <highspeed/highaccuracy/longrange>\r\n";
         ret += "corner <TL/TR/BL/BR>\r\n";
         ret += "claw <servo_up/servo_close> angle\r\n";
         ret += "claw state <states>\r\n";
@@ -497,63 +390,6 @@ String Robot::set_command(String first_arg, String second_arg, String third_arg)
             sprintf(out, "%s", "Invalid Drive mode");
         }
     }
-    else if (first_arg == "tof")
-    {
-        if (second_arg == "left")
-        {
-            if (third_arg == "longrange")
-            {
-                tof_left->setLongRangeMode(!tof_left->getLongRangeMode());
-                sprintf(out, "Sensor.longrange is now %s", tof_left->getLongRangeMode() ? "true" : "false");
-            }
-            else if (third_arg == "highaccuracy")
-            {
-                tof_left->setHighAccuracy(!tof_left->getHighAccuracy());
-                sprintf(out, "Sensor.highaccuracy is now %s", tof_left->getHighAccuracy() ? "true" : "false");
-            }
-            else if (third_arg == "highspeed")
-            {
-                tof_left->setHighSpeed(!tof_left->getHighSpeed());
-                sprintf(out, "Sensor.highspeed is now %s", tof_left->getHighSpeed() ? "true" : "false");
-            }
-        }
-        else if (second_arg == "back")
-        {
-            if (third_arg == "longrange")
-            {
-                tof_back->setLongRangeMode(!tof_back->getLongRangeMode());
-                sprintf(out, "Sensor.longrange is now %s", tof_back->getLongRangeMode() ? "true" : "false");
-            }
-            else if (third_arg == "highaccuracy")
-            {
-                tof_back->setHighAccuracy(!tof_back->getHighAccuracy());
-                sprintf(out, "Sensor.highaccuracy is now %s", tof_back->getHighAccuracy() ? "true" : "false");
-            }
-            else if (third_arg == "highspeed")
-            {
-                tof_back->setHighSpeed(!tof_back->getHighSpeed());
-                sprintf(out, "Sensor.highspeed is now %s", tof_back->getHighSpeed() ? "true" : "false");
-            }
-        }
-        else if (second_arg == "right")
-        {
-            if (third_arg == "longrange")
-            {
-                tof_right->setLongRangeMode(!tof_right->getLongRangeMode());
-                sprintf(out, "Sensor.longrange is now %s", tof_right->getLongRangeMode() ? "true" : "false");
-            }
-            else if (third_arg == "highaccuracy")
-            {
-                tof_right->setHighAccuracy(!tof_right->getHighAccuracy());
-                sprintf(out, "Sensor.highaccuracy is now %s", tof_right->getHighAccuracy() ? "true" : "false");
-            }
-            else if (third_arg == "highspeed")
-            {
-                tof_right->setHighSpeed(!tof_right->getHighSpeed());
-                sprintf(out, "Sensor.highspeed is now %s", tof_right->getHighSpeed() ? "true" : "false");
-            }
-        }
-    }
     else if (first_arg == "claw")
     {
         if (second_arg == "servo_up")
@@ -574,6 +410,8 @@ String Robot::set_command(String first_arg, String second_arg, String third_arg)
             Claw::State state;
             if (third_arg == "bottom_open")
                 state = Claw::BOTTOM_OPEN;
+            else if (third_arg == "bottom_mid")
+                state = Claw::BOTTOM_MID;
             else if (third_arg == "bottom_closed")
                 state = Claw::BOTTOM_CLOSED;
             else if (third_arg == "side_closed")
@@ -712,30 +550,30 @@ void Robot::parse_command(String command)
 
 // Room
 
-#define ROOM_MOVE_ALONG_WALL_DISTANCE 80
-#define ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR 0.43f
+// #define ROOM_MOVE_ALONG_WALL_DISTANCE 80
+// #define ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR 0.43f
 
-void Robot::room_move_along_wall()
-{
-    //////// General todo: tof_closereange average
+// void Robot::room_move_along_wall()
+// {
+//     //////// General todo: tof_closereange average
 
-    uint16_t closerange_dis = tof_closerange->getMeasurement();
-    if (tof_closerange->getMeasurementError() != tof::TOF_ERROR_MAX_DISTANCE) // Closerange needs to see the wall, or else it cant work
-    {
-        int motor_l_val = DRIVE_SPEED_RAUM;
-        int motor_r_val = DRIVE_SPEED_RAUM;
+//     uint16_t closerange_dis = tof_closerange->getMeasurement();
+//     if (tof_closerange->getMeasurementError() != tof::TOF_ERROR_MAX_DISTANCE) // Closerange needs to see the wall, or else it cant work
+//     {
+//         int motor_l_val = DRIVE_SPEED_RAUM;
+//         int motor_r_val = DRIVE_SPEED_RAUM;
 
-        if (tof_closerange->getMeasurementError() == tof::TOF_ERROR_NONE)
-        {
-            float error = ROOM_MOVE_ALONG_WALL_DISTANCE - closerange_dis;
+//         if (tof_closerange->getMeasurementError() == tof::TOF_ERROR_NONE)
+//         {
+//             float error = ROOM_MOVE_ALONG_WALL_DISTANCE - closerange_dis;
 
-            motor_l_val = float(DRIVE_SPEED_RAUM) - ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR * error;
-            motor_r_val = float(DRIVE_SPEED_RAUM) + ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR * error;
-        }
+//             motor_l_val = float(DRIVE_SPEED_RAUM) - ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR * error;
+//             motor_r_val = float(DRIVE_SPEED_RAUM) + ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR * error;
+//         }
 
-        move(motor_l_val, motor_r_val);
-    }
-}
+//         move(motor_l_val, motor_r_val);
+//     }
+// }
 
 void Robot::startRoom()
 {

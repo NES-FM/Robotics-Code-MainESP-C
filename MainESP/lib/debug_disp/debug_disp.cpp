@@ -292,6 +292,49 @@ void debug_disp::draw_balls_in_room_coordinates()
             oled->fillCircle(ball_point_screen.x, ball_point_screen.y, int(25.0 / room_conversion_factor), SSD1306_WHITE);
         else
             oled->drawCircle(ball_point_screen.x, ball_point_screen.y, int(25.0 / room_conversion_factor), SSD1306_WHITE);
+
+        draw_move_to_ball_steps();
+    }
+}
+
+void debug_disp::draw_move_to_ball_steps()
+{
+    float simulated_robot_angle = _robot->angle;
+    Robot::point simulated_target_pos = _robot->moving_to_balls_target.pos;
+    for (auto &step : _robot->moving_to_balls_queue)
+    {
+        if (step.follow_ball) // Follow Ball with Cam mode
+        {
+            draw_room_space_line(_robot->Origin, simulated_target_pos);  // TODO: Bugfix: Draws from origin to new point (same goes for else path), when robot from current pov is no longer at origin
+        }
+        else if (step.target_angle != -1) // Rotate to Target Angle Mode
+        {
+            simulated_robot_angle = step.target_angle;
+        }
+        else // Move straight Distance (time) mode
+        {
+            if (step.motor_left_speed == step.motor_right_speed && step.motor_left_speed != 0)
+            {
+                float speed_scale = abs((float)step.motor_left_speed) / 40.0; // Adjust for not driving with 40 speed
+                float delta_distance = (double)step.time_left * MILLIMETERS_PER_MILLISECOND * speed_scale;
+
+                // convert angle to radians
+                float angle_rad = simulated_robot_angle * M_PI / 180.0;
+
+                if (step.motor_left_speed > 0) // If moving forward, move the ball backwards
+                {
+                    // calculate the opposite angle by adding 180 degrees
+                    angle_rad = angle_rad + M_PI;
+                }
+
+                // calculate new x and y coordinates
+                Robot::point new_pos;
+                new_pos.x_mm = simulated_target_pos.x_mm + delta_distance * cos(angle_rad);
+                new_pos.y_mm = simulated_target_pos.y_mm + delta_distance * sin(angle_rad);
+                draw_room_space_line(new_pos, simulated_target_pos);
+                simulated_target_pos = new_pos;
+            }
+        }
     }
 }
 

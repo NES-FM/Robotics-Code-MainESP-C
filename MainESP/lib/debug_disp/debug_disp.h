@@ -1,6 +1,9 @@
 #ifndef DEBUG_DISP_H
 #define DEBUG_DISP_H
 
+// NEEDS TO BE CHANGED when changed in drive_room.h
+#define MILLIMETERS_PER_MILLISECOND 0.1770833333
+
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -87,6 +90,7 @@ class debug_disp {
 
         void draw_robot_in_room_coordinates();
         void draw_balls_in_room_coordinates();
+        void draw_move_to_ball_steps();
         void draw_room_space_line(Robot::point point_1, Robot::point point_2);
 
         float room_conversion_factor;
