@@ -87,6 +87,7 @@ class tof {
         void _vl6180x_begin(uint8_t address);
         void _vl6180x_changeAddress(uint8_t address);
         uint16_t _vl6180x_getMeasurement();
+        void _vl6180x_setContinuous(bool mode, uint32_t period_ms);
 
 
     friend class Robot;

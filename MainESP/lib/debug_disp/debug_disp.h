@@ -90,7 +90,8 @@ class debug_disp {
 
         void draw_robot_in_room_coordinates();
         void draw_balls_in_room_coordinates();
-        void draw_move_to_ball_steps();
+        void draw_corners_in_room_coordinates();
+        void draw_move_in_room_steps();
         void draw_room_space_line(Robot::point point_1, Robot::point point_2);
 
         float room_conversion_factor;

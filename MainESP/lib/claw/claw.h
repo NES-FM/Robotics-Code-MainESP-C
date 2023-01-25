@@ -27,6 +27,7 @@ class Claw
         State get_state();
 
         void enableTof(bool enabled) {tof_claw->enable(enabled);}
+        void setTofContinuous(bool continuous) {tof_claw->setContinuous(continuous, 0);}
 
         uint16_t get_ball_distance();
 

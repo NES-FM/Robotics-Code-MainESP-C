@@ -168,6 +168,8 @@ void tof::setContinuous(bool mode, uint32_t period_ms)
     {
         if (_sensor_type == TOF_SENSOR_VL53L0X)
             _vl53l0x_setContinuous(mode, period_ms);
+        else if (_sensor_type == TOF_SENSOR_VL6180X)
+            _vl6180x_setContinuous(mode, period_ms);
     }
 }
 
@@ -180,16 +182,14 @@ uint16_t tof::getMeasurement()
         else if (_sensor_type == TOF_SENSOR_VL6180X)
             return _vl6180x_getMeasurement();
     }
-    else
-    {
-        return 0;
-    }
+    return 0;
 }
 
 bool tof::timeoutOccurred() 
 {
     if (_sensor_type == TOF_SENSOR_VL53L0X)
         return _vl53l0x_timeoutOccured(); 
+    return false;
 }
 
 
@@ -349,11 +349,36 @@ void tof::_vl6180x_changeAddress(uint8_t address)
     vl6180x_sensor->setAddress(address);
 }
 
+void tof::_vl6180x_setContinuous(bool mode, uint32_t period_ms)
+{
+    if (continuous_mode != mode)
+    {
+        continuous_mode = mode;
+        if (mode)
+        {
+            vl6180x_sensor->startRangeContinuous(period_ms);
+        }
+        else
+        {
+            vl6180x_sensor->stopRangeContinuous();
+        }
+    }
+}
+
 uint16_t tof::_vl6180x_getMeasurement()
 {
-    uint8_t range = vl6180x_sensor->readRange();
+    uint8_t range = 0;
+    if (continuous_mode)
+    {
+        vl6180x_sensor->waitRangeComplete();
+        range = vl6180x_sensor->readRangeResult();
+    }
+    else
+    {
+        range = vl6180x_sensor->readRange();
+    }
+    
     uint8_t status = vl6180x_sensor->readRangeStatus();
-
 
     if (range > 150)
     {

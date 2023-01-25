@@ -293,25 +293,75 @@ void debug_disp::draw_balls_in_room_coordinates()
         else
             oled->drawCircle(ball_point_screen.x, ball_point_screen.y, int(25.0 / room_conversion_factor), SSD1306_WHITE);
 
-        draw_move_to_ball_steps();
+        draw_move_in_room_steps();
     }
 }
 
-void debug_disp::draw_move_to_ball_steps()
+void debug_disp::draw_corners_in_room_coordinates()
+{
+    if (_robot->cur_room_state == _robot->ROOM_STATE_ROTATE_TO_FIND_BALLS)
+    {
+        for (auto c : _robot->possible_corners)
+        {
+            screen_point first_point_screen;
+            first_point_screen.x = SCREEN_MID_X + round(float(c.first_pos.x_mm) / room_conversion_factor);
+            first_point_screen.y = SCREEN_MID_Y - round(float(c.first_pos.y_mm) / room_conversion_factor);
+            screen_point last_point_screen;
+            last_point_screen.x = SCREEN_MID_X + round(float(c.last_pos.x_mm) / room_conversion_factor);
+            last_point_screen.y = SCREEN_MID_Y - round(float(c.last_pos.y_mm) / room_conversion_factor);
+            screen_point third_point;
+            if (c.first_pos.x_mm > 0)
+                third_point.x = max(last_point_screen.x, first_point_screen.x);
+            else // If left of y-Axis, then min (because -500 < -200, when we want -500)
+                third_point.x = min(last_point_screen.x, first_point_screen.x);
+
+            if (c.first_pos.y_mm > 0)
+                third_point.y = max(last_point_screen.y, first_point_screen.y);
+            else
+                third_point.y = min(last_point_screen.y, first_point_screen.y);
+
+            oled->fillTriangle(first_point_screen.x, first_point_screen.y, last_point_screen.x, last_point_screen.y, third_point.x, third_point.y, SSD1306_WHITE);
+        }
+    }
+    else if (_robot->cur_room_state == _robot->ROOM_STATE_MOVING_TO_BALL)
+    {
+        Robot::corner c = _robot->most_likely_corner;
+        screen_point first_point_screen;
+        first_point_screen.x = SCREEN_MID_X + round(float(c.first_pos.x_mm) / room_conversion_factor);
+        first_point_screen.y = SCREEN_MID_Y - round(float(c.first_pos.y_mm) / room_conversion_factor);
+        screen_point last_point_screen;
+        last_point_screen.x = SCREEN_MID_X + round(float(c.last_pos.x_mm) / room_conversion_factor);
+        last_point_screen.y = SCREEN_MID_Y - round(float(c.last_pos.y_mm) / room_conversion_factor);
+        screen_point third_point;
+        if (c.first_pos.x_mm > 0)
+            third_point.x = max(last_point_screen.x, first_point_screen.x);
+        else // If left of y-Axis, then min (because -500 < -200, when we want -500)
+            third_point.x = min(last_point_screen.x, first_point_screen.x);
+
+        if (c.first_pos.y_mm > 0)
+            third_point.y = max(last_point_screen.y, first_point_screen.y);
+        else
+            third_point.y = min(last_point_screen.y, first_point_screen.y);
+
+        oled->fillTriangle(first_point_screen.x, first_point_screen.y, last_point_screen.x, last_point_screen.y, third_point.x, third_point.y, SSD1306_WHITE);
+    }
+}
+
+void debug_disp::draw_move_in_room_steps()
 {
     float simulated_robot_angle = _robot->angle;
-    Robot::point simulated_target_pos = _robot->moving_to_balls_target.pos;
-    for (auto &step : _robot->moving_to_balls_queue)
+    Robot::point simulated_robot_pos = _robot->Origin;
+    for (auto &step : _robot->moving_in_room_queue)
     {
-        if (step.follow_ball) // Follow Ball with Cam mode
+        if (step.getType() == Robot::moving_in_room_step::MOVING_IN_ROOM_FOLLOW_BALL) // Follow Ball with Cam mode
         {
-            draw_room_space_line(_robot->Origin, simulated_target_pos);  // TODO: Bugfix: Draws from origin to new point (same goes for else path), when robot from current pov is no longer at origin
+            draw_room_space_line(simulated_robot_pos, _robot->moving_to_balls_target.pos);  // TODO: Bugfix: Draws from origin to new point (same goes for else path), when robot from current pov is no longer at origin
         }
-        else if (step.target_angle != -1) // Rotate to Target Angle Mode
+        else if (step.getType() == Robot::moving_in_room_step::MOVING_IN_ROOM_ROTATE_TO_DEG) // Rotate to Target Angle Mode
         {
             simulated_robot_angle = step.target_angle;
         }
-        else // Move straight Distance (time) mode
+        else if (step.getType() == Robot::moving_in_room_step::MOVING_IN_ROOM_DISTANCE_BY_TIME) // Move straight Distance (time) mode
         {
             if (step.motor_left_speed == step.motor_right_speed && step.motor_left_speed != 0)
             {
@@ -321,18 +371,17 @@ void debug_disp::draw_move_to_ball_steps()
                 // convert angle to radians
                 float angle_rad = simulated_robot_angle * M_PI / 180.0;
 
-                if (step.motor_left_speed > 0) // If moving forward, move the ball backwards
+                if (step.motor_left_speed < 0) // If moving backwards, move the robot backwards
                 {
                     // calculate the opposite angle by adding 180 degrees
                     angle_rad = angle_rad + M_PI;
                 }
 
-                // calculate new x and y coordinates
-                Robot::point new_pos;
-                new_pos.x_mm = simulated_target_pos.x_mm + delta_distance * cos(angle_rad);
-                new_pos.y_mm = simulated_target_pos.y_mm + delta_distance * sin(angle_rad);
-                draw_room_space_line(new_pos, simulated_target_pos);
-                simulated_target_pos = new_pos;
+                // calculate new x and y coordinates + Draw line
+                Robot::point old_pos = simulated_robot_pos;
+                simulated_robot_pos.x_mm = simulated_robot_pos.x_mm + delta_distance * cos(angle_rad);
+                simulated_robot_pos.y_mm = simulated_robot_pos.y_mm + delta_distance * sin(angle_rad);
+                draw_room_space_line(old_pos, simulated_robot_pos);
             }
         }
     }

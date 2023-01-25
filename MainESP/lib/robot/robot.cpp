@@ -87,16 +87,51 @@ void Robot::tick()
             bcuart_ref->reset_balls();
         }
 
+        if (detectingCornerEnabled && bcuart_ref->corner_valid)
+        {
+            log_inline_begin();log_inline("Corner  ");
+            auto recieved_corner = bcuart_ref->received_corner;
+            point irl_pos;
+            irl_pos.x_mm = -recieved_corner.x_offset*10; // *10, because x_offset is in cm, while irl_pos is in mm  // - because negative x_offset means right of robot, if robot is pointing forward
+            irl_pos.y_mm = -recieved_corner.distance*10 - (0.5*height); // - because the robot detects balls towards the back  // - (0.5*height) because b.distance counts starting from the back edge of the robot
+            irl_pos = rotate_point_around_origin(irl_pos, angle);
+
+            bool corner_found_before = false;
+
+            for (corner old_corner : possible_corners)
+            {
+                if (distance_between_points(old_corner.center_pos, irl_pos) < 250)
+                {
+                    logln("Corner Found before!");
+                    old_corner.last_pos = irl_pos;
+                    old_corner.center_pos = midpoint_between_points(old_corner.first_pos, old_corner.last_pos);
+                    old_corner.conf = max(old_corner.conf, recieved_corner.conf);
+                    old_corner.num_hits += 1;
+                    corner_found_before = true;
+                    break;
+                }
+            }
+
+            if (!corner_found_before)
+            {
+                logln("New Corner -> Appending!");
+                corner new_corner;
+                new_corner.first_pos = irl_pos;
+                new_corner.center_pos = irl_pos;
+                new_corner.last_pos = irl_pos;
+                new_corner.conf = recieved_corner.conf;
+                new_corner.num_hits = 1;
+
+                possible_corners.push_back(new_corner);
+            }
+
+            bcuart_ref->reset_corner();
+        }
+
         // TODO: Save Corner Placement if found
 
         // TODO: Turn On / Off features of cam to save framerate
 
-        // if (bcuart_ref->corner_valid)
-        // {
-        //     auto b = bcuart_ref->received_corner;
-        //     logln("Corner: x_off%.3f dist%.3f c%.3f", b.x_offset, b.distance, b.conf);
-        //     bcuart_ref->reset_corner();
-        // }
         // if (bcuart_ref->exit_line_valid)
         // {
         //     auto b = bcuart_ref->received_exit_line;
@@ -119,6 +154,16 @@ void Robot::print_balls()
     {
         ball b = detected_balls[i];
         logln("%d: X=%d Y=%d C=%.2f N=%d %s", i, b.pos.x_mm, b.pos.y_mm, b.conf, b.num_hits, b.black ? "black" : "silver");
+    }
+    logln("-----------------");
+}
+
+void Robot::print_corners()
+{
+    logln("---- Corners ----");
+    for (corner c : possible_corners)
+    {
+        logln("X=%d Y=%d C=%.2f N=%d", c.center_pos.x_mm, c.center_pos.y_mm, c.conf, c.num_hits);
     }
     logln("-----------------");
 }
@@ -198,6 +243,15 @@ float Robot::x_distance_between_points(point p1, point p2)
 float Robot::y_distance_between_points(point p1, point p2)
 {
     return abs(p1.y_mm - p2.y_mm);
+}
+
+Robot::point Robot::midpoint_between_points(point p1, point p2)
+{
+    point return_point;
+    return_point.x_mm = (p1.x_mm + p2.x_mm) / 2;
+    return_point.y_mm = (p1.y_mm + p2.y_mm) / 2;
+
+    return return_point;
 }
 
 String Robot::help_command()

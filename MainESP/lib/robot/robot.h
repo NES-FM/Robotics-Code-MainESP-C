@@ -79,6 +79,7 @@ class Robot
         static float distance_between_points(point p1, point p2);
         static float x_distance_between_points(point p1, point p2);
         static float y_distance_between_points(point p1, point p2);
+        static point midpoint_between_points(point p1, point p2);
 
         enum ROBOT_DRIVE_MODE
         {
@@ -106,19 +107,23 @@ class Robot
         ball detected_balls[30];
         uint8_t num_detected_balls = 0;
         bool detectingBallsEnabled = false;
+        ball moving_to_balls_target;
         void print_balls();
 
-        struct moving_to_balls_step
-        {
-            int motor_left_speed;
-            int motor_right_speed;
-            uint32_t time_left;
-            float target_angle = -1;
-            bool follow_ball = false;
+        struct corner {
+            point center_pos;
+            point first_pos;
+            point last_pos;
+            float conf = 0.0;
+            uint16_t num_hits = 0;
         };
-        std::deque<moving_to_balls_step> moving_to_balls_queue;
+        
+        std::deque<corner> possible_corners;
+        bool detectingCornerEnabled = false;
+        corner most_likely_corner;
+        void print_corners();
 
-        ball moving_to_balls_target;
+        #include "moving_in_room.cpp"
 
         // void room_move_along_wall();
 
