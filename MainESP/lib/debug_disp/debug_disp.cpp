@@ -351,27 +351,27 @@ void debug_disp::draw_move_in_room_steps()
 {
     float simulated_robot_angle = _robot->angle;
     Robot::point simulated_robot_pos = _robot->Origin;
-    for (auto &step : _robot->moving_in_room_queue)
+    for (auto step : moving_in_room_queue)
     {
-        if (step.getType() == Robot::moving_in_room_step::MOVING_IN_ROOM_FOLLOW_BALL) // Follow Ball with Cam mode
+        if (moving_in_room_follow_ball* obj = static_cast<moving_in_room_follow_ball*>(step)) // Follow Ball with Cam mode
         {
-            draw_room_space_line(simulated_robot_pos, _robot->moving_to_balls_target.pos);  // TODO: Bugfix: Draws from origin to new point (same goes for else path), when robot from current pov is no longer at origin
+            draw_room_space_line(simulated_robot_pos, _robot->moving_to_balls_target.pos);
         }
-        else if (step.getType() == Robot::moving_in_room_step::MOVING_IN_ROOM_ROTATE_TO_DEG) // Rotate to Target Angle Mode
+        else if (moving_in_room_rotate_to_deg* obj = static_cast<moving_in_room_rotate_to_deg*>(step)) // Rotate to Target Angle Mode
         {
-            simulated_robot_angle = step.target_angle;
+            simulated_robot_angle = obj->target_angle;
         }
-        else if (step.getType() == Robot::moving_in_room_step::MOVING_IN_ROOM_DISTANCE_BY_TIME) // Move straight Distance (time) mode
+        else if (moving_in_room_distance_by_time* obj = static_cast<moving_in_room_distance_by_time*>(step)) // Move straight Distance (time) mode
         {
-            if (step.motor_left_speed == step.motor_right_speed && step.motor_left_speed != 0)
+            if (obj->motor_left_speed == obj->motor_right_speed && obj->motor_left_speed != 0)
             {
-                float speed_scale = abs((float)step.motor_left_speed) / 40.0; // Adjust for not driving with 40 speed
-                float delta_distance = (double)step.time_left * MILLIMETERS_PER_MILLISECOND * speed_scale;
+                float speed_scale = abs((float)obj->motor_left_speed) / 40.0; // Adjust for not driving with 40 speed
+                float delta_distance = (double)obj->time_left * MILLIMETERS_PER_MILLISECOND * speed_scale;
 
                 // convert angle to radians
                 float angle_rad = simulated_robot_angle * M_PI / 180.0;
 
-                if (step.motor_left_speed < 0) // If moving backwards, move the robot backwards
+                if (obj->motor_left_speed < 0) // If moving backwards, move the robot backwards
                 {
                     // calculate the opposite angle by adding 180 degrees
                     angle_rad = angle_rad + M_PI;

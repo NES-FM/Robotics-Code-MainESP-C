@@ -18,7 +18,7 @@ void Claw::init()
         _set_raw_servo_up_state(servo_up_down);
         delay(safety_delay);
         _set_raw_servo_close_state(servo_close_open);
-        delay(safety_delay);
+        delay(500);
         disable_close_servo();
     }
     else

@@ -2,7 +2,6 @@
 
 #ifndef ROBOT_H
 #define ROBOT_H
-#endif
 
 #include "motor.h"
 #include "accel.h"
@@ -25,6 +24,7 @@
 #include "command_parser.h"
 
 #include <deque>
+#include <vector>
 
 class Robot
 {
@@ -123,8 +123,6 @@ class Robot
         corner most_likely_corner;
         void print_corners();
 
-        #include "moving_in_room.cpp"
-
         // void room_move_along_wall();
 
         enum room_end_types {
@@ -170,3 +168,5 @@ class Robot
         String heartbeat_command(String arg);
         String balls_command(String arg);
 };
+
+#endif

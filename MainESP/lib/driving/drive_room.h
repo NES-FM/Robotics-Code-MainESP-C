@@ -1,6 +1,8 @@
 // mm/ms at 40 speed
 #define MILLIMETERS_PER_MILLISECOND 0.1770833333
 
+#include "moving_in_room.h"
+
 #define ROTATE_TO_ANGLE_TOLERANCE 2
 
 float rotate_balls_360_start_angle = 0;
@@ -34,7 +36,7 @@ void drive_room()
             robot.detectingCornerEnabled = true;
             rotate_balls_360_start_angle = angle;
             rotated_balls_over_10_degrees = false;
-            robot.moving_in_room_queue.clear();
+            moving_in_room_queue.clear();
         }
 
         if (abs(angle - rotate_balls_360_start_angle) > 10)
@@ -70,16 +72,19 @@ void drive_room()
             // Selecting Corner
             robot.most_likely_corner = *std::max_element(robot.possible_corners.begin(), robot.possible_corners.end(), [](const Robot::corner& a, const Robot::corner& b) { return a.conf*(float)a.num_hits < b.conf*(float)b.num_hits; });
 
-            logln("Selected Corner (%d|%d)!");
+            logln("Selected Corner (%d|%d)!", robot.most_likely_corner.center_pos.x_mm, robot.most_likely_corner.center_pos.y_mm);
 
             // if (abs(robot.moving_to_balls_target.pos.y_mm) <= 200) // If ball is less than 20cm away of middle, go directly to ball
             // {
                 // Step 1: Rotate to ball
-                Robot::moving_in_room_rotate_to_deg rotate_to_ball;
-                rotate_to_ball._bcuart = &bcuart;
-                rotate_to_ball._robot = &robot;
-                rotate_to_ball.motor_left_speed = 20;
-                rotate_to_ball.motor_right_speed = -20;
+                moving_in_room_rotate_to_deg* rotate_to_ball = new moving_in_room_rotate_to_deg();
+                rotate_to_ball->_bcuart = &bcuart;
+                rotate_to_ball->_robot = &robot;
+                rotate_to_ball->motor_left_speed = 20;
+                rotate_to_ball->motor_right_speed = -20;
+
+                if (robot.moving_to_balls_target.pos.y_mm != 0)
+                    robot.moving_to_balls_target.pos.y_mm = 1;
                 float target_angle_rad = abs(atan(robot.moving_to_balls_target.pos.x_mm / robot.moving_to_balls_target.pos.y_mm));
                 if (robot.moving_to_balls_target.pos.x_mm < 0)
                 {
@@ -99,17 +104,18 @@ void drive_room()
                         target_angle_rad = 2*PI - target_angle_rad;
                     }
                 }
-                rotate_to_ball.target_angle = target_angle_rad * RAD_TO_DEG;
-                robot.moving_in_room_queue.push_back(rotate_to_ball);
+                rotate_to_ball->target_angle = target_angle_rad * RAD_TO_DEG;
+
+                moving_in_room_queue.push_back(rotate_to_ball);
                 logln("Step1: Rotating to ball with motors %d|%d (Target angle: %f°)", 20, -20, target_angle_rad * RAD_TO_DEG);
 
                 // Step 2: Move to ball using cam
-                Robot::moving_in_room_follow_ball move_to_ball;
-                move_to_ball._bcuart = &bcuart;
-                move_to_ball._robot = &robot;
-                move_to_ball.motor_left_speed = -20;
-                move_to_ball.motor_right_speed = -20;
-                robot.moving_in_room_queue.push_back(move_to_ball);
+                moving_in_room_follow_ball* move_to_ball = new moving_in_room_follow_ball();
+                move_to_ball->_bcuart = &bcuart;
+                move_to_ball->_robot = &robot;
+                move_to_ball->motor_left_speed = -20;
+                move_to_ball->motor_right_speed = -20;
+                moving_in_room_queue.push_back(move_to_ball);
                 logln("Step2: Moving to Ball using cam");
             // }
             // TODO: else if ball is not within 20cm of center line (ie next to wall)
@@ -138,13 +144,16 @@ void drive_room()
         last_millis = millis();
         adjust_moving_to_balls_target(delta_time);
 
-        if (!robot.moving_in_room_queue.empty())
+        if (!moving_in_room_queue.empty())
         {
-            Robot::moving_in_room_step* step = &robot.moving_in_room_queue.front();
+            moving_in_room_step* step = moving_in_room_queue.front();
             robot.move(step->motor_left_speed, step->motor_right_speed);
             
             if (step->tick(delta_time))
-                robot.moving_in_room_queue.pop_front();
+            {
+                delete moving_in_room_queue[0];
+                moving_in_room_queue.erase(moving_in_room_queue.begin());
+            }
         }
         else
         {

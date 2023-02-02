@@ -14,6 +14,7 @@
 #include "io_extender.h"
 #include "logger.h"
 
+#include "moving_in_room.h"
 #include "debug_disp.h"
 
 #include "lc02.h"

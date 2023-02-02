@@ -16,6 +16,7 @@
 #include "dip.h"
 #include "taster.h"
 #include "cuart.h"
+#include "moving_in_room.h"
 #include "robot.h"
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
