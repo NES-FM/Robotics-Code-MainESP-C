@@ -11,6 +11,8 @@ tof::tof(int sensor_type, int offset_x, int offset_y, int offset_a, int xshut)
 
     if (_sensor_type == TOF_SENSOR_VL53L0X)
         vl53l0x_sensor = new VL53L0X();
+    else if (_sensor_type == TOF_SENSOR_VL53l1X)
+        vl53l1x_sensor = new VL53L1X();
     else if (_sensor_type == TOF_SENSOR_VL6180X)
         vl6180x_sensor = new Adafruit_VL6180X();
 }
@@ -25,6 +27,8 @@ tof::tof(int sensor_type, int offset_x, int offset_y, int offset_a, io_ext_pins 
 
     if (_sensor_type == TOF_SENSOR_VL53L0X)
         vl53l0x_sensor = new VL53L0X();
+    else if (_sensor_type == TOF_SENSOR_VL53l1X)
+        vl53l1x_sensor = new VL53L1X();
     else if (_sensor_type == TOF_SENSOR_VL6180X)
         vl6180x_sensor = new Adafruit_VL6180X();
 }
@@ -58,6 +62,8 @@ void tof::begin(uint8_t address)
     {
         if (_sensor_type == TOF_SENSOR_VL53L0X)
             _vl53l0x_begin(address);
+        else if (_sensor_type == TOF_SENSOR_VL53l1X)
+            _vl53l1x_begin(address);
         else if (_sensor_type == TOF_SENSOR_VL6180X)
             _vl6180x_begin(address);
     }
@@ -77,7 +83,7 @@ void tof::setLongRangeMode(bool mode)
 
 void tof::setHighSpeed(bool mode)
 {
-    if (_enabled)
+    if (_enabled && _sensor_type == TOF_SENSOR_VL53L0X)
     {
         _vl53l0x_setHighSpeed(mode);
     }
@@ -85,7 +91,7 @@ void tof::setHighSpeed(bool mode)
 
 void tof::setHighAccuracy(bool mode)
 {
-    if (_enabled)
+    if (_enabled && _sensor_type == TOF_SENSOR_VL53L0X)
     {
         _vl53l0x_setHighAccuracy(mode);
     }
@@ -157,6 +163,8 @@ void tof::changeAddress(uint8_t address)
     {
         if (_sensor_type == TOF_SENSOR_VL53L0X)
             _vl53l0x_changeAddress(address);
+        else if (_sensor_type == TOF_SENSOR_VL53l1X)
+            _vl53l1x_changeAddress(address);
         else if (_sensor_type == TOF_SENSOR_VL6180X)
             _vl6180x_changeAddress(address);
     }
@@ -168,6 +176,8 @@ void tof::setContinuous(bool mode, uint32_t period_ms)
     {
         if (_sensor_type == TOF_SENSOR_VL53L0X)
             _vl53l0x_setContinuous(mode, period_ms);
+        else if (_sensor_type == TOF_SENSOR_VL53l1X)
+            _vl53l1x_setContinuous(mode, period_ms);
         else if (_sensor_type == TOF_SENSOR_VL6180X)
             _vl6180x_setContinuous(mode, period_ms);
     }
@@ -179,22 +189,45 @@ uint16_t tof::getMeasurement()
     {
         if (_sensor_type == TOF_SENSOR_VL53L0X)
             return _vl53l0x_getMeasurement();
+        else if (_sensor_type == TOF_SENSOR_VL53l1X)
+            return _vl53l1x_getMeasurement();
         else if (_sensor_type == TOF_SENSOR_VL6180X)
             return _vl6180x_getMeasurement();
     }
     return 0;
 }
 
+void tof::setDistanceMode(VL53L1X::DistanceMode distanceMode)
+{
+    if (_enabled && _sensor_type == TOF_SENSOR_VL53l1X)
+        _vl53l1x_setDistanceMode(distanceMode);
+}
+
+void tof::setRoiSize(int x, int y)
+{
+    if (_enabled && _sensor_type == TOF_SENSOR_VL53l1X)
+        _vl53l1x_setRoiSize(x, y);
+}
+
+// See https://www.st.com/resource/en/user_manual/dm00600212-vl53l1x-ultra-lite-driver-multiple-zone-implementation-stmicroelectronics.pdf#%5B%7B%22num%22%3A14%2C%22gen%22%3A0%7D%2C%7B%22name%22%3A%22XYZ%22%7D%2Cnull%2C732.75592%2Cnull%5D for spad_num definitions
+void tof::setRoiCenter(int spad_num)
+{
+    if (_enabled && _sensor_type == TOF_SENSOR_VL53l1X)
+        _vl53l1x_setRoiCenter(spad_num);
+}
+
 bool tof::timeoutOccurred() 
 {
     if (_sensor_type == TOF_SENSOR_VL53L0X)
         return _vl53l0x_timeoutOccured(); 
+    else if (_sensor_type == TOF_SENSOR_VL53l1X)
+        return vl53l1x_sensor->timeoutOccurred();
     return false;
 }
 
 
 
-// Vl53L0X
+// VL53L0X
 void tof::_vl53l0x_begin(uint8_t address = 0b0101001)
 {
     log_inline("Init as VL53L0X: ");
@@ -322,6 +355,100 @@ bool tof::_vl53l0x_timeoutOccured()
     return vl53l0x_sensor->timeoutOccurred();
 }
 
+// VL53L1X
+void tof::_vl53l1x_begin(uint8_t address)
+{
+    log_inline("Init as VL53L1X: ");
+    vl53l1x_sensor->setTimeout(500);
+    if (!vl53l1x_sensor->init())
+    {
+        logln("Failed to detect and initialize VL53L1X!");
+        this->enable(false);
+        _error = TOF_ERROR_FAILED_TO_INITIALIZE;
+        return;
+    }
+    else
+    {
+        logln("init successful!");
+    }
+    delay(10);
+    changeAddress(address);
+
+    setDistanceMode(VL53L1X::Short);
+    vl53l1x_sensor->setMeasurementTimingBudget(50000);
+    setRoiSize(4, 16);
+    setRoiCenter(247);
+    
+    _error = TOF_ERROR_NONE;
+}
+
+void tof::_vl53l1x_changeAddress(uint8_t address)
+{
+    vl53l1x_sensor->setAddress(address);
+}
+
+void tof::_vl53l1x_setDistanceMode(VL53L1X::DistanceMode mode)
+{
+    vl53l1x_sensor->setDistanceMode(mode);
+}
+
+void tof::_vl53l1x_setRoiSize(int x, int y)
+{
+    vl53l1x_sensor->setROISize(x, y);
+}
+
+void tof::_vl53l1x_setRoiCenter(int spad_num)
+{
+    vl53l1x_sensor->setROICenter(spad_num);
+}
+
+void tof::_vl53l1x_setContinuous(bool mode, uint32_t period_ms)
+{
+    continuous_mode = mode;
+    if (mode)
+    {
+        vl53l1x_sensor->startContinuous(period_ms);
+    }
+    else
+    {
+        vl53l1x_sensor->stopContinuous();
+    }
+}
+
+uint16_t tof::_vl53l1x_getMeasurement()
+{
+    if (continuous_mode)
+    {
+        vl53l1x_sensor->readRangeContinuousMillimeters();
+    }
+    else
+    {
+        vl53l1x_sensor->readRangeSingleMillimeters();
+    }
+
+    uint16_t measurement = vl53l1x_sensor->ranging_data.range_mm;
+
+    if (vl53l1x_sensor->timeoutOccurred())
+    {
+        _error = TOF_ERROR_TIMEOUT;
+    }
+    else if (vl53l1x_sensor->ranging_data.range_status != VL53L1X::RangeValid)
+    {
+        _error = TOF_ERROR_SYSERROR;
+    }
+    else if (measurement > 8000)
+    {
+        _error = TOF_ERROR_MAX_DISTANCE;
+    }
+    else
+    {
+        _error = TOF_ERROR_NONE;
+    }
+
+    last_measurement = measurement;
+
+    return measurement;
+}
 
 
 // VL6180X

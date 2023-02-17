@@ -433,6 +433,7 @@ String Robot::set_command(String first_arg, String second_arg, String third_arg)
         {
             sprintf(out, "%s", "Setting Drive Mode to Room");
             cur_drive_mode = ROBOT_DRIVE_MODE_ROOM;
+            cur_room_state = ROOM_STATE_DEFAULT;
         }
         else if (third_arg == "line")
         {
@@ -639,10 +640,8 @@ void Robot::startRoom()
 
     setRoomBeginningAngle();
 
-    cur_room_state = ROOM_STATE_DEFAULT;
+    cur_room_state = ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER;
     prev_room_state = ROOM_STATE_DEFAULT;
-
-    // room_time_measure_start();
 }
 
 Robot::room_end_types Robot::room_has_reached_end()

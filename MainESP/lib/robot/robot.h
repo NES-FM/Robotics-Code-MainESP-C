@@ -19,6 +19,7 @@
 #include "cuart.h"
 #include "bcuart.h"
 #include "claw.h"
+#include "tof.h"
 
 #include "logger.h"
 #include "command_parser.h"
@@ -126,11 +127,11 @@ class Robot
         // void room_move_along_wall();
 
         enum room_end_types {
-            ROOM_HAS_NOT_REACHED_END,
-            ROOM_HAS_REACHED_TASTER_RIGHT,
-            ROOM_HAS_REACHED_TASTER_LEFT,
-            ROOM_HAS_REACHED_SILVER_LINE,
-            ROOM_HAS_REACHED_GREEN_LINE
+            ROOM_HAS_NOT_REACHED_END = 0,
+            ROOM_HAS_REACHED_TASTER_RIGHT = 1,
+            ROOM_HAS_REACHED_TASTER_LEFT = 2,
+            ROOM_HAS_REACHED_SILVER_LINE = 3,
+            ROOM_HAS_REACHED_GREEN_LINE = 4
         };
         room_end_types room_has_reached_end();
 
@@ -148,6 +149,8 @@ class Robot
         enum room_states
         {
             ROOM_STATE_DEFAULT,
+            ROOM_STATE_ORIENT_ON_SILVER,
+            ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER,
             ROOM_STATE_ROTATE_TO_FIND_BALLS,
             ROOM_STATE_MOVING_TO_BALL,
             ROOM_STATE_PUTTING_BALL_IN_CORNER,
@@ -155,6 +158,8 @@ class Robot
         };
         room_states cur_room_state;
         room_states prev_room_state;
+
+        tof* tof_side = new tof(TOF_SENSOR_VL53l1X, 90, 10, 90, EXT_P1);
 
     private:
         void parse_command(String command);

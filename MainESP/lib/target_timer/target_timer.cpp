@@ -25,3 +25,13 @@ bool target_timer::has_reached_target()
 {
     return (millis() - target) > zero_time;
 }
+
+int target_timer::time_elapsed()
+{
+    return millis() - zero_time;
+}
+
+int target_timer::time_left()
+{
+    return zero_time - (millis() - target);
+}

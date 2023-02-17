@@ -22,7 +22,15 @@ enum io_ext_pins {
     EXT_A4 = 18,
     EXT_A5 = 19,
     EXT_A6 = 20,
-    EXT_A7 = 21
+    EXT_A7 = 21,
+    EXT_P0 = 40,
+    EXT_P1 = 41,
+    EXT_P2 = 42,
+    EXT_P3 = 43,
+    EXT_P4 = 44,
+    EXT_P5 = 45,
+    EXT_P6 = 46,
+    EXT_P7 = 47
 };
 
 struct lc02_answer

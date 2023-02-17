@@ -34,6 +34,8 @@ class Claw
         void _set_raw_servo_up_state(int degrees) {claw_up_servo->write(degrees);}
         void _set_raw_servo_close_state(int degrees) {claw_close_servo->write(degrees);}
 
+        tof* tof_claw = new tof(TOF_SENSOR_VL6180X, 0, -87, 180, EXT_P3);
+
     private:
         State _last_state;
         Servo* claw_up_servo = new Servo();
@@ -64,8 +66,6 @@ class Claw
         const uint8_t servo_up_up = 180;
 
         Preferences* claw_prefs = new Preferences();
-
-        tof* tof_claw = new tof(TOF_SENSOR_VL6180X, 0, -87, 180);
 };
 
 #endif

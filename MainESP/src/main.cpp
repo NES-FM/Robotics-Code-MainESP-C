@@ -60,19 +60,39 @@ void setup()
     robot.motor_right->enable(check_device_enabled(I2C_ADDRESSS_MOTOR_CONTROLLER, "motor_right", "MR"));
 
     display.enable(check_device_enabled(I2C_ADDRESS_DISPLAY, "display", "DI"));
-    // check_device_enabled(I2C_ADDRESS_IO_EXTENDER, "io-extender", "IO");
+    check_device_enabled(I2C_ADDRESS_IO_EXT_PCF, "io-extender", "IO");
 
     robot.compass->enable(check_device_enabled(I2C_ADDRESS_COMPASS, "compass", "CO"));
     robot.accel_sensor->enable(check_device_enabled(I2C_ADDRESS_ACCELEROMETER, "accelerometer", "AC"));
 
-    robot.claw->enableTof(check_device_enabled(I2C_ADDRESS_TOF_DEFAULT, "claw_tof", "CT"));
+    // TOF
+    robot.claw->tof_claw->init();
+    robot.tof_side->init();
+    
+    delay(5);
+
+    robot.claw->tof_claw->holdReset();
+    robot.tof_side->holdReset();
+
+    delay(5);
+
+    robot.claw->tof_claw->releaseReset();
+    robot.claw->tof_claw->enable(scan_single_device_enabled(I2C_ADDRESS_TOF_DEFAULT, "tof_claw_default", ""));
+    robot.claw->tof_claw->begin(I2C_ADDRESS_TOF_CLAW);
+    robot.claw->tof_claw->enable(scan_single_device_enabled(I2C_ADDRESS_TOF_CLAW, "tof_claw", "TC"));
+
+    robot.tof_side->releaseReset();
+    robot.tof_side->enable(scan_single_device_enabled(I2C_ADDRESS_TOF_DEFAULT, "tof_side_default", ""));
+    robot.tof_side->begin(I2C_ADDRESS_TOF_SIDE);
+    robot.tof_side->enable(scan_single_device_enabled(I2C_ADDRESS_TOF_SIDE, "tof_side", "TS"));
+    robot.tof_side->setContinuous(50); // TODO: Only set Continuous when needed
 
     // Initialization of libs
     robot.init();
 
-    logln("I2C after robot.init:");
-    scan_i2c_addresses();
-    print_i2c_addresses();
+    // logln("I2C after robot.init:");
+    // scan_i2c_addresses();
+    // print_i2c_addresses();
 
     cuart.init();
     bcuart.init();

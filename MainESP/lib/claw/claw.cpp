@@ -25,9 +25,6 @@ void Claw::init()
     {
         this->set_state(Claw::BOTTOM_OPEN);
     }
-
-    tof_claw->init();
-    tof_claw->begin();
 }
 
 void Claw::set_state(State target_state)
@@ -279,6 +276,7 @@ void Claw::claw_to_up_pos()
 void Claw::disable_close_servo()
 {
     claw_close_servo->detach(); // TODO: Sometimes closes the servo a little bit
+    digitalWrite(PIN_SERVO1, HIGH);
 }
 
 void Claw::enable_close_servo()

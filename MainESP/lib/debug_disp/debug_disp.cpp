@@ -25,7 +25,7 @@ void debug_disp::init(CUART_class* c, Robot* r, bool* int_sit, bool* int_bi_left
         oled->display();
     }
 
-    room_conversion_factor = float(_robot->room_height*2) / float(SCREEN_HEIGHT);
+    room_conversion_factor = float(_robot->room_height) / float(SCREEN_HEIGHT);
 }
 
 void debug_disp::draw_sensor_array(int x, int y, int element_width, int element_height)
@@ -229,6 +229,12 @@ void debug_disp::draw_taster(int x, int y, int w, int h)
         oled->fillRect(x+(w/2), y+1, (w/2)-1, h/4, SSD1306_WHITE);
 }
 
+void debug_disp::draw_room_tof(int x, int y)
+{
+    oled->setCursor(x, y);
+    oled->setTextSize(1);
+    oled->printf("C:%02d, S:%03d", int(constrain(_robot->claw->get_ball_distance(), 0, 200)/10), int(_robot->tof_side->getMeasurement()/10));
+}
 
 void debug_disp::draw_robot_in_room_coordinates()
 {
@@ -447,6 +453,7 @@ void debug_disp::tick()
                 
                 this->draw_compass(100, 46);
                 this->draw_voltage_smol(100, 54);
+                this->draw_room_tof(0, 0);
                 // this->draw_motor_values(0, 24); // W: 108px
             }
             

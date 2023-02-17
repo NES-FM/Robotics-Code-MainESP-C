@@ -68,4 +68,19 @@ bool check_device_enabled(uint8_t address, String name, String short_name)
     return ret;
 }
 
+bool scan_single_device_enabled(uint8_t address, String name, String short_name)
+{
+    Wire.beginTransmission(address);
+    uint8_t error = Wire.endTransmission();
+
+    if (error == 0 || error == 4)
+        return true;
+
+    display.disable_i2c_device(short_name);
+    String tmp = "ERROR: " + name + "! DEVICE NOT FOUND!";
+    logln("%s", tmp.c_str());
+    
+    return false;
+}
+
 #endif /* I2C_SCANNER_H */

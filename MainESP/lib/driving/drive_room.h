@@ -2,15 +2,17 @@
 #define MILLIMETERS_PER_MILLISECOND 0.1770833333
 
 #include "moving_in_room.h"
+#include "target_timer.h"
 
 #define ROTATE_TO_ANGLE_TOLERANCE 2
 
+#define MOVE_TO_CENTER_TIME 1200
+
 float rotate_balls_360_start_angle = 0;
-bool rotated_balls_over_10_degrees = false;
+bool rotated_balls_was_at_180_degrees = false;
 
 void adjust_moving_to_balls_target(uint32_t delta_time);
-
-bool moving_to_balls_ball_too_close = false;
+void rotate_to_angle(float target, bool turn_right);
 
 uint32_t last_millis;
 void drive_room()
@@ -22,6 +24,89 @@ void drive_room()
             robot.move(0, 0);
             robot.prev_room_state = robot.ROOM_STATE_DEFAULT;
         }
+    }
+    else if (robot.cur_room_state == robot.ROOM_STATE_ORIENT_ON_SILVER)
+    {
+        if (robot.prev_room_state != robot.ROOM_STATE_ORIENT_ON_SILVER)
+        {
+            robot.move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+            robot.prev_room_state = robot.ROOM_STATE_ORIENT_ON_SILVER;
+            cuart.silver_line = false;
+        }
+
+        if (cuart.silver_line)
+        {
+            delay(200); // move further behind silver line
+            
+            robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL); // Move until Silver line in middle
+            while (!cuart.sensor_array[0])
+            {
+                display.tick();
+                delay(5);
+            }
+            robot.move(0, 0);
+            delay(1000);
+
+            while (abs(cuart.line_angle) > 4) // Move until straight
+            {
+                if (cuart.line_angle > 0)
+                    robot.move(-5, 5);
+                else
+                    robot.move(5, -5);
+            }
+            robot.move(0, 0);
+
+            robot.setRoomBeginningAngle();
+            robot.cur_room_state = robot.ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER;
+        }
+    }
+    else if (robot.cur_room_state == robot.ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER) // TODO: Maybe make async
+    {
+        if (robot.prev_room_state != robot.ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER)
+        {
+            robot.prev_room_state = robot.ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER;
+            robot.claw->set_state(Claw::BOTTOM_CLOSED);
+            delay(1000);
+        }
+        logln("Find Wall");
+        target_timer time_until_wall_found(2000);
+
+        logln("Rotate to 45");
+        rotate_to_angle(45, true);
+        robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+
+        logln("room_has_reached_end()=%d", (int)robot.room_has_reached_end());
+
+        time_until_wall_found.reset();
+
+        while (robot.room_has_reached_end() != robot.ROOM_HAS_REACHED_TASTER_RIGHT 
+            && robot.room_has_reached_end() != robot.ROOM_HAS_REACHED_TASTER_LEFT  // While no taster pressed
+            && !time_until_wall_found.has_reached_target()) // And timer not reached
+        {
+            logln("in while -> room_has_reached_end()=%d", (int)robot.room_has_reached_end());
+            display.tick();
+            delay(5);
+        }
+
+        if (robot.room_has_reached_end() == robot.ROOM_HAS_REACHED_TASTER_RIGHT || robot.room_has_reached_end() == robot.ROOM_HAS_REACHED_TASTER_LEFT) // Wall to the right -> Drive to the Left
+        {
+            logln("Taster pressed -> drive to left");
+            robot.move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+            delay(time_until_wall_found.time_elapsed());
+
+            rotate_to_angle(315, false);
+
+            robot.move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
+            delay(MOVE_TO_CENTER_TIME);
+        }
+        else // No Wall to the right -> Drive to the Right
+        {
+            logln("No taster pressed");
+            robot.move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
+            delay(MOVE_TO_CENTER_TIME-500);
+        }
+
+        robot.cur_room_state = robot.ROOM_STATE_ROTATE_TO_FIND_BALLS;
     }
     else if (robot.cur_room_state == robot.ROOM_STATE_ROTATE_TO_FIND_BALLS)
     {
@@ -35,14 +120,14 @@ void drive_room()
             robot.detectingBallsEnabled = true;
             robot.detectingCornerEnabled = true;
             rotate_balls_360_start_angle = angle;
-            rotated_balls_over_10_degrees = false;
+            rotated_balls_was_at_180_degrees = false;
             moving_in_room_queue.clear();
         }
 
-        if (abs(angle - rotate_balls_360_start_angle) > 10)
-            rotated_balls_over_10_degrees = true;
+        if (abs(angle - rotate_balls_360_start_angle - 180) < 10)
+            rotated_balls_was_at_180_degrees = true;
 
-        if (rotated_balls_over_10_degrees && abs(angle - rotate_balls_360_start_angle) < ROTATE_TO_ANGLE_TOLERANCE)  // Rotated approx. 360 degrees -> goto next step
+        if (rotated_balls_was_at_180_degrees && abs(angle - rotate_balls_360_start_angle) < ROTATE_TO_ANGLE_TOLERANCE)  // Rotated approx. 360 degrees -> goto next step
         {
             robot.detectingBallsEnabled = false;
             robot.detectingCornerEnabled = false;
@@ -136,7 +221,6 @@ void drive_room()
         {
             last_millis = millis();
             robot.prev_room_state = robot.cur_room_state;
-            moving_to_balls_ball_too_close = false;
             robot.claw->setTofContinuous(true);
         }
 
@@ -217,3 +301,16 @@ void adjust_moving_to_balls_target(uint32_t delta_time)
     robot.most_likely_corner.center_pos.y_mm = robot.most_likely_corner.center_pos.y_mm + delta_distance * sin(angle_rad);
 }
  
+void rotate_to_angle(float target, bool turn_right)
+{
+    if (turn_right)
+        robot.move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    else
+        robot.move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+
+    while(abs(robot.compass->keep_in_360_range(robot.compass->get_angle() - robot.room_beginning_angle) - target) > ROTATE_TO_ANGLE_TOLERANCE)
+    {
+        delay(5);
+        display.tick();
+    }
+}

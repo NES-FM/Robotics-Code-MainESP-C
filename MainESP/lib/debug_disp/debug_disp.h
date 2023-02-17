@@ -89,6 +89,7 @@ class debug_disp {
         void draw_cuart(int x, int y);
         void draw_taster(int x, int y, int w, int h);
 
+        void draw_room_tof(int x, int y);
         void draw_robot_in_room_coordinates();
         void draw_balls_in_room_coordinates();
         void draw_corners_in_room_coordinates();
