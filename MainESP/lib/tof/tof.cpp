@@ -375,7 +375,7 @@ void tof::_vl53l1x_begin(uint8_t address)
     changeAddress(address);
 
     setDistanceMode(VL53L1X::Short);
-    vl53l1x_sensor->setMeasurementTimingBudget(50000);
+    setContinuous(false);
     setRoiSize(4, 16);
     setRoiCenter(247);
     
@@ -407,10 +407,12 @@ void tof::_vl53l1x_setContinuous(bool mode, uint32_t period_ms)
     continuous_mode = mode;
     if (mode)
     {
+        vl53l1x_sensor->setMeasurementTimingBudget(period_ms * 1000);
         vl53l1x_sensor->startContinuous(period_ms);
     }
     else
     {
+        vl53l1x_sensor->setMeasurementTimingBudget(50000);
         vl53l1x_sensor->stopContinuous();
     }
 }

@@ -233,7 +233,23 @@ void debug_disp::draw_room_tof(int x, int y)
 {
     oled->setCursor(x, y);
     oled->setTextSize(1);
-    oled->printf("C:%02d, S:%03d", int(constrain(_robot->claw->get_ball_distance(), 0, 200)/10), int(_robot->tof_side->getMeasurement()/10));
+    #ifdef TIMEIT
+    uint32_t start_time_sub = millis();
+    #endif
+    
+    int closerange_val = int(constrain(_robot->claw->get_ball_distance(), 0, 200)/10);
+    #ifdef TIMEIT
+    logln("draw_room_tof(): closerange_val took %dms", millis()-start_time_sub);
+    start_time_sub = millis();
+    #endif
+
+    int side_val = int(_robot->tof_side->getMeasurement()/10);
+    #ifdef TIMEIT
+    logln("draw_room_tof(): side_val took %dms", millis()-start_time_sub);
+    start_time_sub = millis();
+    #endif
+
+    oled->printf("C:%02d, S:%03d", closerange_val, side_val);
 }
 
 void debug_disp::draw_robot_in_room_coordinates()
@@ -448,12 +464,38 @@ void debug_disp::tick()
             }
             else if (_robot->cur_drive_mode == Robot::ROBOT_DRIVE_MODE_ROOM)
             {
+                #ifdef TIMEIT
+                uint32_t start_time = millis();
+                #endif
                 this->draw_robot_in_room_coordinates();
+                #ifdef TIMEIT
+                logln("display.tick(): draw_robot_in_room_coordinates() took %dms", millis()-start_time);
+                start_time = millis();
+                #endif
+
                 this->draw_balls_in_room_coordinates();
-                
+                #ifdef TIMEIT
+                logln("display.tick(): draw_balls_in_room_coordinates() took %dms", millis()-start_time);
+                start_time = millis();
+                #endif
+
                 this->draw_compass(100, 46);
+                #ifdef TIMEIT
+                logln("display.tick(): draw_compass() took %dms", millis()-start_time);
+                start_time = millis();
+                #endif
+        
                 this->draw_voltage_smol(100, 54);
+                #ifdef TIMEIT
+                logln("display.tick(): draw_voltage_smol() took %dms", millis()-start_time);
+                start_time = millis();
+                #endif
+
                 this->draw_room_tof(0, 0);
+                #ifdef TIMEIT
+                logln("display.tick(): draw_room_tof() took %dms", millis()-start_time);
+                start_time = millis();
+                #endif
                 // this->draw_motor_values(0, 24); // W: 108px
             }
             

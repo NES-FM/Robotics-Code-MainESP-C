@@ -80,12 +80,13 @@ void setup()
     robot.claw->tof_claw->enable(scan_single_device_enabled(I2C_ADDRESS_TOF_DEFAULT, "tof_claw_default", ""));
     robot.claw->tof_claw->begin(I2C_ADDRESS_TOF_CLAW);
     robot.claw->tof_claw->enable(scan_single_device_enabled(I2C_ADDRESS_TOF_CLAW, "tof_claw", "TC"));
+    robot.claw->tof_claw->setContinuous(true, 50);
 
     robot.tof_side->releaseReset();
     robot.tof_side->enable(scan_single_device_enabled(I2C_ADDRESS_TOF_DEFAULT, "tof_side_default", ""));
     robot.tof_side->begin(I2C_ADDRESS_TOF_SIDE);
     robot.tof_side->enable(scan_single_device_enabled(I2C_ADDRESS_TOF_SIDE, "tof_side", "TS"));
-    robot.tof_side->setContinuous(50); // TODO: Only set Continuous when needed
+    robot.tof_side->setContinuous(true, 50); // TODO: Only set Continuous when needed
 
     // Initialization of libs
     robot.init();
