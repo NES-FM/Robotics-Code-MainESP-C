@@ -499,7 +499,7 @@ uint16_t tof::_vl6180x_getMeasurement()
     uint8_t range = 0;
     if (continuous_mode)
     {
-        vl6180x_sensor->waitRangeComplete();
+        // vl6180x_sensor->waitRangeComplete();
         range = vl6180x_sensor->readRangeResult();
     }
     else

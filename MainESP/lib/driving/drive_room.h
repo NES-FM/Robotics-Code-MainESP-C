@@ -221,7 +221,7 @@ void drive_room()
         {
             last_millis = millis();
             robot.prev_room_state = robot.cur_room_state;
-            robot.claw->setTofContinuous(true);
+            // robot.claw->setTofContinuous(true);
         }
 
         uint32_t delta_time = millis() - last_millis;
@@ -257,7 +257,7 @@ void drive_room()
         {
             robot.move(0, 0);
             robot.prev_room_state = robot.cur_room_state;
-            robot.claw->setTofContinuous(false);
+            // robot.claw->setTofContinuous(false);
         }
 
         // TODO: Bring ball to corner
