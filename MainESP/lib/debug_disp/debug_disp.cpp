@@ -303,7 +303,7 @@ void debug_disp::draw_balls_in_room_coordinates()
                 oled->drawCircle(ball_point_screen.x, ball_point_screen.y, int(25.0 / room_conversion_factor), SSD1306_WHITE);
         }
     }
-    else if (_robot->cur_room_state == _robot->ROOM_STATE_MOVING_TO_BALL)
+    else if (_robot->cur_room_state == _robot->ROOM_STATE_MOVE_IN_ROOM)
     {
         Robot::ball b = _robot->moving_to_balls_target;
         screen_point ball_point_screen;
@@ -345,7 +345,7 @@ void debug_disp::draw_corners_in_room_coordinates()
             oled->fillTriangle(first_point_screen.x, first_point_screen.y, last_point_screen.x, last_point_screen.y, third_point.x, third_point.y, SSD1306_WHITE);
         }
     }
-    else if (_robot->cur_room_state == _robot->ROOM_STATE_MOVING_TO_BALL)
+    else if (_robot->cur_room_state == _robot->ROOM_STATE_MOVE_IN_ROOM)
     {
         Robot::corner c = _robot->most_likely_corner;
         screen_point first_point_screen;

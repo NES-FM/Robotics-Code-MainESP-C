@@ -13,6 +13,7 @@ bool rotated_balls_was_at_180_degrees = false;
 
 void adjust_moving_to_balls_target(uint32_t delta_time);
 void rotate_to_angle(float target, bool turn_right);
+void clear_queue();
 
 uint32_t last_millis;
 void drive_room()
@@ -25,39 +26,31 @@ void drive_room()
             robot.prev_room_state = robot.ROOM_STATE_DEFAULT;
         }
     }
-    else if (robot.cur_room_state == robot.ROOM_STATE_ORIENT_ON_SILVER)
+    else if (robot.cur_room_state == robot.ROOM_STATE_MOVE_IN_ROOM)
     {
-        if (robot.prev_room_state != robot.ROOM_STATE_ORIENT_ON_SILVER)
+        if (robot.prev_room_state != robot.ROOM_STATE_MOVE_IN_ROOM)
         {
-            robot.move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
-            robot.prev_room_state = robot.ROOM_STATE_ORIENT_ON_SILVER;
-            cuart.silver_line = false;
+            last_millis = millis();
+            robot.prev_room_state = robot.cur_room_state;
         }
+        uint32_t delta_time = millis() - last_millis;
+        last_millis = millis();
+        adjust_moving_to_balls_target(delta_time);
 
-        if (cuart.silver_line)
+        if (!moving_in_room_queue.empty())
         {
-            delay(200); // move further behind silver line
+            moving_in_room_step* step = moving_in_room_queue.front();
+            robot.move(step->motor_left_speed, step->motor_right_speed);
             
-            robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL); // Move until Silver line in middle
-            while (!cuart.sensor_array[0])
+            if (step->tick(delta_time))
             {
-                display.tick();
-                delay(5);
+                delete moving_in_room_queue[0];
+                moving_in_room_queue.erase(moving_in_room_queue.begin());
             }
-            robot.move(0, 0);
-            delay(1000);
-
-            while (abs(cuart.line_angle) > 4) // Move until straight
-            {
-                if (cuart.line_angle > 0)
-                    robot.move(-5, 5);
-                else
-                    robot.move(5, -5);
-            }
-            robot.move(0, 0);
-
-            robot.setRoomBeginningAngle();
-            robot.cur_room_state = robot.ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER;
+        }
+        else
+        {
+            logln("ERROR! THIS SHOULD NOT BE REACHED! MOVE_IN_ROOM_QUEUE BECAME EMPTY!");
         }
     }
     else if (robot.cur_room_state == robot.ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER) // TODO: Maybe make async
@@ -135,8 +128,10 @@ void drive_room()
             robot.print_balls();
             robot.print_corners();
 
+            clear_queue();
+
             last_millis = millis();
-            robot.cur_room_state = robot.ROOM_STATE_MOVING_TO_BALL;
+            robot.cur_room_state = robot.ROOM_STATE_MOVE_IN_ROOM;
 
             // Selecting Ball to follow
             float max_conf = 0.0;
@@ -163,12 +158,11 @@ void drive_room()
             // {
                 // Step 1: Rotate to ball
                 moving_in_room_rotate_to_deg* rotate_to_ball = new moving_in_room_rotate_to_deg();
-                rotate_to_ball->_bcuart = &bcuart;
                 rotate_to_ball->_robot = &robot;
                 rotate_to_ball->motor_left_speed = 20;
                 rotate_to_ball->motor_right_speed = -20;
 
-                if (robot.moving_to_balls_target.pos.y_mm != 0)
+                if (robot.moving_to_balls_target.pos.y_mm == 0)
                     robot.moving_to_balls_target.pos.y_mm = 1;
                 float target_angle_rad = abs(atan(robot.moving_to_balls_target.pos.x_mm / robot.moving_to_balls_target.pos.y_mm));
                 if (robot.moving_to_balls_target.pos.x_mm < 0)
@@ -206,6 +200,15 @@ void drive_room()
             // TODO: else if ball is not within 20cm of center line (ie next to wall)
             // TODO: else if ball is too close to robot
 
+            moving_in_room_pick_up_ball* pick_up_ball = new moving_in_room_pick_up_ball();
+            pick_up_ball->_robot = &robot;
+            moving_in_room_queue.push_back(pick_up_ball);
+
+            moving_in_room_goto_room_state* goto_next_step = new moving_in_room_goto_room_state();
+            goto_next_step->_robot = &robot;
+            goto_next_step->target_room_state = Robot::ROOM_STATE_PUT_BALL_IN_CORNER;
+            moving_in_room_queue.push_back(goto_next_step);
+
             logln("Detecting balls finnished, waiting for 5 secs before continuing...");
             for (int i = 0; i < 5000; i+=100)
             {
@@ -215,49 +218,14 @@ void drive_room()
             }
         }
     }
-    else if (robot.cur_room_state == robot.ROOM_STATE_MOVING_TO_BALL)
+    else if (robot.cur_room_state == robot.ROOM_STATE_PUT_BALL_IN_CORNER)
     {
-        if (robot.prev_room_state != robot.ROOM_STATE_MOVING_TO_BALL)
-        {
-            last_millis = millis();
-            robot.prev_room_state = robot.cur_room_state;
-            // robot.claw->setTofContinuous(true);
-        }
-
-        uint32_t delta_time = millis() - last_millis;
-        last_millis = millis();
-        adjust_moving_to_balls_target(delta_time);
-
-        if (!moving_in_room_queue.empty())
-        {
-            moving_in_room_step* step = moving_in_room_queue.front();
-            robot.move(step->motor_left_speed, step->motor_right_speed);
-            
-            if (step->tick(delta_time))
-            {
-                delete moving_in_room_queue[0];
-                moving_in_room_queue.erase(moving_in_room_queue.begin());
-            }
-        }
-        else
-        {
-            robot.move(0, 0);
-            robot.claw->set_state(Claw::BOTTOM_CLOSED);
-            robot.move(10, 10);
-            delay(50);
-            robot.claw->set_state(Claw::SIDE_CLOSED);
-            robot.move(0, 0);
-
-            robot.cur_room_state = robot.ROOM_STATE_PUTTING_BALL_IN_CORNER;
-        }
-    }
-    else if (robot.cur_room_state == robot.ROOM_STATE_PUTTING_BALL_IN_CORNER)
-    {
-        if (robot.prev_room_state != robot.ROOM_STATE_PUTTING_BALL_IN_CORNER)
+        if (robot.prev_room_state != robot.ROOM_STATE_PUT_BALL_IN_CORNER)
         {
             robot.move(0, 0);
             robot.prev_room_state = robot.cur_room_state;
             // robot.claw->setTofContinuous(false);
+            logln("Now in PUT_BALL_IN_CORNER");
         }
 
         // TODO: Bring ball to corner
@@ -313,4 +281,13 @@ void rotate_to_angle(float target, bool turn_right)
         delay(5);
         display.tick();
     }
+}
+
+void clear_queue()
+{
+    for (auto el : moving_in_room_queue)
+    {
+        delete el;
+    }
+    moving_in_room_queue.clear();
 }

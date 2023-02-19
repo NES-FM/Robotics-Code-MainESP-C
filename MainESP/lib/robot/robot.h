@@ -149,11 +149,10 @@ class Robot
         enum room_states
         {
             ROOM_STATE_DEFAULT,
-            ROOM_STATE_ORIENT_ON_SILVER,
+            ROOM_STATE_MOVE_IN_ROOM,
             ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER,
             ROOM_STATE_ROTATE_TO_FIND_BALLS,
-            ROOM_STATE_MOVING_TO_BALL,
-            ROOM_STATE_PUTTING_BALL_IN_CORNER,
+            ROOM_STATE_PUT_BALL_IN_CORNER,
             ROOM_STATE_SEARCHING_EXIT
         };
         room_states cur_room_state;

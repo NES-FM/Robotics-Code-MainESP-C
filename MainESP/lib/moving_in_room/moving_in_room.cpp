@@ -85,4 +85,22 @@ bool moving_in_room_distance_by_time::tick(uint32_t delta_time)
     return false;
 }
 
+bool moving_in_room_pick_up_ball::tick(uint32_t delta_time)
+{
+    _robot->move(0, 0);
+    _robot->claw->set_state(Claw::BOTTOM_CLOSED);
+    _robot->move(10, 10);
+    delay(50);
+    _robot->claw->set_state(Claw::SIDE_CLOSED);
+    _robot->move(0, 0);
+
+    return true;
+}
+
+bool moving_in_room_goto_room_state::tick(uint32_t delta_time)
+{
+    _robot->cur_room_state = target_room_state;
+    return true;
+}
+
 std::vector<moving_in_room_step*> moving_in_room_queue;
