@@ -1,6 +1,3 @@
-// mm/ms at 40 speed
-#define MILLIMETERS_PER_MILLISECOND 0.1770833333
-
 #include "moving_in_room.h"
 #include "target_timer.h"
 
@@ -14,6 +11,9 @@ bool rotated_balls_was_at_180_degrees = false;
 void adjust_moving_to_balls_target(uint32_t delta_time);
 void rotate_to_angle(float target, bool turn_right);
 void clear_queue();
+
+target_timer find_wall_timer;
+int find_wall_right_distance_avg = -1;
 
 uint32_t last_millis;
 void drive_room()
@@ -40,7 +40,6 @@ void drive_room()
         if (!moving_in_room_queue.empty())
         {
             moving_in_room_step* step = moving_in_room_queue.front();
-            robot.move(step->motor_left_speed, step->motor_right_speed);
             
             if (step->tick(delta_time))
             {
@@ -57,49 +56,70 @@ void drive_room()
     {
         if (robot.prev_room_state != robot.ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER)
         {
+            logln("Find Wall");
             robot.prev_room_state = robot.ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER;
-            robot.claw->set_state(Claw::BOTTOM_CLOSED);
-            delay(1000);
+
+            robot.move(-DRIVE_SPEED_RAUM, -DRIVE_SPEED_RAUM);
+            delay(800);
+            find_wall_timer.set_target(2000);
+            find_wall_timer.reset();
+            robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
         }
-        logln("Find Wall");
-        target_timer time_until_wall_found(2000);
 
-        logln("Rotate to 45");
-        rotate_to_angle(45, true);
-        robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
-
-        logln("room_has_reached_end()=%d", (int)robot.room_has_reached_end());
-
-        time_until_wall_found.reset();
-
-        while (robot.room_has_reached_end() != robot.ROOM_HAS_REACHED_TASTER_RIGHT 
-            && robot.room_has_reached_end() != robot.ROOM_HAS_REACHED_TASTER_LEFT  // While no taster pressed
-            && !time_until_wall_found.has_reached_target()) // And timer not reached
+        int measurement = robot.tof_side->getMeasurement();
+        if (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_NONE)
         {
-            logln("in while -> room_has_reached_end()=%d", (int)robot.room_has_reached_end());
-            display.tick();
-            delay(5);
+            if (find_wall_right_distance_avg == -1) // First Time -> Reset
+                find_wall_right_distance_avg = measurement;
+            else
+                find_wall_right_distance_avg = (find_wall_right_distance_avg + measurement) / 2;
         }
 
-        if (robot.room_has_reached_end() == robot.ROOM_HAS_REACHED_TASTER_RIGHT || robot.room_has_reached_end() == robot.ROOM_HAS_REACHED_TASTER_LEFT) // Wall to the right -> Drive to the Left
+        if (find_wall_timer.has_reached_target())
         {
-            logln("Taster pressed -> drive to left");
-            robot.move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
-            delay(time_until_wall_found.time_elapsed());
+            logln("Found Wall at Distance of %d", find_wall_right_distance_avg);
 
-            rotate_to_angle(315, false);
+            if (find_wall_right_distance_avg >= 425 || find_wall_right_distance_avg == -1) // If Robot is on Left half of Room
+            {
+                moving_in_room_rotate_to_deg* rotate_to_middle = new moving_in_room_rotate_to_deg();
+                rotate_to_middle->_robot = &robot;
+                rotate_to_middle->motor_left_speed = 20;
+                rotate_to_middle->motor_right_speed = -20;
+                rotate_to_middle->target_angle = 90;
+                moving_in_room_queue.push_back(rotate_to_middle);
 
-            robot.move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
-            delay(MOVE_TO_CENTER_TIME);
+                moving_in_room_distance_by_time* move_to_middle = new moving_in_room_distance_by_time();
+                move_to_middle->_robot = &robot;
+                move_to_middle->motor_left_speed = 40;
+                move_to_middle->motor_right_speed = 40;
+                move_to_middle->calculate_time_by_distance(find_wall_right_distance_avg-320);
+                moving_in_room_queue.push_back(move_to_middle);
+            }
+            else if (find_wall_right_distance_avg <= 150) // If Robot is on Right side of Room
+            {
+                moving_in_room_rotate_to_deg* rotate_to_middle = new moving_in_room_rotate_to_deg();
+                rotate_to_middle->_robot = &robot;
+                rotate_to_middle->motor_left_speed = -20;
+                rotate_to_middle->motor_right_speed = 20;
+                rotate_to_middle->target_angle = 270;
+                moving_in_room_queue.push_back(rotate_to_middle);
+
+                moving_in_room_distance_by_time* move_to_middle = new moving_in_room_distance_by_time();
+                move_to_middle->_robot = &robot;
+                move_to_middle->motor_left_speed = 40;
+                move_to_middle->motor_right_speed = 40;
+                move_to_middle->calculate_time_by_distance(320-find_wall_right_distance_avg);
+                moving_in_room_queue.push_back(move_to_middle);
+            }
+            //else // If Robot is in Middle of Room
+
+            moving_in_room_goto_room_state* goto_rotate_to_find_balls = new moving_in_room_goto_room_state();
+            goto_rotate_to_find_balls->_robot = &robot;
+            goto_rotate_to_find_balls->target_room_state = Robot::ROOM_STATE_ROTATE_TO_FIND_BALLS;
+            moving_in_room_queue.push_back(goto_rotate_to_find_balls);
+
+            robot.cur_room_state = Robot::ROOM_STATE_MOVE_IN_ROOM;
         }
-        else // No Wall to the right -> Drive to the Right
-        {
-            logln("No taster pressed");
-            robot.move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
-            delay(MOVE_TO_CENTER_TIME-500);
-        }
-
-        robot.cur_room_state = robot.ROOM_STATE_ROTATE_TO_FIND_BALLS;
     }
     else if (robot.cur_room_state == robot.ROOM_STATE_ROTATE_TO_FIND_BALLS)
     {
@@ -117,7 +137,7 @@ void drive_room()
             moving_in_room_queue.clear();
         }
 
-        if (abs(angle - rotate_balls_360_start_angle - 180) < 10)
+        if (abs(angle - robot.compass->keep_in_360_range(rotate_balls_360_start_angle - 180)) < 10)
             rotated_balls_was_at_180_degrees = true;
 
         if (rotated_balls_was_at_180_degrees && abs(angle - rotate_balls_360_start_angle) < ROTATE_TO_ANGLE_TOLERANCE)  // Rotated approx. 360 degrees -> goto next step
@@ -149,10 +169,14 @@ void drive_room()
 
             logln("Selected Ball (%d|%d), conf=%d*%f=%f as a target!", robot.moving_to_balls_target.pos.x_mm, robot.moving_to_balls_target.pos.y_mm, robot.moving_to_balls_target.num_hits, robot.moving_to_balls_target.conf, max_conf);
 
-            // Selecting Corner
-            robot.most_likely_corner = *std::max_element(robot.possible_corners.begin(), robot.possible_corners.end(), [](const Robot::corner& a, const Robot::corner& b) { return a.conf*(float)a.num_hits < b.conf*(float)b.num_hits; });
+            // Find the corner with the highest value of conf * num_hits
+            auto max_corner_it = std::max_element(robot.possible_corners.begin(), robot.possible_corners.end(),
+                [](Robot::corner* a, Robot::corner* b) { return a->conf * (float)a->num_hits < b->conf * (float)b->num_hits; });
 
-            logln("Selected Corner (%d|%d)!", robot.most_likely_corner.center_pos.x_mm, robot.most_likely_corner.center_pos.y_mm);
+            // Dereference the iterator to get the max element
+            robot.most_likely_corner = *max_corner_it;
+
+            logln("Selected Corner (%d|%d)!", robot.most_likely_corner->center_pos.x_mm, robot.most_likely_corner->center_pos.y_mm);
 
             // if (abs(robot.moving_to_balls_target.pos.y_mm) <= 200) // If ball is less than 20cm away of middle, go directly to ball
             // {
@@ -164,7 +188,8 @@ void drive_room()
 
                 if (robot.moving_to_balls_target.pos.y_mm == 0)
                     robot.moving_to_balls_target.pos.y_mm = 1;
-                float target_angle_rad = abs(atan(robot.moving_to_balls_target.pos.x_mm / robot.moving_to_balls_target.pos.y_mm));
+                float target_angle_rad = abs(atan((float)robot.moving_to_balls_target.pos.x_mm / (float)robot.moving_to_balls_target.pos.y_mm));
+                logln("Result of atan: %f using atan(%d/%d)", target_angle_rad, robot.moving_to_balls_target.pos.x_mm, robot.moving_to_balls_target.pos.y_mm);
                 if (robot.moving_to_balls_target.pos.x_mm < 0)
                 {
                     if (robot.moving_to_balls_target.pos.y_mm > 0) // TL
@@ -183,10 +208,18 @@ void drive_room()
                         target_angle_rad = 2*PI - target_angle_rad;
                     }
                 }
+                logln("After If: %f", target_angle_rad);
                 rotate_to_ball->target_angle = target_angle_rad * RAD_TO_DEG;
 
                 moving_in_room_queue.push_back(rotate_to_ball);
                 logln("Step1: Rotating to ball with motors %d|%d (Target angle: %f°)", 20, -20, target_angle_rad * RAD_TO_DEG);
+
+                moving_in_room_distance_by_time* wait_1_sec = new moving_in_room_distance_by_time();
+                wait_1_sec->_robot = &robot;
+                wait_1_sec->motor_left_speed = 0;
+                wait_1_sec->motor_right_speed = 0;
+                wait_1_sec->time_left = 1000;
+                moving_in_room_queue.push_back(wait_1_sec);
 
                 // Step 2: Move to ball using cam
                 moving_in_room_follow_ball* move_to_ball = new moving_in_room_follow_ball();
@@ -251,7 +284,7 @@ void adjust_moving_to_balls_target(uint32_t delta_time)
     }
 
     float speed_scale = abs((float)motor_left_speed) / 40.0; // Adjust for not driving with 40 speed
-    float delta_distance = (double)delta_time * MILLIMETERS_PER_MILLISECOND * speed_scale;
+    float delta_distance = (double)delta_time * robot.millimeters_per_millisecond_40_speed * speed_scale;
 
     // convert angle to radians
     float angle_rad = robot.angle * M_PI / 180.0;
@@ -265,8 +298,8 @@ void adjust_moving_to_balls_target(uint32_t delta_time)
     // calculate new x and y coordinates
     robot.moving_to_balls_target.pos.x_mm = robot.moving_to_balls_target.pos.x_mm + delta_distance * cos(angle_rad);
     robot.moving_to_balls_target.pos.y_mm = robot.moving_to_balls_target.pos.y_mm + delta_distance * sin(angle_rad);
-    robot.most_likely_corner.center_pos.x_mm = robot.most_likely_corner.center_pos.x_mm + delta_distance * cos(angle_rad);
-    robot.most_likely_corner.center_pos.y_mm = robot.most_likely_corner.center_pos.y_mm + delta_distance * sin(angle_rad);
+    robot.most_likely_corner->center_pos.x_mm = robot.most_likely_corner->center_pos.x_mm + delta_distance * cos(angle_rad);
+    robot.most_likely_corner->center_pos.y_mm = robot.most_likely_corner->center_pos.y_mm + delta_distance * sin(angle_rad);
 }
  
 void rotate_to_angle(float target, bool turn_right)

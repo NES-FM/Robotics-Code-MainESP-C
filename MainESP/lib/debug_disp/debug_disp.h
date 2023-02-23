@@ -1,9 +1,6 @@
 #ifndef DEBUG_DISP_H
 #define DEBUG_DISP_H
 
-// NEEDS TO BE CHANGED when changed in drive_room.h
-#define MILLIMETERS_PER_MILLISECOND 0.1770833333
-
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>

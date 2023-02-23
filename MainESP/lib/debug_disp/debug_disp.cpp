@@ -323,21 +323,21 @@ void debug_disp::draw_corners_in_room_coordinates()
 {
     if (_robot->cur_room_state == _robot->ROOM_STATE_ROTATE_TO_FIND_BALLS)
     {
-        for (auto c : _robot->possible_corners)
+        for (Robot::corner* c : _robot->possible_corners)
         {
             screen_point first_point_screen;
-            first_point_screen.x = SCREEN_MID_X + round(float(c.first_pos.x_mm) / room_conversion_factor);
-            first_point_screen.y = SCREEN_MID_Y - round(float(c.first_pos.y_mm) / room_conversion_factor);
+            first_point_screen.x = SCREEN_MID_X + round(float(c->first_pos.x_mm) / room_conversion_factor);
+            first_point_screen.y = SCREEN_MID_Y - round(float(c->first_pos.y_mm) / room_conversion_factor);
             screen_point last_point_screen;
-            last_point_screen.x = SCREEN_MID_X + round(float(c.last_pos.x_mm) / room_conversion_factor);
-            last_point_screen.y = SCREEN_MID_Y - round(float(c.last_pos.y_mm) / room_conversion_factor);
+            last_point_screen.x = SCREEN_MID_X + round(float(c->last_pos.x_mm) / room_conversion_factor);
+            last_point_screen.y = SCREEN_MID_Y - round(float(c->last_pos.y_mm) / room_conversion_factor);
             screen_point third_point;
-            if (c.first_pos.x_mm > 0)
+            if (c->first_pos.x_mm > 0)
                 third_point.x = max(last_point_screen.x, first_point_screen.x);
             else // If left of y-Axis, then min (because -500 < -200, when we want -500)
                 third_point.x = min(last_point_screen.x, first_point_screen.x);
 
-            if (c.first_pos.y_mm > 0)
+            if (c->first_pos.y_mm > 0)
                 third_point.y = max(last_point_screen.y, first_point_screen.y);
             else
                 third_point.y = min(last_point_screen.y, first_point_screen.y);
@@ -347,20 +347,20 @@ void debug_disp::draw_corners_in_room_coordinates()
     }
     else if (_robot->cur_room_state == _robot->ROOM_STATE_MOVE_IN_ROOM)
     {
-        Robot::corner c = _robot->most_likely_corner;
+        Robot::corner* c = _robot->most_likely_corner;
         screen_point first_point_screen;
-        first_point_screen.x = SCREEN_MID_X + round(float(c.first_pos.x_mm) / room_conversion_factor);
-        first_point_screen.y = SCREEN_MID_Y - round(float(c.first_pos.y_mm) / room_conversion_factor);
+        first_point_screen.x = SCREEN_MID_X + round(float(c->first_pos.x_mm) / room_conversion_factor);
+        first_point_screen.y = SCREEN_MID_Y - round(float(c->first_pos.y_mm) / room_conversion_factor);
         screen_point last_point_screen;
-        last_point_screen.x = SCREEN_MID_X + round(float(c.last_pos.x_mm) / room_conversion_factor);
-        last_point_screen.y = SCREEN_MID_Y - round(float(c.last_pos.y_mm) / room_conversion_factor);
+        last_point_screen.x = SCREEN_MID_X + round(float(c->last_pos.x_mm) / room_conversion_factor);
+        last_point_screen.y = SCREEN_MID_Y - round(float(c->last_pos.y_mm) / room_conversion_factor);
         screen_point third_point;
-        if (c.first_pos.x_mm > 0)
+        if (c->first_pos.x_mm > 0)
             third_point.x = max(last_point_screen.x, first_point_screen.x);
         else // If left of y-Axis, then min (because -500 < -200, when we want -500)
             third_point.x = min(last_point_screen.x, first_point_screen.x);
 
-        if (c.first_pos.y_mm > 0)
+        if (c->first_pos.y_mm > 0)
             third_point.y = max(last_point_screen.y, first_point_screen.y);
         else
             third_point.y = min(last_point_screen.y, first_point_screen.y);
@@ -388,7 +388,7 @@ void debug_disp::draw_move_in_room_steps()
             if (obj->motor_left_speed == obj->motor_right_speed && obj->motor_left_speed != 0)
             {
                 float speed_scale = abs((float)obj->motor_left_speed) / 40.0; // Adjust for not driving with 40 speed
-                float delta_distance = (double)obj->time_left * MILLIMETERS_PER_MILLISECOND * speed_scale;
+                float delta_distance = (double)obj->time_left * _robot->millimeters_per_millisecond_40_speed * speed_scale;
 
                 // convert angle to radians
                 float angle_rad = simulated_robot_angle * M_PI / 180.0;
@@ -476,6 +476,12 @@ void debug_disp::tick()
                 this->draw_balls_in_room_coordinates();
                 #ifdef TIMEIT
                 logln("display.tick(): draw_balls_in_room_coordinates() took %dms", millis()-start_time);
+                start_time = millis();
+                #endif
+
+                this->draw_corners_in_room_coordinates();
+                #ifdef TIMEIT
+                logln("display.tick(): draw_corners_in_room_coordinates() took %dms", millis()-start_time);
                 start_time = millis();
                 #endif
 

@@ -36,6 +36,7 @@ class moving_in_room_distance_by_time : public moving_in_room_step
     public:
         bool tick(uint32_t delta_time) override;
         uint32_t time_left = 0;
+        void calculate_time_by_distance(int distance_mm);
 };
 
 class moving_in_room_pick_up_ball : public moving_in_room_step

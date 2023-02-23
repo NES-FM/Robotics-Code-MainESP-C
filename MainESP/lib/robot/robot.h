@@ -119,9 +119,9 @@ class Robot
             uint16_t num_hits = 0;
         };
         
-        std::deque<corner> possible_corners;
+        std::vector<corner*> possible_corners;
         bool detectingCornerEnabled = false;
-        corner most_likely_corner;
+        corner* most_likely_corner;
         void print_corners();
 
         // void room_move_along_wall();
@@ -159,6 +159,8 @@ class Robot
         room_states prev_room_state;
 
         tof* tof_side = new tof(TOF_SENSOR_VL53l1X, 90, 10, 90, EXT_P1);
+
+        const float millimeters_per_millisecond_40_speed = 0.1770833333;
 
     private:
         void parse_command(String command);

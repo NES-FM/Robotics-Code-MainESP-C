@@ -48,7 +48,8 @@
 			"format": "cpp",
 			"forward_list": "cpp",
 			"initializer_list": "cpp",
-			"string_view": "cpp"
+			"string_view": "cpp",
+			"new": "cpp"
 		},
 		"editor.defaultFormatter": "ms-vscode.cpptools",
 		"todo-tree.tree.showBadges": true,

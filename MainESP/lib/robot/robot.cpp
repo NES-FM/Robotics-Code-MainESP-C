@@ -98,15 +98,15 @@ void Robot::tick()
 
             bool corner_found_before = false;
 
-            for (corner old_corner : possible_corners)
+            for (corner* old_corner : possible_corners)
             {
-                if (distance_between_points(old_corner.center_pos, irl_pos) < 250)
+                if (distance_between_points(old_corner->center_pos, irl_pos) < 250)
                 {
                     logln("Corner Found before!");
-                    old_corner.last_pos = irl_pos;
-                    old_corner.center_pos = midpoint_between_points(old_corner.first_pos, old_corner.last_pos);
-                    old_corner.conf = max(old_corner.conf, recieved_corner.conf);
-                    old_corner.num_hits += 1;
+                    old_corner->last_pos = irl_pos;
+                    old_corner->center_pos = midpoint_between_points(old_corner->first_pos, old_corner->last_pos);
+                    old_corner->conf = max(old_corner->conf, recieved_corner.conf);
+                    old_corner->num_hits += 1;
                     corner_found_before = true;
                     break;
                 }
@@ -115,20 +115,18 @@ void Robot::tick()
             if (!corner_found_before)
             {
                 logln("New Corner -> Appending!");
-                corner new_corner;
-                new_corner.first_pos = irl_pos;
-                new_corner.center_pos = irl_pos;
-                new_corner.last_pos = irl_pos;
-                new_corner.conf = recieved_corner.conf;
-                new_corner.num_hits = 1;
+                corner* new_corner = new corner();
+                new_corner->first_pos = irl_pos;
+                new_corner->center_pos = irl_pos;
+                new_corner->last_pos = irl_pos;
+                new_corner->conf = recieved_corner.conf;
+                new_corner->num_hits = 1;
 
                 possible_corners.push_back(new_corner);
             }
 
             bcuart_ref->reset_corner();
         }
-
-        // TODO: Save Corner Placement if found
 
         // TODO: Turn On / Off features of cam to save framerate
 
@@ -161,9 +159,9 @@ void Robot::print_balls()
 void Robot::print_corners()
 {
     logln("---- Corners ----");
-    for (corner c : possible_corners)
+    for (corner* c : possible_corners)
     {
-        logln("X=%d Y=%d C=%.2f N=%d", c.center_pos.x_mm, c.center_pos.y_mm, c.conf, c.num_hits);
+        logln("XS=%d YS=%d XE=%d YE=%d C=%.2f N=%d", c->first_pos.x_mm, c->first_pos.y_mm, c->last_pos.x_mm, c->last_pos.y_mm, c->conf, c->num_hits);
     }
     logln("-----------------");
 }
