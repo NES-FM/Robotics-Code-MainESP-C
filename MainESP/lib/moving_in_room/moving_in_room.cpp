@@ -107,8 +107,8 @@ bool moving_in_room_pick_up_ball::tick(uint32_t delta_time)
     _robot->move(0, 0);
     _robot->claw->set_state(Claw::BOTTOM_CLOSED);
     _robot->move(10, 10);
-    delay(500);
-    _robot->move(-10, -10);
+    delay(1000);
+    _robot->move(-20, -20);
     delay(500);
     // _robot->claw->set_state(Claw::SIDE_CLOSED);
     _robot->move(0, 0);

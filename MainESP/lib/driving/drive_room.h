@@ -60,7 +60,7 @@ void drive_room()
             robot.prev_room_state = robot.ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER;
 
             robot.move(-DRIVE_SPEED_RAUM, -DRIVE_SPEED_RAUM);
-            delay(800);
+            delay(500);
             find_wall_timer.set_target(2000);
             find_wall_timer.reset();
             robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
@@ -242,13 +242,13 @@ void drive_room()
             goto_next_step->target_room_state = Robot::ROOM_STATE_PUT_BALL_IN_CORNER;
             moving_in_room_queue.push_back(goto_next_step);
 
-            logln("Detecting balls finnished, waiting for 5 secs before continuing...");
-            for (int i = 0; i < 5000; i+=100)
-            {
-                robot.tick();
-                display.tick();
-                delay(100);
-            }
+            // logln("Detecting balls finnished, waiting for 5 secs before continuing...");
+            // for (int i = 0; i < 5000; i+=100)
+            // {
+            //     robot.tick();
+            //     display.tick();
+            //     delay(100);
+            // }
         }
     }
     else if (robot.cur_room_state == robot.ROOM_STATE_PUT_BALL_IN_CORNER)

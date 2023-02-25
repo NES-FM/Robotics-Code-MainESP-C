@@ -88,7 +88,7 @@ class Robot
             ROBOT_DRIVE_MODE_ROOM
             //TBD: Different Steps of room
         };
-        ROBOT_DRIVE_MODE cur_drive_mode = ROBOT_DRIVE_MODE_ROOM; // NEEDS TO BE CHANGED (Sets default drive mode)
+        ROBOT_DRIVE_MODE cur_drive_mode = ROBOT_DRIVE_MODE_LINE; // NEEDS TO BE CHANGED (Sets default drive mode)
 
         bool is_control_on_user = false;
 
@@ -121,7 +121,7 @@ class Robot
         
         std::vector<corner*> possible_corners;
         bool detectingCornerEnabled = false;
-        corner* most_likely_corner;
+        corner* most_likely_corner = new corner();
         void print_corners();
 
         // void room_move_along_wall();

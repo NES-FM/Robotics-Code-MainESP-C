@@ -123,12 +123,7 @@ bool PCF8574::begin(){
  */
 void PCF8574::pinMode(uint8_t pin, uint8_t mode, uint8_t output_start){
 	#ifdef EXTENSIVE_DEBUG
-	log_inline_begin();
-	log_inline("Set pin ");
-	log_inline(pin);
-	log_inline(" as ");
-	log_inline(mode);
-	log_inline_end();
+	logln("Set pin %d as mode %d", pin, mode);
 	#endif
 
 	if (mode == OUTPUT){
