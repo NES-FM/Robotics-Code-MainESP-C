@@ -81,7 +81,10 @@ bool moving_in_room_rotate_to_deg::tick(uint32_t delta_time)
 {
     _robot->move(motor_left_speed, motor_right_speed);
     logln("Rotate to deg tick (Cur: %f Target: %f) with speed %d %d", _robot->angle, target_angle, motor_left_speed, motor_right_speed);
-    return (abs(_robot->angle - target_angle) < ROTATE_TO_ANGLE_TOLERANCE); // Angle Reached
+    bool ret = (abs(_robot->angle - target_angle) < ROTATE_TO_ANGLE_TOLERANCE);
+    if ((ROTATE_TO_ANGLE_TOLERANCE - target_angle) > 0)
+        ret = ret || _robot->angle > 360 - (ROTATE_TO_ANGLE_TOLERANCE - target_angle);
+    return ret; // Angle Reached
 }
 
 bool moving_in_room_distance_by_time::tick(uint32_t delta_time)
@@ -118,7 +121,15 @@ bool moving_in_room_pick_up_ball::tick(uint32_t delta_time)
 
 bool moving_in_room_goto_room_state::tick(uint32_t delta_time)
 {
+    _robot->move(0, 0);
     _robot->cur_room_state = target_room_state;
+    return true;
+}
+
+bool moving_in_room_set_claw::tick(uint32_t delta_time)
+{
+    _robot->move(0, 0);
+    _robot->claw->set_state(claw_state, force);
     return true;
 }
 

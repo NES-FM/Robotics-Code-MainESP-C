@@ -23,7 +23,7 @@ class Claw
 
         Claw();
         void init();
-        void set_state(State state);
+        void set_state(State state, bool force = false);
         State get_state();
 
         void enableTof(bool enabled) {tof_claw->enable(enabled);}

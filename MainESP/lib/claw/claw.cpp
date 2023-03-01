@@ -27,10 +27,45 @@ void Claw::init()
     }
 }
 
-void Claw::set_state(State target_state)
+void Claw::set_state(State target_state, bool force)
 {
     if (target_state == _last_state)  // Same state requested, that claw already is at
     {
+        if (force)
+        {
+            enable_close_servo();
+            if (target_state == BOTTOM_OPEN)
+            {
+                _set_raw_servo_close_state(servo_close_open);
+                claw_to_down_pos();
+                disable_close_servo();
+            }
+            else if (target_state == BOTTOM_MID)
+            {
+                _set_raw_servo_close_state(servo_close_mid);
+                claw_to_down_pos();
+            }
+            else if (target_state == BOTTOM_CLOSED)
+            {
+                _set_raw_servo_close_state(servo_close_closed_second_step);
+                claw_to_down_pos();
+            }
+            else if (target_state == SIDE_CLOSED)
+            {
+                _set_raw_servo_close_state(servo_close_closed_second_step);
+                claw_to_side_pos();
+            }
+            else if (target_state == TOP_CLOSED)
+            {
+                _set_raw_servo_close_state(servo_close_closed_second_step);
+                claw_to_up_pos();
+            }
+            else if (target_state == TOP_OPEN)
+            {
+                _set_raw_servo_close_state(servo_close_open);
+                claw_to_up_pos();
+            }
+        }
         goto end;
     }
     else if (target_state > _last_state)  // Claw should go up in hirarchie
@@ -157,7 +192,6 @@ void Claw::set_state(State target_state)
     {
         logln("[else] ERROR! THIS SHOULD NEVER BE REACHED!");
     }
-
 
     end:
     _last_state = target_state;

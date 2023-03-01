@@ -4,6 +4,7 @@
 #include "bcuart.h"
 
 #define ROTATE_TO_ANGLE_TOLERANCE 2
+#define ROTATE_TO_ANGLE_SLOW_DOWN_TOLERANCE 10
 
 class moving_in_room_step
 {
@@ -50,6 +51,14 @@ class moving_in_room_goto_room_state : public moving_in_room_step
     public:
         bool tick(uint32_t delta_time) override;
         Robot::room_states target_room_state = Robot::ROOM_STATE_DEFAULT;
+};
+
+class moving_in_room_set_claw : public moving_in_room_step
+{
+    public:
+        bool tick(uint32_t delta_time) override;
+        Claw::State claw_state;
+        bool force = false;
 };
 
 extern std::vector<moving_in_room_step*> moving_in_room_queue;
