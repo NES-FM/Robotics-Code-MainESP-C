@@ -1,12 +1,12 @@
 #ifndef MOTOR_H
 #define MOTOR_H
 
-#define comm_v2
+#define comm_v3
 
 #include <Wire.h>
 #include "../../include/pin_definitions.h"
 
-#ifndef comm_v2
+#ifdef comm_v1
 #include "../../include/motor_directions.h"
 #endif
 
@@ -21,9 +21,11 @@ class motor
         motor();
         void init(char mnum);
         void move(int speed);
+        #ifdef comm_v2
         void move_steps(int speed, int steps);
+        #endif
 
-        #ifndef comm_v2
+        #ifdef comm_v1
         void move_direction(int speed, int direction);
         #endif
 
@@ -41,7 +43,7 @@ class motor
         #define move_direction_backward 1
 
     private:
-        #ifndef comm_v2
+        #ifdef comm_v1
         const char _i2c_set_speed = 0x00;
         const char _i2c_set_direc = 0x01;
         const char _i2c_offset_motor_1 = 0x30;
@@ -63,7 +65,6 @@ class motor
         signed char motor_num = -1;
 
         #ifdef comm_v2
-
         struct stop_command {
             uint8_t motor_num;        // + 1 byte
             uint8_t type;             // + 1 byte
@@ -84,8 +85,6 @@ class motor
             uint16_t steps;           // + 3 byte
                                       // = 6 bytes
         };
-
-        
         #endif
 };
 

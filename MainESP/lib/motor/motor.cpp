@@ -7,7 +7,7 @@ void motor::enable(bool enabled)
     _motor_i2c_enabled = enabled;
 }
 
-#ifndef comm_v2
+#ifdef comm_v1
 void motor::writeto_mem(char addr, char reg, char data)
 {
     if (_motor_i2c_enabled == true) 
@@ -88,7 +88,7 @@ void motor::force_resend()
 }
 #endif
 
-#ifdef comm_v2
+#if defined(comm_v2) || defined(comm_v3)
 void motor::init(char mnum) 
 {
     logln("init motor %d", mnum);
@@ -96,6 +96,19 @@ void motor::init(char mnum)
     move(0);
 }
 
+void motor::force_resend()
+{
+    // By changing the current direction / speed forcing the resend of motor values
+
+    char save_current_speed = current_speed;
+
+    current_speed = current_speed + 1;
+
+    move(save_current_speed);
+}
+#endif
+
+#ifdef comm_v2
 void motor::move(int speed)
 {
     #ifdef EXTENSIVE_DEBUG
@@ -167,15 +180,53 @@ void motor::off()
     Wire.write((unsigned char*) &out, sizeof(out));
     Wire.endTransmission();
 }
+#endif
 
-void motor::force_resend()
+#ifdef comm_v3
+void motor::move(int speed)
 {
-    // By changing the current direction / speed forcing the resend of motor values
+    #ifdef EXTENSIVE_DEBUG
+    logln("move motor %d with speed %d", motor_num, speed);
+    #endif
+    if (speed != current_speed)
+    {
+        current_speed = speed;
 
-    char save_current_speed = current_speed;
+        uint8_t send_byte = 0; // Byte where all information will be stored
+        send_byte |= (motor_num == 2) << 7; // Setting First Bit to be the motor_num
+        
+        if (abs(speed) > 63)
+            logln("WARNING! Exceeding Speed Maximum of 63!");
 
-    current_speed = current_speed + 1;
+        if (speed == 0)
+        {
+            send_byte |= stop_type_stop << 6; // Setting Second Bit to be the Stop Type
+        }
+        else
+        {
+            if (speed < 0)  // Setting Second Bit to be the Move Direction
+                send_byte |= move_direction_backward << 6;
+            else if (speed > 0)
+                send_byte |= move_direction_forward << 6;
+        }
 
-    move(save_current_speed);
+        send_byte |= constrain(abs(speed), 0, 63);  // Setting Rest to be the absolute Speed
+
+        Wire.beginTransmission(_i2c_address);
+        Wire.write(send_byte);
+        Wire.endTransmission();
+    }
+    motor_speed = speed;
+}
+
+void motor::off() 
+{ 
+    uint8_t send_byte = 0; // Byte where all information will be stored
+    send_byte |= (motor_num == 2) << 7; // Setting First Bit to be the motor_num
+    send_byte |= stop_type_off << 6; // Setting Second Bit to be the Stop Type
+
+    Wire.beginTransmission(_i2c_address);
+    Wire.write(send_byte);
+    Wire.endTransmission();
 }
 #endif

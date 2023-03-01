@@ -356,6 +356,7 @@ String Robot::move_command(String first_arg, String second_arg, String third_arg
         ret += "--------\r\n";
         return ret;
     }
+    #ifdef comm_v2
     else if (first_arg == "steps")
     {
         sprintf(out, "Moving in steps mode with speed: %d and steps: %d", second_arg.toInt(), third_arg.toInt());
@@ -363,6 +364,7 @@ String Robot::move_command(String first_arg, String second_arg, String third_arg
         this->motor_right->move_steps(second_arg.toInt(), third_arg.toInt());
         return out;
     }
+    #endif
     
     this->motor_left->move(first_arg.toInt());
     this->motor_right->move(second_arg.toInt());
