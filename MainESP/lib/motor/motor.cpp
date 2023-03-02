@@ -56,10 +56,10 @@ void motor::move_direction(int speed, int direction)
     
     speed = abs(speed);
 
-    if (current_direc != direction)
-        writeto_mem(_i2c_address, current_i2c_offset + _i2c_set_direc, direction);
     if (current_speed != speed)
         writeto_mem(_i2c_address, current_i2c_offset + _i2c_set_speed, speed);
+    if (current_direc != direction)
+        writeto_mem(_i2c_address, current_i2c_offset + _i2c_set_direc, direction);
 
     current_direc = direction;
     current_speed = speed;

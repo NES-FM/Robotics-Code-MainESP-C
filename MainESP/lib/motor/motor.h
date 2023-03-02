@@ -1,7 +1,7 @@
 #ifndef MOTOR_H
 #define MOTOR_H
 
-#define comm_v3
+#define comm_v1
 
 #include <Wire.h>
 #include "../../include/pin_definitions.h"
@@ -27,9 +27,12 @@ class motor
 
         #ifdef comm_v1
         void move_direction(int speed, int direction);
+        void stop();
         #endif
 
+        #ifndef comm_v1
         void stop() { this->move(0); }
+        #endif
         void off();
         void enable(bool enabled);
         bool is_enabled() { return _motor_i2c_enabled; }

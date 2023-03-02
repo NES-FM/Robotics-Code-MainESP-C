@@ -266,8 +266,8 @@ void drive_room()
         }
 
         Robot::point first_p = robot.most_likely_corner->first_pos;
+        Robot::point mid_p = robot.most_likely_corner->center_pos;//Robot::midpoint_between_points(first_p, last_p);
         Robot::point last_p = robot.most_likely_corner->last_pos;
-        Robot::point mid_p = Robot::midpoint_between_points(first_p, last_p);
 
         // Slopes
         float slope_corner = ((float)last_p.y_mm - (float)first_p.y_mm) / ((float)last_p.x_mm - (float)first_p.x_mm);
@@ -276,7 +276,7 @@ void drive_room()
 
         // Target 2
         Robot::point target_2;
-        if (robot.most_likely_corner->center_pos.x_mm < 0)
+        if (mid_p.x_mm < 0)
         {
             target_2.x_mm = mid_p.x_mm + (cos(angle_slope_90_to_corner) * TARGET_2_CORNER_DISTANCE);
             target_2.y_mm = mid_p.y_mm + (sin(angle_slope_90_to_corner) * TARGET_2_CORNER_DISTANCE);
@@ -433,11 +433,19 @@ void adjust_moving_to_balls_target(uint32_t delta_time)
         angle_rad = angle_rad + M_PI;
     }
 
+    float s = sin(angle_rad);
+    float c = cos(angle_rad);
+
     // calculate new x and y coordinates
-    robot.moving_to_balls_target.pos.x_mm = robot.moving_to_balls_target.pos.x_mm + delta_distance * cos(angle_rad);
-    robot.moving_to_balls_target.pos.y_mm = robot.moving_to_balls_target.pos.y_mm + delta_distance * sin(angle_rad);
-    robot.most_likely_corner->center_pos.x_mm = robot.most_likely_corner->center_pos.x_mm + delta_distance * cos(angle_rad);
-    robot.most_likely_corner->center_pos.y_mm = robot.most_likely_corner->center_pos.y_mm + delta_distance * sin(angle_rad);
+    robot.moving_to_balls_target.pos.x_mm = robot.moving_to_balls_target.pos.x_mm + delta_distance * c;
+    robot.moving_to_balls_target.pos.y_mm = robot.moving_to_balls_target.pos.y_mm + delta_distance * s;
+
+    robot.most_likely_corner->center_pos.x_mm = robot.most_likely_corner->center_pos.x_mm + delta_distance * c;
+    robot.most_likely_corner->center_pos.y_mm = robot.most_likely_corner->center_pos.y_mm + delta_distance * s;
+    robot.most_likely_corner->first_pos.x_mm = robot.most_likely_corner->first_pos.x_mm + delta_distance * c;
+    robot.most_likely_corner->first_pos.y_mm = robot.most_likely_corner->first_pos.y_mm + delta_distance * s;
+    robot.most_likely_corner->last_pos.x_mm = robot.most_likely_corner->last_pos.x_mm + delta_distance * c;
+    robot.most_likely_corner->last_pos.y_mm = robot.most_likely_corner->last_pos.y_mm + delta_distance * s;
 }
  
 void rotate_to_angle(float target, bool turn_right)
