@@ -465,19 +465,19 @@ void drive_room()
                 motor_r_val = float(DRIVE_SPEED_RAUM) + ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR * error;
             }
 
-            move(motor_l_val, motor_r_val);
+            robot.move(motor_l_val, motor_r_val);
         }
 
         if (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_MAX_DISTANCE || (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_NONE && abs(follow_wall_last_tof_value - tof_dis) > 100))
         {
             // Maybe Hole
-            move(20, 20);
+            robot.move(20, 20);
             delay(400);
-            move(20, -20);
+            robot.move(20, -20);
             delay(TURN_90_DEG_DELAY);
             robot.room_has_reached_end(); // Just Reset everything
 
-            move(20, 20);
+            robot.move(20, 20);
 
             Robot::room_end_types end_type = Robot::ROOM_HAS_NOT_REACHED_END;
             while (end_type == Robot::ROOM_HAS_NOT_REACHED_END)
@@ -489,19 +489,19 @@ void drive_room()
 
             if (end_type == Robot::ROOM_HAS_REACHED_SILVER_LINE)
             {
-                move(-20, -20);
+                robot.move(-20, -20);
                 delay(200);
                 cuart.silver_line = false;
             }
             else if (end_type == Robot::ROOM_HAS_REACHED_GREEN_LINE)
             {
-                move(20, 20);
+                robot.move(20, 20);
                 delay(1000);
-                move(0, 0);
+                robot.move(0, 0);
                 cuart.green_line = false;
                 robot.cur_drive_mode = Robot::ROBOT_DRIVE_MODE_LINE;
                 delay(1000);
-                move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+                robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
                 return;
             }
 
@@ -509,27 +509,31 @@ void drive_room()
             cuart.silver_line = false;
         }
 
-        if (cuart.green_line)
+        Robot::room_end_types end_type = robot.room_has_reached_end();
+        if (end_type != Robot::ROOM_HAS_NOT_REACHED_END)
         {
-            display.raum_mode = false;
-            in_raum = false;
-            move(0,  0);
-            cust_delay(1000);
-            move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
-            return;
+            if (end_type == Robot::ROOM_HAS_REACHED_SILVER_LINE)
+            {
+                robot.move(-20, -20);
+                delay(200);
+                cuart.silver_line = false;
+            }
+            else if (end_type == Robot::ROOM_HAS_REACHED_GREEN_LINE)
+            {
+                robot.move(20, 20);
+                delay(1000);
+                robot.move(0, 0);
+                cuart.green_line = false;
+                robot.cur_drive_mode = Robot::ROBOT_DRIVE_MODE_LINE;
+                delay(1000);
+                robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+                return;
+            }
+            turn_90_while_next_to_wall();
         }
-        if (cuart.silver_line)
-        {
-            move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
-            cust_delay(200);
-            cuart.silver_line = false;
-            disable_IR_timer.reset();
-        }
-        turn_90_while_next_to_wall();
         
-        move_along_wall_find_exit();
-
-        follow_wall_last_tof_value = tof_dis;
+        if (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_NONE)
+            follow_wall_last_tof_value = tof_dis;
     }
 }
 
@@ -614,11 +618,11 @@ void clear_queue()
 
 void turn_90_while_next_to_wall()
 {
-    move(0, -DRIVE_SPEED_NORMAL-5);
+    robot.move(0, -DRIVE_SPEED_NORMAL-5);
     delay(300);
-    move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    robot.move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
     delay(200);
-    move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    robot.move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
     delay(TURN_90_DEG_DELAY+160);
-    move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
+    robot.move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
 }
