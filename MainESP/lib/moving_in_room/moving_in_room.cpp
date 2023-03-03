@@ -87,6 +87,21 @@ bool moving_in_room_rotate_to_deg::tick(uint32_t delta_time)
     return ret; // Angle Reached
 }
 
+bool moving_in_room_rotate_relative_degrees::tick(uint32_t delta_time)
+{
+    if (first_time)
+    {
+        first_time = false;
+        rotate_to_deg = new moving_in_room_rotate_to_deg();
+        rotate_to_deg->_robot = _robot;
+        rotate_to_deg->motor_left_speed = motor_left_speed;
+        rotate_to_deg->motor_right_speed = motor_right_speed;
+        rotate_to_deg->target_angle = compass_bmm::keep_in_360_range(_robot->angle + target_relative_angle);
+    }
+
+    return rotate_to_deg->tick(delta_time);
+}
+
 bool moving_in_room_distance_by_time::tick(uint32_t delta_time)
 {
     _robot->move(motor_left_speed, motor_right_speed);
@@ -101,8 +116,8 @@ bool moving_in_room_distance_by_time::tick(uint32_t delta_time)
 }
 void moving_in_room_distance_by_time::calculate_time_by_distance(int distance)
 {
-    float speed_scale = (abs(motor_left_speed) + abs(motor_right_speed)) / 2 / 40.0; // Adjust for not driving with 40 speed
-    time_left = distance / (_robot->millimeters_per_millisecond_40_speed * speed_scale);
+    float speed_scale = (float)(abs(motor_left_speed) + abs(motor_right_speed)) / 2.0 / 40.0; // Adjust for not driving with 40 speed
+    time_left = constrain(distance / (_robot->millimeters_per_millisecond_40_speed * speed_scale), 0, UINT32_MAX);
 }
 
 bool moving_in_room_pick_up_ball::tick(uint32_t delta_time)
@@ -131,6 +146,27 @@ bool moving_in_room_set_claw::tick(uint32_t delta_time)
     _robot->move(0, 0);
     _robot->claw->set_state(claw_state, force);
     return true;
+}
+
+bool moving_in_room_until_taster::tick(uint32_t delta_time)
+{
+    _robot->move(motor_left_speed, motor_right_speed);
+    logln("move until taster tick with speed %d %d", motor_left_speed, motor_right_speed);
+
+    Robot::room_end_types room_end = _robot->room_has_reached_end();
+    taster_activated = room_end == Robot::ROOM_HAS_REACHED_TASTER_LEFT || room_end == Robot::ROOM_HAS_REACHED_TASTER_RIGHT;
+
+    if (taster_activated)
+    {
+        if (continue_afterwards <= delta_time) // Done!
+        {
+            return true;
+        }
+        else
+            continue_afterwards -= delta_time;
+    }
+
+    return false;
 }
 
 std::vector<moving_in_room_step*> moving_in_room_queue;

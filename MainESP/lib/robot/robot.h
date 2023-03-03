@@ -152,7 +152,8 @@ class Robot
             ROOM_STATE_MOVE_IN_ROOM,
             ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER,
             ROOM_STATE_ROTATE_TO_FIND_BALLS,
-            ROOM_STATE_PUT_BALL_IN_CORNER,
+            ROOM_STATE_PUT_BALL_IN_CORNER_STEP_1,
+            ROOM_STATE_PUT_BALL_IN_CORNER_STEP_2,
             ROOM_STATE_SEARCHING_EXIT
         };
         room_states cur_room_state;

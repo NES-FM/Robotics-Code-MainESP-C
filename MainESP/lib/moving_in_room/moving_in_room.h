@@ -32,6 +32,16 @@ class moving_in_room_rotate_to_deg : public moving_in_room_step
         float target_angle = 0.0;
 };
 
+class moving_in_room_rotate_relative_degrees : public moving_in_room_step
+{
+    public:
+        bool tick(uint32_t delta_time) override;
+        float target_relative_angle = 0.0;
+    private:
+        moving_in_room_rotate_to_deg* rotate_to_deg;
+        bool first_time = true;
+};
+
 class moving_in_room_distance_by_time : public moving_in_room_step
 {
     public:
@@ -59,6 +69,15 @@ class moving_in_room_set_claw : public moving_in_room_step
         bool tick(uint32_t delta_time) override;
         Claw::State claw_state;
         bool force = false;
+};
+
+class moving_in_room_until_taster : public moving_in_room_step
+{
+    public:
+        bool tick(uint32_t delta_time) override;
+        uint32_t continue_afterwards = 0;
+    private:
+        bool taster_activated = false;
 };
 
 extern std::vector<moving_in_room_step*> moving_in_room_queue;

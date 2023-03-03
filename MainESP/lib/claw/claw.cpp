@@ -65,6 +65,7 @@ void Claw::set_state(State target_state, bool force)
                 _set_raw_servo_close_state(servo_close_open);
                 claw_to_up_pos();
             }
+            delay(safety_delay);
         }
         goto end;
     }
