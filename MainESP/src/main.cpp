@@ -48,7 +48,7 @@ void setup()
     Serial.begin(115200); 
     Wire.begin(PIN_SDA, PIN_SCL, 400000U);
 
-    logger_init(!robot.dip->get_wettkampfmodus());
+    logger_init();
 
     preferences.begin("main_esp", false);
 

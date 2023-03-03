@@ -1,11 +1,8 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <BluetoothSerial.h>
-
-#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
-#endif
+#include <Arduino.h>
+#include <esp32-hal-log.h>
 
 #define LOGGER_BUFFLEN 256
 
@@ -18,9 +15,8 @@
 #define log_inline(format, ...) logger_log_formatted_string(format, ##__VA_ARGS__)
 #define log_inline_end() logger_log_formatted_string("\r\n")
 
-void logger_init(bool bluetoothEnabled = true);
+void logger_init();
 String logger_tick();
 void logger_log_formatted_string(const char *format, ...);
-void logger_bluetooth_callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *param);
 
 #endif
