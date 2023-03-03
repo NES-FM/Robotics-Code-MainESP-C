@@ -7,6 +7,11 @@
 
 #define TARGET_2_CORNER_DISTANCE 350
 
+#define TURN_90_DEG_DELAY 500
+
+#define ROOM_MOVE_ALONG_WALL_DISTANCE 60
+#define ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR 0.43f
+
 float rotate_balls_360_start_angle = 0;
 bool rotated_balls_was_at_180_degrees = false;
 
@@ -17,9 +22,12 @@ void adjust_moving_to_balls_target(uint32_t delta_time);
 void rotate_to_angle(float target, bool turn_right);
 void clear_queue();
 void clear_possible_corners();
+void turn_90_while_next_to_wall();
 
 target_timer find_wall_timer;
 int find_wall_right_distance_avg = -1;
+
+uint16_t follow_wall_last_tof_value = 0;
 
 uint32_t last_millis;
 void drive_room()
@@ -424,7 +432,7 @@ void drive_room()
 
             // if not all balls put down
             robot.move(40, 40);
-            delay(350 / robot.millimeters_per_millisecond_40_speed);
+            delay(TARGET_2_CORNER_DISTANCE / robot.millimeters_per_millisecond_40_speed);
             robot.move(0, 0);
             delay(2000); // Lag of Progress safety delay
             // save amount of put down balls
@@ -433,6 +441,95 @@ void drive_room()
             // else
             // move along wall and find exit
         }
+    }
+
+    else if (robot.cur_room_state == robot.ROOM_STATE_SEARCHING_EXIT)
+    {
+        uint16_t tof_dis = robot.tof_side->getMeasurement();
+        if (robot.prev_room_state != robot.cur_room_state)
+        {
+            robot.prev_room_state = robot.cur_room_state;
+            follow_wall_last_tof_value = tof_dis;
+        }
+
+        if (robot.tof_side->getMeasurementError() != tof::TOF_ERROR_MAX_DISTANCE) // Closerange needs to see the wall, or else it cant work
+        {
+            int motor_l_val = DRIVE_SPEED_RAUM;
+            int motor_r_val = DRIVE_SPEED_RAUM;
+
+            if (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_NONE)
+            {
+                float error = ROOM_MOVE_ALONG_WALL_DISTANCE - tof_dis;
+
+                motor_l_val = float(DRIVE_SPEED_RAUM) - ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR * error;
+                motor_r_val = float(DRIVE_SPEED_RAUM) + ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR * error;
+            }
+
+            move(motor_l_val, motor_r_val);
+        }
+
+        if (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_MAX_DISTANCE || (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_NONE && abs(follow_wall_last_tof_value - tof_dis) > 100))
+        {
+            // Maybe Hole
+            move(20, 20);
+            delay(400);
+            move(20, -20);
+            delay(TURN_90_DEG_DELAY);
+            robot.room_has_reached_end(); // Just Reset everything
+
+            move(20, 20);
+
+            Robot::room_end_types end_type = Robot::ROOM_HAS_NOT_REACHED_END;
+            while (end_type == Robot::ROOM_HAS_NOT_REACHED_END)
+            {
+                end_type = robot.room_has_reached_end();
+                display.tick();
+                delay(10);
+            }
+
+            if (end_type == Robot::ROOM_HAS_REACHED_SILVER_LINE)
+            {
+                move(-20, -20);
+                delay(200);
+                cuart.silver_line = false;
+            }
+            else if (end_type == Robot::ROOM_HAS_REACHED_GREEN_LINE)
+            {
+                move(20, 20);
+                delay(1000);
+                move(0, 0);
+                cuart.green_line = false;
+                robot.cur_drive_mode = Robot::ROBOT_DRIVE_MODE_LINE;
+                delay(1000);
+                move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+                return;
+            }
+
+            turn_90_while_next_to_wall();
+            cuart.silver_line = false;
+        }
+
+        if (cuart.green_line)
+        {
+            display.raum_mode = false;
+            in_raum = false;
+            move(0,  0);
+            cust_delay(1000);
+            move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+            return;
+        }
+        if (cuart.silver_line)
+        {
+            move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+            cust_delay(200);
+            cuart.silver_line = false;
+            disable_IR_timer.reset();
+        }
+        turn_90_while_next_to_wall();
+        
+        move_along_wall_find_exit();
+
+        follow_wall_last_tof_value = tof_dis;
     }
 }
 
@@ -513,4 +610,15 @@ void clear_queue()
         delete el;
     }
     moving_in_room_queue.clear();
+}
+
+void turn_90_while_next_to_wall()
+{
+    move(0, -DRIVE_SPEED_NORMAL-5);
+    delay(300);
+    move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    delay(200);
+    move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    delay(TURN_90_DEG_DELAY+160);
+    move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
 }
