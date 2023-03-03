@@ -7,12 +7,12 @@ void ausweichen()
     robot.move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
     delay(900);
     robot.move(15, 35);
-    for (int x = 0; x < 3000; x+=10)
+    for (int x = 0; x < 1500; x+=10)
     {
         display.tick();
         delay(10);
     }
-    while(cuart.array_mid_sensor < 3)
+    while(cuart.array_total < 5)
     {
         display.tick();
         vTaskDelay(watchdog_delay);

@@ -331,7 +331,7 @@ void drive_sensor_array()
             {
                 logln("Interesting: Turning Around (Dead End) with ltype %d and dl green dot %s and dr green dot %s", driving_interesting_actual_ltype, cuart.green_dots[2] ? "True" : "False", cuart.green_dots[3] ? "True" : "False");
                 robot.move(DRIVE_SPEED_CORNER, -DRIVE_SPEED_CORNER);
-                for (int x = 0; x < 1800; x += 50)
+                for (int x = 0; x < 1600; x += 50)
                 {
                     display.tick();
                     delay(50);
