@@ -227,6 +227,8 @@ void debug_disp::draw_taster(int x, int y, int w, int h)
         oled->fillRect(x+1, y+1, (w/2)-1, h/4, SSD1306_WHITE);
     if (_robot->taster->get_state(_robot->taster->front_right))
         oled->fillRect(x+(w/2), y+1, (w/2)-1, h/4, SSD1306_WHITE);
+    if (_robot->taster->get_state(_robot->taster->reset_nvs))
+        oled->fillRect(x+1, y+(h/2), w-1, h/4, SSD1306_WHITE);
 }
 
 void debug_disp::draw_room_tof(int x, int y)

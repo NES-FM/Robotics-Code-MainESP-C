@@ -22,6 +22,8 @@ void Robot::init()
     accel_sensor->init();
     logln("After accel");
     compass->init();
+
+    room_prefs->begin("room", false);
 }
 
 void Robot::tick()
@@ -33,7 +35,9 @@ void Robot::tick()
     }
     else if (cur_drive_mode == ROBOT_DRIVE_MODE_ROOM)
     {
+        logln("Before compass");
         angle = compass->keep_in_360_range(compass->get_angle() - room_beginning_angle);
+        logln("After compass");
 
         if (detectingBallsEnabled && bcuart_ref->num_balls_in_array > 0)  // TODO: Bugs if balls are too close to robot
         {
@@ -142,6 +146,16 @@ void Robot::tick()
     if (logger_tick_return != "")
     {
         this->parse_command(logger_tick_return);
+    }
+
+    if (taster->get_state(taster_class::reset_nvs))
+    {
+        logln("reset");
+        room_prefs->putBool("silver_1", false);
+        room_prefs->putBool("silver_2", false);
+        room_prefs->putBool("black", false);
+        room_prefs->putBool("blue", false);
+        logln("reset done");
     }
 }
 
@@ -422,7 +436,7 @@ String Robot::set_command(String first_arg, String second_arg, String third_arg)
         ret += "drive mode [line/room]\r\n";
         ret += "compass calib(ration) [on/off]\r\n";
         ret += "corner <TL/TR/BL/BR>\r\n";
-        ret += "claw <servo_up/servo_close> angle\r\n";
+        ret += "claw <servo_up/servo_close/blue_cube> angle\r\n";
         ret += "claw state <states>\r\n";
         ret += "-------\r\n";
         return ret;
@@ -458,6 +472,12 @@ String Robot::set_command(String first_arg, String second_arg, String third_arg)
             int angle = third_arg.toInt(); 
             claw->_set_raw_servo_close_state(angle);
             return "Successfully set Claw Close Servo!\r\n";
+        }
+        else if (second_arg == "blue_cube")
+        {
+            int angle = third_arg.toInt(); 
+            claw->_set_raw_servo_blue_cube_state(angle);
+            return "Successfully set Blue Cube Servo!\r\n";
         }
         else if (second_arg == "state")
         {
@@ -633,15 +653,20 @@ void Robot::parse_command(String command)
 void Robot::startRoom()
 {
     move(0, 0);
-    cur_drive_mode = ROBOT_DRIVE_MODE_ROOM;
-    main_buzzer->noTone();
-    cuart_ref->silver_line = false;
-    cuart_ref->green_line = false;
+    delay(3000);
 
-    setRoomBeginningAngle();
+    if (cuart_ref->array_total < 5)
+    {
+        cur_drive_mode = ROBOT_DRIVE_MODE_ROOM;
+        main_buzzer->noTone();
+        cuart_ref->silver_line = false;
+        cuart_ref->green_line = false;
 
-    cur_room_state = ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER;
-    prev_room_state = ROOM_STATE_DEFAULT;
+        setRoomBeginningAngle();
+
+        cur_room_state = ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER;
+        prev_room_state = ROOM_STATE_DEFAULT;
+    }
 }
 
 Robot::room_end_types Robot::room_has_reached_end()

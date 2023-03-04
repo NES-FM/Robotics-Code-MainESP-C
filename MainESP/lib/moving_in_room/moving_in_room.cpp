@@ -77,6 +77,67 @@ bool moving_in_room_follow_ball::tick(uint32_t delta_time)
     return false;
 }
 
+bool moving_in_room_follow_corner::tick(uint32_t delta_time)
+{
+    logln("Follow corner tick");
+
+    if (!moving_to_corner_corner_too_close)
+    {
+        if (_bcuart->corner_valid)
+        {
+            auto recieved_corner = _bcuart->received_corner;
+            Robot::point irl_pos;
+            irl_pos.x_mm = -recieved_corner.x_offset*10; // *10, because x_offset is in cm, while irl_pos is in mm  // - because negative x_offset means right of robot, if robot is pointing forward
+            irl_pos.y_mm = -recieved_corner.distance*10 - (0.5*_robot->height); // - because the robot detects balls towards the back  // - (0.5*height) because b.distance counts starting from the back edge of the robot
+            irl_pos = Robot::rotate_point_around_origin(irl_pos, _robot->angle);
+
+            float closest_corner_x_offset = -recieved_corner.x_offset;
+            float closest_corner_y_offset = recieved_corner.distance;
+
+            _bcuart->reset_corner();
+
+            float robot_to_corner_dis = Robot::distance_between_points(_robot->Origin, irl_pos);
+
+            logln("Following Corner with x_off: %f, y_off: %f, Robot to corner dis: %f", closest_corner_x_offset, closest_corner_y_offset, robot_to_corner_dis);
+
+            if (!moving_to_corner_corner_too_close && closest_corner_y_offset <= 20) // Ball is too close to be detected
+            {
+                logln("\r\n\r\nGoing into balls too close mode\r\n");
+                moving_to_corner_corner_too_close = true;
+            }
+
+            if (closest_corner_x_offset > 4+2) // If more than 2 cm deviation from 4cm line, correct for it
+            {
+                logln("Correcting with -5 5, because x_offset:%.3f is > 3", closest_corner_x_offset);
+                _robot->move(-5, 5);
+            }
+            else if (closest_corner_x_offset < 4-2) // If more than 2 cm deviation from 4cm line, correct for it
+            {
+                logln("Correcting with 5 -5, because x_offset:%.3f is < -3", closest_corner_x_offset);
+                _robot->move(5, -5);
+            }
+            else
+            {
+                logln("Driving with %d %d", motor_left_speed, motor_right_speed);
+                _robot->move(motor_left_speed, motor_right_speed);
+            }
+        }
+    }
+    else
+    {
+        _robot->claw->set_state(Claw::TOP_CLOSED);
+        _robot->move(motor_left_speed, motor_right_speed);
+
+        if (time_after <= delta_time) // Done!
+            return true;
+        else
+            time_after -= delta_time;
+        return false;
+    }
+
+    return false;
+}
+
 bool moving_in_room_rotate_to_deg::tick(uint32_t delta_time)
 {
     _robot->move(motor_left_speed, motor_right_speed);

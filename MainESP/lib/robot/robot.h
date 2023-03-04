@@ -20,6 +20,7 @@
 #include "bcuart.h"
 #include "claw.h"
 #include "tof.h"
+#include <Preferences.h>
 
 #include "logger.h"
 #include "command_parser.h"
@@ -162,6 +163,8 @@ class Robot
         tof* tof_side = new tof(TOF_SENSOR_VL53l1X, 90, 10, 90, EXT_P1);
 
         const float millimeters_per_millisecond_40_speed = 0.1770833333;
+
+        Preferences* room_prefs = new Preferences();
 
     private:
         void parse_command(String command);

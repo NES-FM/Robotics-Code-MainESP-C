@@ -12,6 +12,7 @@ void Claw::init()
 
     enable_close_servo();
     claw_up_servo->attach(PIN_SERVO2, -1, 0, 180, 530, 2450); // default: pin, -1, 0, 544, 2400
+    blue_cube_servo->attach(PIN_SERVO3);
     
     if (_last_state == BOTTOM_OPEN)
     {
@@ -333,3 +334,14 @@ uint16_t Claw::get_ball_distance()
     return dis;
 }
 
+void Claw::hold_blue_cube()
+{
+    _set_raw_servo_blue_cube_state(servo_blue_cube_holding);
+    delay(50);
+}
+
+void Claw::throw_blue_cube()
+{
+    _set_raw_servo_blue_cube_state(servo_blue_cube_throw);
+    delay(50);
+}

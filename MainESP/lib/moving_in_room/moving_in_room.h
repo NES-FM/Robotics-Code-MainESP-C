@@ -25,6 +25,16 @@ class moving_in_room_follow_ball : public moving_in_room_step
         bool moving_to_balls_ball_too_close = false;
 };
 
+class moving_in_room_follow_corner : public moving_in_room_step
+{
+    public:
+        bool tick(uint32_t delta_time) override;
+        BCUART_class* _bcuart;
+        uint32_t time_after = 1000;
+    private:
+        bool moving_to_corner_corner_too_close = false;
+};
+
 class moving_in_room_rotate_to_deg : public moving_in_room_step
 {
     public:
