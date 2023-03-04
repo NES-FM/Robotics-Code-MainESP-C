@@ -62,16 +62,16 @@ bool moving_in_room_follow_ball::tick(uint32_t delta_time)
     }
     else
     {
-        _robot->move(motor_left_speed, motor_right_speed);
+        _robot->move(motor_left_speed, motor_right_speed);   
+    }
 
-        uint16_t ball_sensor_distance = _robot->claw->get_ball_distance();
-        logln("Ball Sensor Distance: %d", ball_sensor_distance);
-        if (ball_sensor_distance < 18)
-        {
-            logln("Ball is close enough -> end");
-            delay(200);
-            return true;
-        }
+    uint16_t ball_sensor_distance = _robot->claw->get_ball_distance();
+    logln("Ball Sensor Distance: %d", ball_sensor_distance);
+    if (ball_sensor_distance < 18)
+    {
+        logln("Ball is close enough -> end");
+        delay(200);
+        return true;
     }
 
     return false;
@@ -100,18 +100,18 @@ bool moving_in_room_follow_corner::tick(uint32_t delta_time)
 
             logln("Following Corner with x_off: %f, y_off: %f, Robot to corner dis: %f", closest_corner_x_offset, closest_corner_y_offset, robot_to_corner_dis);
 
-            if (!moving_to_corner_corner_too_close && closest_corner_y_offset <= 20) // Ball is too close to be detected
+            if (recieved_corner.screen_w > 200 || closest_corner_y_offset <= 20) // Ball is too close to be detected
             {
-                logln("\r\n\r\nGoing into balls too close mode\r\n");
+                logln("\r\n\r\nGoing into corner too close mode\r\n");
                 moving_to_corner_corner_too_close = true;
             }
 
-            if (closest_corner_x_offset > 4+2) // If more than 2 cm deviation from 4cm line, correct for it
+            if (closest_corner_x_offset > 4+4) // If more than 2 cm deviation from 4cm line, correct for it
             {
                 logln("Correcting with -5 5, because x_offset:%.3f is > 3", closest_corner_x_offset);
                 _robot->move(-5, 5);
             }
-            else if (closest_corner_x_offset < 4-2) // If more than 2 cm deviation from 4cm line, correct for it
+            else if (closest_corner_x_offset < 4-4) // If more than 2 cm deviation from 4cm line, correct for it
             {
                 logln("Correcting with 5 -5, because x_offset:%.3f is < -3", closest_corner_x_offset);
                 _robot->move(5, -5);

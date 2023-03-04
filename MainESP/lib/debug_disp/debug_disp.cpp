@@ -245,13 +245,13 @@ void debug_disp::draw_room_tof(int x, int y)
     start_time_sub = millis();
     #endif
 
-    int side_val = int(_robot->tof_side->getMeasurement()/10);
+    // int side_val = int(_robot->tof_side->getMeasurement()/10);
     #ifdef TIMEIT
     logln("draw_room_tof(): side_val took %dms", millis()-start_time_sub);
     start_time_sub = millis();
     #endif
 
-    oled->printf("C:%02d, S:%03d", closerange_val, side_val);
+    // oled->printf("C:%02d, S:%03d", closerange_val, side_val);
 }
 
 void debug_disp::draw_robot_in_room_coordinates()

@@ -25,17 +25,19 @@ class BCUART_class
             float conf;
             uint8_t black;
         };
-        #pragma pack()
         struct corner {
             float x_offset;
             float distance;
             float conf;
+            uint8_t screen_w;
         };
         struct exit_line {
             float x_offset;
             float distance;
             float conf;
         };
+
+        #pragma pack()
 
         ball received_balls[10];
         corner received_corner;

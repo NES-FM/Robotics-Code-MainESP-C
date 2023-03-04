@@ -35,7 +35,7 @@ class Claw
         void _set_raw_servo_close_state(int degrees) {claw_close_servo->write(degrees);}
         void _set_raw_servo_blue_cube_state(int degrees) {blue_cube_servo->write(degrees);}
 
-        tof* tof_claw = new tof(TOF_SENSOR_VL6180X, 0, -87, 180, EXT_P3);
+        tof* tof_claw = new tof(TOF_SENSOR_VL6180X, 0, -87, 180);//, EXT_P3);
 
         void hold_blue_cube();
         void throw_blue_cube();
@@ -64,7 +64,7 @@ class Claw
         const uint8_t servo_close_open_second_step = 110;
         const uint8_t servo_close_closed_first_step = 40;
         const uint8_t servo_close_closed_second_step = 43;
-        const uint8_t servo_close_mid = 80;
+        const uint8_t servo_close_mid = 85;//80;
 
         const uint8_t servo_up_down = 0;
         const uint8_t servo_up_side = 90;

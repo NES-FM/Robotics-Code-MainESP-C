@@ -3,7 +3,7 @@
 #include "robot.h"
 #include "bcuart.h"
 
-#define ROTATE_TO_ANGLE_TOLERANCE 2
+#define ROTATE_TO_ANGLE_TOLERANCE 4
 #define ROTATE_TO_ANGLE_SLOW_DOWN_TOLERANCE 10
 
 class moving_in_room_step
