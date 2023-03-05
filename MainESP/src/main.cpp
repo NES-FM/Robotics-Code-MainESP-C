@@ -62,7 +62,7 @@ void setup()
     display.enable(check_device_enabled(I2C_ADDRESS_DISPLAY, "display", "DI"));
     check_device_enabled(I2C_ADDRESS_IO_EXT_PCF, "io-extender", "IO");
 
-    robot.compass->enable(check_device_enabled(I2C_ADDRESS_COMPASS, "compass", "CO"));
+    robot.compass->enable(check_device_enabled(I2C_ADDRESS_COMPASS_BMM, "compass", "CO"));
     robot.accel_sensor->enable(check_device_enabled(I2C_ADDRESS_ACCELEROMETER, "accelerometer", "AC"));
 
     // TOF

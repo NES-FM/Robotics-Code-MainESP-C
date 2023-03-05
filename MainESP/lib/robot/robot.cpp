@@ -26,6 +26,8 @@ void Robot::init()
     room_prefs->begin("room", false);
 }
 
+uint32_t last_compass_millis = 0;
+
 void Robot::tick()
 {
     // logln("Tick");
@@ -35,9 +37,27 @@ void Robot::tick()
     }
     else if (cur_drive_mode == ROBOT_DRIVE_MODE_ROOM)
     {
-        logln("Before compass");
-        angle = compass->keep_in_360_range(compass->get_angle() - room_beginning_angle);
-        logln("After compass");
+        if (compass->is_enabled())
+        {
+            if ((millis()-last_compass_millis) >= 50)
+            {
+                logln("Before compass");
+                angle = compass->keep_in_360_range(compass->get_angle() - room_beginning_angle);
+                last_compass_millis = millis();
+                logln("After compass");
+            }
+        }
+        else
+        {
+            // Apprximation using time
+            if (motor_left->motor_speed == -motor_right->motor_speed)
+            {
+                float speed_scale = abs((float)motor_left->motor_speed) / 20.0; // Adjust for not driving with 40 speed
+                float delta_angle = (double)(millis()-last_compass_millis) * degrees_per_millisecond_20_speed * speed_scale;
+                angle = compass->keep_in_360_range(angle + delta_angle);
+            }
+            last_compass_millis = millis();
+        }
 
         if (detectingBallsEnabled && bcuart_ref->num_balls_in_array > 0)  // TODO: Bugs if balls are too close to robot
         {

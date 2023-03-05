@@ -163,6 +163,7 @@ class Robot
         // tof* tof_side = new tof(TOF_SENSOR_VL53l1X, 90, 10, 90, EXT_P1);
 
         const float millimeters_per_millisecond_40_speed = 0.1770833333;
+        const float degrees_per_millisecond_20_speed = 360 / 4050;
 
         Preferences* room_prefs = new Preferences();
 

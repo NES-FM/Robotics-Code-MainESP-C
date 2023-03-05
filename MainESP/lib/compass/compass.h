@@ -11,12 +11,13 @@ class compass_bmm {
         compass_bmm();
         float get_angle();
         void init();
+        bool is_enabled() { return _compass_enabled; }
         static float keep_in_360_range(float alpha);
         void enable(bool enabled);
         void calibrate(uint32_t timeout = 10000);
     private:
         bool _compass_enabled = false;
-        DFRobot_BMM150_I2C* bmm150 = new DFRobot_BMM150_I2C(&Wire, I2C_ADDRESS_COMPASS);
+        DFRobot_BMM150_I2C* bmm150 = new DFRobot_BMM150_I2C(&Wire, I2C_ADDRESS_COMPASS_BMM);
 
         float value_offset_x = 0.0;
         float value_offset_y = 0.0;
@@ -24,55 +25,55 @@ class compass_bmm {
         Preferences* compass_prefs = new Preferences();
 };
 
-// #define COMPASS_LIBRARY 1
+#define COMPASS_LIBRARY 1
 
-// #if COMPASS_LIBRARY == 0
-// #include <HMC5883L.h>
-// #elif COMPASS_LIBRARY == 1
-// #include <../HMC5883L_SeedStudio/HMC5883L_SeedStudio.h>
-// #endif
-// #include "accel.h"
+#if COMPASS_LIBRARY == 0
+#include <HMC5883L.h>
+#elif COMPASS_LIBRARY == 1
+#include <../HMC5883L_SeedStudio/HMC5883L_SeedStudio.h>
+#endif
+#include "accel.h"
 
-// #include <Preferences.h>
+#include <Preferences.h>
 
-// class compass_hmc {
-//     public:
-//         compass_hmc();
-//         void init(accel* ac_pointer);
-//         void init();
-//         void tick();
-//         void enable(bool enabled);
-//         bool is_enabled() { return _compass_enabled; }
-//         float get_angle();
-//         #if COMPASS_LIBRARY == 1
-//         void calibrate();
-//         void calibrate_background_task();
-//         void start_calibrate_background_task();
-//         void stop_calibrate_background_task();        
-//         #endif
+class compass_hmc {
+    public:
+        compass_hmc();
+        void init(accel* ac_pointer);
+        void init();
+        void tick();
+        void enable(bool enabled);
+        bool is_enabled() { return _compass_enabled; }
+        float get_angle();
+        #if COMPASS_LIBRARY == 1
+        void calibrate();
+        void calibrate_background_task();
+        void start_calibrate_background_task();
+        void stop_calibrate_background_task();        
+        #endif
 
-//         static float keep_in_360_range(float alpha);
-//     private:
-//         bool _compass_enabled = false;
+        static float keep_in_360_range(float alpha);
+    private:
+        bool _compass_enabled = false;
 
-//         #if COMPASS_LIBRARY == 0
-//         float noTiltCompensation();
-//         float tiltCompensation();
-//         float correctAngle(float heading);
-//         HMC5883L* hmc = new HMC5883L();
-//         accel* ac;
-//         #elif COMPASS_LIBRARY == 1
-//         HMC5883L *compass = new HMC5883L();
-//         int error = 0;
-//         MagnetometerScaled *valueOffset = new MagnetometerScaled();
-//         void output(MagnetometerRaw raw, MagnetometerScaled scaled, float heading, float headingDegrees);
+        #if COMPASS_LIBRARY == 0
+        float noTiltCompensation();
+        float tiltCompensation();
+        float correctAngle(float heading);
+        HMC5883L* hmc = new HMC5883L();
+        accel* ac;
+        #elif COMPASS_LIBRARY == 1
+        HMC5883L *compass = new HMC5883L();
+        int error = 0;
+        MagnetometerScaled *valueOffset = new MagnetometerScaled();
+        void output(MagnetometerRaw raw, MagnetometerScaled scaled, float heading, float headingDegrees);
 
-//         Preferences* compass_prefs = new Preferences();
+        Preferences* compass_prefs = new Preferences();
 
-//         MagnetometerScaled calibrate_background_task_valueMax = {0, 0, 0};
-//         MagnetometerScaled calibrate_background_task_valueMin = {0, 0, 0};
+        MagnetometerScaled calibrate_background_task_valueMax = {0, 0, 0};
+        MagnetometerScaled calibrate_background_task_valueMin = {0, 0, 0};
 
-//         #endif
-// };
+        #endif
+};
 
 #endif /* COMPASS_H */

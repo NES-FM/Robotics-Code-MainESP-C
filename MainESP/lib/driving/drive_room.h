@@ -38,8 +38,10 @@ void drive_room()
         if (robot.prev_room_state != robot.ROOM_STATE_DEFAULT)
         {
             robot.move(0, 0);
+            // robot.move(40, -40);
             robot.prev_room_state = robot.ROOM_STATE_DEFAULT;
         }
+        // logln("%.4f", robot.angle);
     }
     else if (robot.cur_room_state == robot.ROOM_STATE_MOVE_IN_ROOM)
     {
@@ -75,9 +77,9 @@ void drive_room()
             logln("Find Wall");
             robot.prev_room_state = robot.ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER;
 
-            robot.move(-DRIVE_SPEED_RAUM, -DRIVE_SPEED_RAUM);
-            delay(500);
-            find_wall_timer.set_target(2000);
+            // robot.move(-DRIVE_SPEED_RAUM, -DRIVE_SPEED_RAUM);
+            // delay(500);
+            find_wall_timer.set_target(500);
             find_wall_timer.reset();
             robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
         }
@@ -93,53 +95,55 @@ void drive_room()
 
         if (find_wall_timer.has_reached_target())
         {
-            logln("Found Wall at Distance of %d", find_wall_right_distance_avg);
+            // logln("Found Wall at Distance of %d", find_wall_right_distance_avg);
 
-            if (find_wall_right_distance_avg >= 550 || find_wall_right_distance_avg == -1) // If Robot is on Left half of Room
-            {
-                moving_in_room_rotate_to_deg* rotate_to_middle = new moving_in_room_rotate_to_deg();
-                rotate_to_middle->_robot = &robot;
-                rotate_to_middle->motor_left_speed = 20;
-                rotate_to_middle->motor_right_speed = -20;
-                rotate_to_middle->target_angle = 90;
-                moving_in_room_queue.push_back(rotate_to_middle);
+            // if (find_wall_right_distance_avg >= 550 || find_wall_right_distance_avg == -1) // If Robot is on Left half of Room
+            // {
+            //     moving_in_room_rotate_to_deg* rotate_to_middle = new moving_in_room_rotate_to_deg();
+            //     rotate_to_middle->_robot = &robot;
+            //     rotate_to_middle->motor_left_speed = 20;
+            //     rotate_to_middle->motor_right_speed = -20;
+            //     rotate_to_middle->target_angle = 90;
+            //     moving_in_room_queue.push_back(rotate_to_middle);
 
-                moving_in_room_distance_by_time* move_to_middle = new moving_in_room_distance_by_time();
-                move_to_middle->_robot = &robot;
-                move_to_middle->motor_left_speed = 40;
-                move_to_middle->motor_right_speed = 40;
-                move_to_middle->calculate_time_by_distance(find_wall_right_distance_avg-320);
-                moving_in_room_queue.push_back(move_to_middle);
-            }
-            else if (find_wall_right_distance_avg <= 150) // If Robot is on Right side of Room
-            {
-                moving_in_room_rotate_to_deg* rotate_to_middle = new moving_in_room_rotate_to_deg();
-                rotate_to_middle->_robot = &robot;
-                rotate_to_middle->motor_left_speed = -20;
-                rotate_to_middle->motor_right_speed = 20;
-                rotate_to_middle->target_angle = 270;
-                moving_in_room_queue.push_back(rotate_to_middle);
+            //     moving_in_room_distance_by_time* move_to_middle = new moving_in_room_distance_by_time();
+            //     move_to_middle->_robot = &robot;
+            //     move_to_middle->motor_left_speed = 40;
+            //     move_to_middle->motor_right_speed = 40;
+            //     move_to_middle->calculate_time_by_distance(find_wall_right_distance_avg-320);
+            //     moving_in_room_queue.push_back(move_to_middle);
+            // }
+            // else if (find_wall_right_distance_avg <= 150) // If Robot is on Right side of Room
+            // {
+            //     moving_in_room_rotate_to_deg* rotate_to_middle = new moving_in_room_rotate_to_deg();
+            //     rotate_to_middle->_robot = &robot;
+            //     rotate_to_middle->motor_left_speed = -20;
+            //     rotate_to_middle->motor_right_speed = 20;
+            //     rotate_to_middle->target_angle = 270;
+            //     moving_in_room_queue.push_back(rotate_to_middle);
 
-                moving_in_room_distance_by_time* move_to_middle = new moving_in_room_distance_by_time();
-                move_to_middle->_robot = &robot;
-                move_to_middle->motor_left_speed = 40;
-                move_to_middle->motor_right_speed = 40;
-                move_to_middle->calculate_time_by_distance(320-find_wall_right_distance_avg);
-                moving_in_room_queue.push_back(move_to_middle);
-            }
-            //else // If Robot is in Middle of Room
+            //     moving_in_room_distance_by_time* move_to_middle = new moving_in_room_distance_by_time();
+            //     move_to_middle->_robot = &robot;
+            //     move_to_middle->motor_left_speed = 40;
+            //     move_to_middle->motor_right_speed = 40;
+            //     move_to_middle->calculate_time_by_distance(320-find_wall_right_distance_avg);
+            //     moving_in_room_queue.push_back(move_to_middle);
+            // }
+            // //else // If Robot is in Middle of Room
 
-            moving_in_room_goto_room_state* goto_rotate_to_find_balls = new moving_in_room_goto_room_state();
-            goto_rotate_to_find_balls->_robot = &robot;
-            goto_rotate_to_find_balls->target_room_state = Robot::ROOM_STATE_ROTATE_TO_FIND_BALLS;
-            moving_in_room_queue.push_back(goto_rotate_to_find_balls);
+            // moving_in_room_goto_room_state* goto_rotate_to_find_balls = new moving_in_room_goto_room_state();
+            // goto_rotate_to_find_balls->_robot = &robot;
+            // goto_rotate_to_find_balls->target_room_state = Robot::ROOM_STATE_ROTATE_TO_FIND_BALLS;
+            // moving_in_room_queue.push_back(goto_rotate_to_find_balls);
 
-            robot.cur_room_state = Robot::ROOM_STATE_MOVE_IN_ROOM;
+            // robot.cur_room_state = Robot::ROOM_STATE_MOVE_IN_ROOM;
+
+            robot.cur_room_state = Robot::ROOM_STATE_ROTATE_TO_FIND_BALLS;
         }
     }
     else if (robot.cur_room_state == robot.ROOM_STATE_ROTATE_TO_FIND_BALLS)
     {
-        float angle = robot.compass->get_angle();
+        float angle = robot.angle;
         if (robot.prev_room_state != robot.ROOM_STATE_ROTATE_TO_FIND_BALLS)
         {
             robot.move(-5, 5);
@@ -156,6 +160,8 @@ void drive_room()
 
         if (abs(angle - robot.compass->keep_in_360_range(rotate_balls_360_start_angle - 180)) < 10)
             rotated_balls_was_at_180_degrees = true;
+
+        logln("Rotating to find balls with current angle of %.3f and start_angle of %.3f with 180°:%d", angle, rotate_balls_360_start_angle, rotated_balls_was_at_180_degrees);
 
         if (rotated_balls_was_at_180_degrees && abs(angle - rotate_balls_360_start_angle) < ROTATE_TO_ANGLE_TOLERANCE)  // Rotated approx. 360 degrees -> goto next step
         {
@@ -277,7 +283,7 @@ void drive_room()
     }
     else if (robot.cur_room_state == robot.ROOM_STATE_PUT_BALL_IN_CORNER_STEP_1)
     {
-        float angle = robot.compass->get_angle();
+        float angle = robot.angle;
         if (robot.prev_room_state != robot.ROOM_STATE_PUT_BALL_IN_CORNER_STEP_1)
         {
             robot.move(0, 0);
@@ -285,19 +291,19 @@ void drive_room()
             // robot.claw->setTofContinuous(false);
             clear_queue();
 
-            float time_to_move = Robot::distance_between_points(robot.Origin, start_pos_of_moving_to_ball) / robot.millimeters_per_millisecond_40_speed;
-            robot.move(40, 40);
-            delay(time_to_move);
-            adjust_moving_to_balls_target(time_to_move);
+            float time_to_move = Robot::distance_between_points(robot.Origin, start_pos_of_moving_to_ball) / robot.millimeters_per_millisecond_40_speed / 2;
+            robot.move(20, 20);
+            delay((float)time_to_move);
+            adjust_moving_to_balls_target((float)time_to_move);
 
             float angle_to_center_pos = 90 - (atan((float)robot.most_likely_corner->center_pos.y_mm / (float)robot.most_likely_corner->center_pos.x_mm) * RAD_TO_DEG);
             if (robot.most_likely_corner->center_pos.x_mm > 0)
                 angle_to_center_pos += 180.0;
 
-            float begin_angle = angle_to_center_pos - 60;
+            float begin_angle = angle_to_center_pos - 90;
             find_corner_again_target_angle = angle_to_center_pos + 60;
 
-            robot.move(-20, 20);
+            // robot.move(-20, 20);
             rotate_to_angle(begin_angle, false);
 
 
@@ -310,7 +316,7 @@ void drive_room()
 
             robot.claw->set_state(Claw::SIDE_CLOSED);
 
-            angle = robot.compass->get_angle();
+            angle = robot.angle;
             find_corner_again_timeout.set_target(7000);
             find_corner_again_timeout.reset();
         }
@@ -366,23 +372,37 @@ void drive_room()
             rotate_on_target1->target_angle = 90.0 - (atan((float)target_2.y_mm / (float)target_2.x_mm) * RAD_TO_DEG);
             if (target_2.x_mm < 0)
                 rotate_on_target1->target_angle += 180.0;
-            rotate_on_target1->motor_left_speed = 20;
-            rotate_on_target1->motor_right_speed = -20;
+            rotate_on_target1->motor_left_speed = 10;
+            rotate_on_target1->motor_right_speed = -10;
             moving_in_room_queue.push_back(rotate_on_target1);
             log_inline("Step 1: rotate_on_target1 with %d|%d speed and target_angle %.1f\r\n", rotate_on_target1->motor_left_speed, rotate_on_target1->motor_right_speed, rotate_on_target1->target_angle);
 
+            moving_in_room_distance_by_time* delay_1 = new moving_in_room_distance_by_time();
+            delay_1->_robot = &robot;
+            delay_1->motor_left_speed = 0;
+            delay_1->motor_right_speed = 0;
+            delay_1->time_left = 300;
+            moving_in_room_queue.push_back(delay_1);
+
             moving_in_room_distance_by_time* move_to_target2 = new moving_in_room_distance_by_time();
             move_to_target2->_robot = &robot;
-            move_to_target2->motor_left_speed = 40;
-            move_to_target2->motor_right_speed = 40;
+            move_to_target2->motor_left_speed = 20;
+            move_to_target2->motor_right_speed = 20;
             move_to_target2->calculate_time_by_distance(Robot::distance_between_points(robot.Origin, target_2) - 100);
             moving_in_room_queue.push_back(move_to_target2);
             log_inline("Step 2: move_to_target_2 with 40|40 speed and time %d\r\n", move_to_target2->time_left);
 
+            moving_in_room_distance_by_time* delay_2 = new moving_in_room_distance_by_time();
+            delay_2->_robot = &robot;
+            delay_2->motor_left_speed = 0;
+            delay_2->motor_right_speed = 0;
+            delay_2->time_left = 300;
+            moving_in_room_queue.push_back(delay_2);
+
             moving_in_room_rotate_to_deg* rotate_on_target2 = new moving_in_room_rotate_to_deg();
             rotate_on_target2->_robot = &robot;
-            rotate_on_target2->motor_left_speed = -20;
-            rotate_on_target2->motor_right_speed = 20;
+            rotate_on_target2->motor_left_speed = -10;
+            rotate_on_target2->motor_right_speed = 10;
             rotate_on_target2->target_angle = 90.0 - (angle_slope_90_to_corner * RAD_TO_DEG);
             if (mid_p.x_mm > 0) // Make sure back of robot points to corner
                 rotate_on_target2->target_angle += 180.0;
@@ -410,6 +430,13 @@ void drive_room()
             move_to_corner->time_after = 6000;
             moving_in_room_queue.push_back(move_to_corner);
             log_inline("Step 5: move_to_corner with %d|%d speed \r\n", move_to_corner->motor_left_speed, move_to_corner->motor_right_speed);
+
+            moving_in_room_distance_by_time* delay_3 = new moving_in_room_distance_by_time();
+            delay_3->_robot = &robot;
+            delay_3->motor_left_speed = 0;
+            delay_3->motor_right_speed = 0;
+            delay_3->time_left = 300;
+            moving_in_room_queue.push_back(delay_3);
 
             // moving_in_room_distance_by_time* move_to_turn_around = new moving_in_room_distance_by_time();
             // move_to_turn_around->_robot = &robot;
@@ -650,14 +677,16 @@ void adjust_moving_to_balls_target(uint32_t delta_time)
 void rotate_to_angle(float target, bool turn_right)
 {
     if (turn_right)
-        robot.move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+        robot.move(10, -10);
     else
-        robot.move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        robot.move(-10, 10);
 
-    while(abs(robot.compass->keep_in_360_range(robot.compass->get_angle() - robot.room_beginning_angle) - target) > ROTATE_TO_ANGLE_TOLERANCE)
+    while(abs(robot.angle - target) > ROTATE_TO_ANGLE_TOLERANCE)
     {
         delay(5);
         display.tick();
+        robot.tick();
+        logln("Rotate to Angle. Cur: %.3f Target:%.3f", robot.angle, target);
     }
 }
 
