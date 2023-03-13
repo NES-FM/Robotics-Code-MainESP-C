@@ -29,8 +29,9 @@ void motor::init(char mnum)
     else if (motor_num == 2)
         current_i2c_offset = _i2c_offset_motor_2;
 
-    writeto_mem(_i2c_address, current_i2c_offset + _i2c_set_speed, 0x00);
-    writeto_mem(_i2c_address, current_i2c_offset + _i2c_set_direc, MOTOR_DIREC_STOP);
+    // writeto_mem(_i2c_address, current_i2c_offset + _i2c_set_speed, 0x00);
+    // writeto_mem(_i2c_address, current_i2c_offset + _i2c_set_direc, MOTOR_DIREC_STOP);
+    this->move(0);
 
 }
 

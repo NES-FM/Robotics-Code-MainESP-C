@@ -36,7 +36,7 @@ class BCUART_class
             float distance;
             float conf;
         };
-
+        
         #pragma pack()
 
         ball received_balls[10];

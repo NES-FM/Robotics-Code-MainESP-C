@@ -323,16 +323,17 @@ void Claw::enable_close_servo()
 
 uint16_t Claw::get_ball_distance()
 {
-    uint16_t dis = tof_claw->getMeasurement();
+    // uint16_t dis = tof_claw->getMeasurement();
 
-    if (tof_claw->getMeasurementError() == tof::TOF_ERROR_MAX_DISTANCE)
-        dis = 65535;
-    else if (tof_claw->getMeasurementError() == tof::TOF_ERROR_MIN_DISTANCE)
-        dis = 0;
-    else if (tof_claw->getMeasurementError() != tof::TOF_ERROR_NONE)
-        dis = 65534;
+    // if (tof_claw->getMeasurementError() == tof::TOF_ERROR_MAX_DISTANCE)
+    //     dis = 65535;
+    // else if (tof_claw->getMeasurementError() == tof::TOF_ERROR_MIN_DISTANCE)
+    //     dis = 0;
+    // else if (tof_claw->getMeasurementError() != tof::TOF_ERROR_NONE)
+    //     dis = 65534;
         
-    return dis;
+    // return dis;
+    return 65535;
 }
 
 void Claw::hold_blue_cube()

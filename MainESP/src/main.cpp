@@ -67,12 +67,12 @@ void setup()
 
     // TOF
     // robot.claw->tof_claw->init();
-    // // robot.tof_side->init();
+    // robot.tof_side->init();
     
     // delay(5);
 
     // robot.claw->tof_claw->holdReset();
-    // // robot.tof_side->holdReset();
+    // robot.tof_side->holdReset();
 
     // delay(5);
 
@@ -81,9 +81,10 @@ void setup()
     // robot.claw->tof_claw->begin(I2C_ADDRESS_TOF_CLAW);
     // robot.claw->tof_claw->enable(scan_single_device_enabled(I2C_ADDRESS_TOF_CLAW, "tof_claw", "TC"));
     // robot.claw->tof_claw->setContinuous(true, 50);
-    robot.claw->tof_claw->enable(true);
-    robot.claw->tof_claw->begin();
-    robot.claw->tof_claw->setContinuous(true, 50);
+
+    // robot.claw->tof_claw->enable(true);
+    // robot.claw->tof_claw->begin();
+    // robot.claw->tof_claw->setContinuous(true, 50);
 
     // robot.tof_side->releaseReset();
     // robot.tof_side->enable(scan_single_device_enabled(I2C_ADDRESS_TOF_DEFAULT, "tof_side_default", ""));

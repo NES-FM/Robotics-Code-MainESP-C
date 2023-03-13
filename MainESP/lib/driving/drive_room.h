@@ -158,6 +158,16 @@ void drive_room()
             robot.claw->set_state(Claw::BOTTOM_OPEN, true);
         }
 
+        for (auto c : robot.possible_corners)
+        {
+            if (c->conf * c->num_hits >= 10)
+            {
+                robot.move(-20, -20);
+                robot.move(10000);
+                robot.claw->
+            }
+        }
+
         if (abs(angle - robot.compass->keep_in_360_range(rotate_balls_360_start_angle - 180)) < 10)
             rotated_balls_was_at_180_degrees = true;
 
@@ -534,7 +544,7 @@ void drive_room()
 
     // else if (robot.cur_room_state == robot.ROOM_STATE_SEARCHING_EXIT)
     // {
-    //     // uint16_t tof_dis = robot.tof_side->getMeasurement();
+    //     uint16_t tof_dis = robot.tof_side->getMeasurement();
     //     if (robot.prev_room_state != robot.cur_room_state)
     //     {
     //         robot.prev_room_state = robot.cur_room_state;
