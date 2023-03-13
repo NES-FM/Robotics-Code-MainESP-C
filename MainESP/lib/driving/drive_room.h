@@ -81,14 +81,14 @@ void drive_room()
             robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
         }
 
-        int measurement = robot.tof_side->getMeasurement();
-        if (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_NONE)
-        {
-            if (find_wall_right_distance_avg == -1) // First Time -> Reset
-                find_wall_right_distance_avg = measurement;
-            else
-                find_wall_right_distance_avg = (find_wall_right_distance_avg + measurement) / 2;
-        }
+        // int measurement = robot.tof_side->getMeasurement();
+        // if (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_NONE)
+        // {
+        //     if (find_wall_right_distance_avg == -1) // First Time -> Reset
+        //         find_wall_right_distance_avg = measurement;
+        //     else
+        //         find_wall_right_distance_avg = (find_wall_right_distance_avg + measurement) / 2;
+        // }
 
         if (find_wall_timer.has_reached_target())
         {
@@ -151,6 +151,16 @@ void drive_room()
             rotated_balls_was_at_180_degrees = false;
             clear_queue();
             robot.claw->set_state(Claw::BOTTOM_OPEN, true);
+        }
+
+        for (auto c : robot.possible_corners)
+        {
+            if (c->conf * c->num_hits >= 10)
+            {
+                robot.move(-20, -20);
+                robot.move(10000);
+                robot.claw->
+            }
         }
 
         if (abs(angle - robot.compass->keep_in_360_range(rotate_balls_360_start_angle - 180)) < 10)
@@ -443,98 +453,98 @@ void drive_room()
         }
     }
 
-    else if (robot.cur_room_state == robot.ROOM_STATE_SEARCHING_EXIT)
-    {
-        uint16_t tof_dis = robot.tof_side->getMeasurement();
-        if (robot.prev_room_state != robot.cur_room_state)
-        {
-            robot.prev_room_state = robot.cur_room_state;
-            follow_wall_last_tof_value = tof_dis;
-        }
+    // else if (robot.cur_room_state == robot.ROOM_STATE_SEARCHING_EXIT)
+    // {
+    //     uint16_t tof_dis = robot.tof_side->getMeasurement();
+    //     if (robot.prev_room_state != robot.cur_room_state)
+    //     {
+    //         robot.prev_room_state = robot.cur_room_state;
+    //         follow_wall_last_tof_value = tof_dis;
+    //     }
 
-        if (robot.tof_side->getMeasurementError() != tof::TOF_ERROR_MAX_DISTANCE) // Closerange needs to see the wall, or else it cant work
-        {
-            int motor_l_val = DRIVE_SPEED_RAUM;
-            int motor_r_val = DRIVE_SPEED_RAUM;
+    //     if (robot.tof_side->getMeasurementError() != tof::TOF_ERROR_MAX_DISTANCE) // Closerange needs to see the wall, or else it cant work
+    //     {
+    //         int motor_l_val = DRIVE_SPEED_RAUM;
+    //         int motor_r_val = DRIVE_SPEED_RAUM;
 
-            if (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_NONE)
-            {
-                float error = ROOM_MOVE_ALONG_WALL_DISTANCE - tof_dis;
+    //         if (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_NONE)
+    //         {
+    //             float error = ROOM_MOVE_ALONG_WALL_DISTANCE - tof_dis;
 
-                motor_l_val = float(DRIVE_SPEED_RAUM) - ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR * error;
-                motor_r_val = float(DRIVE_SPEED_RAUM) + ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR * error;
-            }
+    //             motor_l_val = float(DRIVE_SPEED_RAUM) - ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR * error;
+    //             motor_r_val = float(DRIVE_SPEED_RAUM) + ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR * error;
+    //         }
 
-            robot.move(motor_l_val, motor_r_val);
-        }
+    //         robot.move(motor_l_val, motor_r_val);
+    //     }
 
-        if (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_MAX_DISTANCE || (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_NONE && abs(follow_wall_last_tof_value - tof_dis) > 100))
-        {
-            // Maybe Hole
-            robot.move(20, 20);
-            delay(400);
-            robot.move(20, -20);
-            delay(TURN_90_DEG_DELAY);
-            robot.room_has_reached_end(); // Just Reset everything
+    //     if (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_MAX_DISTANCE || (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_NONE && abs(follow_wall_last_tof_value - tof_dis) > 100))
+    //     {
+    //         // Maybe Hole
+    //         robot.move(20, 20);
+    //         delay(400);
+    //         robot.move(20, -20);
+    //         delay(TURN_90_DEG_DELAY);
+    //         robot.room_has_reached_end(); // Just Reset everything
 
-            robot.move(20, 20);
+    //         robot.move(20, 20);
 
-            Robot::room_end_types end_type = Robot::ROOM_HAS_NOT_REACHED_END;
-            while (end_type == Robot::ROOM_HAS_NOT_REACHED_END)
-            {
-                end_type = robot.room_has_reached_end();
-                display.tick();
-                delay(10);
-            }
+    //         Robot::room_end_types end_type = Robot::ROOM_HAS_NOT_REACHED_END;
+    //         while (end_type == Robot::ROOM_HAS_NOT_REACHED_END)
+    //         {
+    //             end_type = robot.room_has_reached_end();
+    //             display.tick();
+    //             delay(10);
+    //         }
 
-            if (end_type == Robot::ROOM_HAS_REACHED_SILVER_LINE)
-            {
-                robot.move(-20, -20);
-                delay(200);
-                cuart.silver_line = false;
-            }
-            else if (end_type == Robot::ROOM_HAS_REACHED_GREEN_LINE)
-            {
-                robot.move(20, 20);
-                delay(1000);
-                robot.move(0, 0);
-                cuart.green_line = false;
-                robot.cur_drive_mode = Robot::ROBOT_DRIVE_MODE_LINE;
-                delay(1000);
-                robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
-                return;
-            }
+    //         if (end_type == Robot::ROOM_HAS_REACHED_SILVER_LINE)
+    //         {
+    //             robot.move(-20, -20);
+    //             delay(200);
+    //             cuart.silver_line = false;
+    //         }
+    //         else if (end_type == Robot::ROOM_HAS_REACHED_GREEN_LINE)
+    //         {
+    //             robot.move(20, 20);
+    //             delay(1000);
+    //             robot.move(0, 0);
+    //             cuart.green_line = false;
+    //             robot.cur_drive_mode = Robot::ROBOT_DRIVE_MODE_LINE;
+    //             delay(1000);
+    //             robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    //             return;
+    //         }
 
-            turn_90_while_next_to_wall();
-            cuart.silver_line = false;
-        }
+    //         turn_90_while_next_to_wall();
+    //         cuart.silver_line = false;
+    //     }
 
-        Robot::room_end_types end_type = robot.room_has_reached_end();
-        if (end_type != Robot::ROOM_HAS_NOT_REACHED_END)
-        {
-            if (end_type == Robot::ROOM_HAS_REACHED_SILVER_LINE)
-            {
-                robot.move(-20, -20);
-                delay(200);
-                cuart.silver_line = false;
-            }
-            else if (end_type == Robot::ROOM_HAS_REACHED_GREEN_LINE)
-            {
-                robot.move(20, 20);
-                delay(1000);
-                robot.move(0, 0);
-                cuart.green_line = false;
-                robot.cur_drive_mode = Robot::ROBOT_DRIVE_MODE_LINE;
-                delay(1000);
-                robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
-                return;
-            }
-            turn_90_while_next_to_wall();
-        }
+    //     Robot::room_end_types end_type = robot.room_has_reached_end();
+    //     if (end_type != Robot::ROOM_HAS_NOT_REACHED_END)
+    //     {
+    //         if (end_type == Robot::ROOM_HAS_REACHED_SILVER_LINE)
+    //         {
+    //             robot.move(-20, -20);
+    //             delay(200);
+    //             cuart.silver_line = false;
+    //         }
+    //         else if (end_type == Robot::ROOM_HAS_REACHED_GREEN_LINE)
+    //         {
+    //             robot.move(20, 20);
+    //             delay(1000);
+    //             robot.move(0, 0);
+    //             cuart.green_line = false;
+    //             robot.cur_drive_mode = Robot::ROBOT_DRIVE_MODE_LINE;
+    //             delay(1000);
+    //             robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    //             return;
+    //         }
+    //         turn_90_while_next_to_wall();
+    //     }
         
-        if (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_NONE)
-            follow_wall_last_tof_value = tof_dis;
-    }
+    //     if (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_NONE)
+    //         follow_wall_last_tof_value = tof_dis;
+    // }
 }
 
 void adjust_moving_to_balls_target(uint32_t delta_time)
