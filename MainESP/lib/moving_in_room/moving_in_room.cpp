@@ -21,7 +21,7 @@ bool moving_in_room_follow_ball::tick(uint32_t delta_time)
                 irl_pos.y_mm = -received_ball.distance*10 - (0.5*_robot->height); // - because the robot detects balls towards the back  // - (0.5*height) because b.distance counts starting from the back edge of the robot
                 irl_pos = Robot::rotate_point_around_origin(irl_pos, _robot->angle);
 
-                float dist = Robot::distance_between_points(irl_pos, _robot->moving_to_balls_target.pos);
+                float dist = abs(_robot->moving_to_balls_target.distance - received_ball.distance);
                 if (dist < closest_distance)
                 {
                     closest_distance = dist;
@@ -31,17 +31,19 @@ bool moving_in_room_follow_ball::tick(uint32_t delta_time)
             }
             _bcuart->reset_balls();
 
-            float robot_to_ball_dis = Robot::distance_between_points(_robot->Origin, _robot->moving_to_balls_target.pos);
+            float robot_to_ball_dis = closest_ball_y_offset;
 
             logln("Following Ball with x_off: %f, y_off: %f, distance to predicted: %f, Robot to ball dis: %f", closest_ball_x_offset, closest_ball_y_offset, closest_distance, robot_to_ball_dis);
 
-            if (!moving_to_balls_ball_too_close && closest_ball_y_offset <= 12) // Ball is too close to be detected
+            if (closest_ball_y_offset <= 12) // Ball is too close to be detected
             {
                 logln("\r\n\r\nGoing into balls too close mode\r\n");
                 moving_to_balls_ball_too_close = true;
             }
 
-            _robot->moving_to_balls_target.pos = irl_pos;
+            _robot->moving_to_balls_target.distance = closest_ball_y_offset;
+
+            // TODO: Correct less if far away
 
             if (closest_ball_x_offset > 3) // If more than 2 cm deviation from middle line, correct for it
             {
@@ -64,6 +66,8 @@ bool moving_in_room_follow_ball::tick(uint32_t delta_time)
     {
         _robot->move(motor_left_speed, motor_right_speed);   
     }
+
+    // TODO: Either never going into balls too close mode or Ball sensor is not working (latter is propably true)
 
     uint16_t ball_sensor_distance = _robot->claw->get_ball_distance();
     logln("Ball Sensor Distance: %d", ball_sensor_distance);

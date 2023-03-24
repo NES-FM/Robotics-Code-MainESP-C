@@ -90,7 +90,7 @@ void setup()
     // robot.tof_side->enable(scan_single_device_enabled(I2C_ADDRESS_TOF_DEFAULT, "tof_side_default", ""));
     // robot.tof_side->begin(I2C_ADDRESS_TOF_SIDE);
     // robot.tof_side->enable(scan_single_device_enabled(I2C_ADDRESS_TOF_SIDE, "tof_side", "TS"));
-    // robot.tof_side->setContinuous(true, 50); // TODO: Only set Continuous when needed
+    // robot.tof_side->setContinuous(true, 50); // TO-DO: Only set Continuous when needed
 
     // Initialization of libs
     robot.init();

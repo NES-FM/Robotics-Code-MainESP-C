@@ -37,129 +37,7 @@ void Robot::tick()
     }
     else if (cur_drive_mode == ROBOT_DRIVE_MODE_ROOM)
     {
-        if (compass->is_enabled())
-        {
-            if ((millis()-last_compass_millis) >= 50)
-            {
-                logln("Before compass");
-                angle = compass->keep_in_360_range(compass->get_angle() - room_beginning_angle);
-                last_compass_millis = millis();
-                logln("After compass");
-            }
-        }
-        else
-        {
-            // Apprximation using time
-            if (motor_left->motor_speed == -motor_right->motor_speed)
-            {
-                float speed_scale = abs((float)motor_left->motor_speed) / 20.0; // Adjust for not driving with 40 speed
-                float delta_angle = (double)(millis()-last_compass_millis) * degrees_per_millisecond_20_speed * speed_scale;
-                angle = compass->keep_in_360_range(angle + delta_angle);
-            }
-            last_compass_millis = millis();
-        }
-
-        if (detectingBallsEnabled && bcuart_ref->num_balls_in_array > 0)  // TODO: Bugs if balls are too close to robot
-        {
-            logln("Balls: ");
-            for (int i = 0; i < bcuart_ref->num_balls_in_array; i++)
-            {
-                log_inline_begin();
-                auto received_ball = bcuart_ref->received_balls[i];
-                point irl_pos;
-                irl_pos.x_mm = -received_ball.x_offset*10; // *10, because x_offset is in cm, while irl_pos is in mm  // - because negative x_offset means right of robot, if robot is pointing forward
-                irl_pos.y_mm = -received_ball.distance*10 - (0.5*height); // - because the robot detects balls towards the back  // - (0.5*height) because b.distance counts starting from the back edge of the robot
-                irl_pos = rotate_point_around_origin(irl_pos, angle);
-                // log_inline("x%d y%d c%.3f %s | ", irl_pos.x_mm, irl_pos.y_mm, b.conf, b.black ? "black" : "silver");
-
-                bool ball_found_before = false;       
-
-                if (num_detected_balls == (sizeof(detected_balls) / sizeof(detected_balls[0])))
-                {
-                    log_inline("ERROR! TOO MANY DETECTED BALLS!!!");
-                }
-                else
-                {
-                    for (int b_num = 0; b_num < num_detected_balls; b_num++)
-                    {
-                        ball old_ball = detected_balls[b_num];
-                        if (distance_between_points(old_ball.pos, irl_pos) < (60 + old_ball.num_hits*5) && old_ball.black == received_ball.black)
-                        {
-                            log_inline("Ball was found before!");
-                            detected_balls[b_num].conf = max(old_ball.conf, received_ball.conf);
-                            detected_balls[b_num].num_hits += 1;
-                            detected_balls[b_num].pos = irl_pos;
-                            ball_found_before = true;
-                            break;
-                        }
-                    }
-                    if (!ball_found_before)
-                    {
-                        log_inline("Ball not found before! Appending...");
-
-                        int b_num = num_detected_balls;
-                        num_detected_balls++;
-                        detected_balls[b_num].black = received_ball.black;
-                        detected_balls[b_num].conf = received_ball.conf;
-                        detected_balls[b_num].num_hits = 1;
-                        detected_balls[b_num].pos = irl_pos;
-                        log_inline(" Done!");
-                    }
-                }
-                log_inline_end();
-            }
-            bcuart_ref->reset_balls();
-        }
-
-        if (detectingCornerEnabled && bcuart_ref->corner_valid)
-        {
-            log_inline_begin();log_inline("Corner  ");
-            auto recieved_corner = bcuart_ref->received_corner;
-            point irl_pos;
-            irl_pos.x_mm = -recieved_corner.x_offset*10; // *10, because x_offset is in cm, while irl_pos is in mm  // - because negative x_offset means right of robot, if robot is pointing forward
-            irl_pos.y_mm = -recieved_corner.distance*10 - (0.5*height); // - because the robot detects balls towards the back  // - (0.5*height) because b.distance counts starting from the back edge of the robot
-            irl_pos = rotate_point_around_origin(irl_pos, angle);
-
-            bool corner_found_before = false;
-
-            for (corner* old_corner : possible_corners)
-            {
-                if (distance_between_points(old_corner->center_pos, irl_pos) < 250)
-                {
-                    logln("Corner Found before!");
-                    old_corner->last_pos = irl_pos;
-                    old_corner->center_pos = midpoint_between_points(old_corner->first_pos, old_corner->last_pos);
-                    old_corner->conf = max(old_corner->conf, recieved_corner.conf);
-                    old_corner->num_hits += 1;
-                    corner_found_before = true;
-                    break;
-                }
-            }
-
-            if (!corner_found_before)
-            {
-                logln("New Corner -> Appending!");
-                corner* new_corner = new corner();
-                new_corner->first_pos = irl_pos;
-                new_corner->center_pos = irl_pos;
-                new_corner->last_pos = irl_pos;
-                new_corner->conf = recieved_corner.conf;
-                new_corner->num_hits = 1;
-
-                possible_corners.push_back(new_corner);
-            }
-
-            bcuart_ref->reset_corner();
-        }
-
-        // TODO: Turn On / Off features of cam to save framerate
-
-        // if (bcuart_ref->exit_line_valid)
-        // {
-        //     auto b = bcuart_ref->received_exit_line;
-        //     logln("Exit Line: x_off%.3f dist%.3f c%.3f", b.x_offset, b.distance, b.conf);
-        //     bcuart_ref->reset_corner();
-        // }
+        
     }
 
     String logger_tick_return = logger_tick();
@@ -185,7 +63,7 @@ void Robot::print_balls()
     for (int i = 0; i < num_detected_balls; i++)
     {
         ball b = detected_balls[i];
-        logln("%d: X=%d Y=%d C=%.2f N=%d %s", i, b.pos.x_mm, b.pos.y_mm, b.conf, b.num_hits, b.black ? "black" : "silver");
+        logln("%d: D=%d C=%.2f N=%d %s", i, b.distance, b.conf, b.num_hits, b.black ? "black" : "silver");
     }
     logln("-----------------");
 }

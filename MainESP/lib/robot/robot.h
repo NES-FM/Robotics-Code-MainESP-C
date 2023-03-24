@@ -100,7 +100,7 @@ class Robot
         void startRoom();
 
         struct ball {
-            point pos;
+            float distance = 0.0;
             float conf = 0.0;
             uint16_t num_hits = 0;
             bool black = false;

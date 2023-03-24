@@ -312,7 +312,7 @@ void Claw::claw_to_up_pos()
 
 void Claw::disable_close_servo()
 {
-    claw_close_servo->detach(); // TODO: Sometimes closes the servo a little bit
+    claw_close_servo->detach();
     digitalWrite(PIN_SERVO1, HIGH);
 }
 
