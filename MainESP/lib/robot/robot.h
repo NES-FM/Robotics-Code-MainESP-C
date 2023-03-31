@@ -113,9 +113,7 @@ class Robot
         void print_balls();
 
         struct corner {
-            point center_pos;
-            point first_pos;
-            point last_pos;
+            float distance = 0.0;
             float conf = 0.0;
             uint16_t num_hits = 0;
         };

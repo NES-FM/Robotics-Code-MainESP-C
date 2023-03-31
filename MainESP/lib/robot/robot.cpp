@@ -63,7 +63,7 @@ void Robot::print_balls()
     for (int i = 0; i < num_detected_balls; i++)
     {
         ball b = detected_balls[i];
-        logln("%d: D=%d C=%.2f N=%d %s", i, b.distance, b.conf, b.num_hits, b.black ? "black" : "silver");
+        logln("%d: D=%.3f C=%.2f N=%d %s", i, b.distance, b.conf, b.num_hits, b.black ? "black" : "silver");
     }
     logln("-----------------");
 }
@@ -73,7 +73,7 @@ void Robot::print_corners()
     logln("---- Corners ----");
     for (corner* c : possible_corners)
     {
-        logln("XS=%d YS=%d XE=%d YE=%d C=%.2f N=%d", c->first_pos.x_mm, c->first_pos.y_mm, c->last_pos.x_mm, c->last_pos.y_mm, c->conf, c->num_hits);
+        logln("D=%.3f C=%.2f N=%d", c->distance, c->conf, c->num_hits);
     }
     logln("-----------------");
 }

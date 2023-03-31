@@ -419,3 +419,156 @@ if (abs(angle-find_corner_again_target_angle) < ROTATE_TO_ANGLE_TOLERANCE || fin
     log_inline_end();
 }
 #pragma endregion
+
+#pragma region Old Put Ball In Corner Step 2
+if (robot.prev_room_state != robot.cur_room_state)
+{
+    robot.prev_room_state = robot.cur_room_state;
+
+    // Put down blue Cube if still in claw
+    if (true)//!robot.room_prefs->getBool("blue", false))
+    {
+        robot.move(20, 20);
+        delay(800);
+        robot.move(0, 0);
+        robot.claw->set_state(Claw::BOTTOM_OPEN);
+        delay(100);
+        robot.move(-20, -20);
+        delay(1500);
+        robot.claw->throw_blue_cube();
+        delay(1000);
+        robot.claw->hold_blue_cube();
+        robot.room_prefs->putBool("blue", true);
+    }
+
+    // // Save Balls that were put down
+    // if (!robot.room_prefs->getBool("silver_1", false))
+    //     robot.room_prefs->putBool("silver_1", true);
+    // else if (!robot.room_prefs->getBool("silver_2", false))
+    //     robot.room_prefs->putBool("silver_2", true);
+    // else
+    //     robot.room_prefs->putBool("black", true);
+
+    if (true)//!robot.room_prefs->getBool("silver_1", false) || !robot.room_prefs->getBool("silver_2", false) || !robot.room_prefs->getBool("black", false))
+    {
+        robot.move(40, 40);
+        delay(TARGET_2_CORNER_DISTANCE / robot.millimeters_per_millisecond_40_speed);
+        robot.move(0, 0);
+        delay(2000); // Lag of Progress safety delay
+        // save amount of put down balls
+        robot.cur_room_state = Robot::ROOM_STATE_ROTATE_TO_FIND_BALLS;
+    }
+    else
+    {
+        robot.cur_room_state = robot.ROOM_STATE_SEARCHING_EXIT;
+    }
+}
+#pragma endregion
+
+#pragma region Old Searching Exit
+
+#define TURN_90_DEG_DELAY 500
+void turn_90_while_next_to_wall()
+{
+    robot.move(0, -DRIVE_SPEED_NORMAL-5);
+    delay(300);
+    robot.move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+    delay(200);
+    robot.move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+    delay(TURN_90_DEG_DELAY+160);
+    robot.move(DRIVE_SPEED_RAUM, DRIVE_SPEED_RAUM);
+}
+
+else if (robot.cur_room_state == robot.ROOM_STATE_SEARCHING_EXIT)
+{
+    uint16_t tof_dis = robot.tof_side->getMeasurement();
+    if (robot.prev_room_state != robot.cur_room_state)
+    {
+        robot.prev_room_state = robot.cur_room_state;
+        follow_wall_last_tof_value = tof_dis;
+    }
+
+    if (robot.tof_side->getMeasurementError() != tof::TOF_ERROR_MAX_DISTANCE) // Closerange needs to see the wall, or else it cant work
+    {
+        int motor_l_val = DRIVE_SPEED_RAUM;
+        int motor_r_val = DRIVE_SPEED_RAUM;
+
+        if (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_NONE)
+        {
+            float error = ROOM_MOVE_ALONG_WALL_DISTANCE - tof_dis;
+
+            motor_l_val = float(DRIVE_SPEED_RAUM) - ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR * error;
+            motor_r_val = float(DRIVE_SPEED_RAUM) + ROOM_MOVE_ALONG_WALL_LINEAR_FACTOR * error;
+        }
+
+        robot.move(motor_l_val, motor_r_val);
+    }
+
+    if (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_MAX_DISTANCE || (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_NONE && abs(follow_wall_last_tof_value - tof_dis) > 100))
+    {
+        // Maybe Hole
+        robot.move(20, 20);
+        delay(400);
+        robot.move(20, -20);
+        delay(TURN_90_DEG_DELAY);
+        robot.room_has_reached_end(); // Just Reset everything
+
+        robot.move(20, 20);
+
+        Robot::room_end_types end_type = Robot::ROOM_HAS_NOT_REACHED_END;
+        while (end_type == Robot::ROOM_HAS_NOT_REACHED_END)
+        {
+            end_type = robot.room_has_reached_end();
+            display.tick();
+            delay(10);
+        }
+
+        if (end_type == Robot::ROOM_HAS_REACHED_SILVER_LINE)
+        {
+            robot.move(-20, -20);
+            delay(200);
+            cuart.silver_line = false;
+        }
+        else if (end_type == Robot::ROOM_HAS_REACHED_GREEN_LINE)
+        {
+            robot.move(20, 20);
+            delay(1000);
+            robot.move(0, 0);
+            cuart.green_line = false;
+            robot.cur_drive_mode = Robot::ROBOT_DRIVE_MODE_LINE;
+            delay(1000);
+            robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+            return;
+        }
+
+        turn_90_while_next_to_wall();
+        cuart.silver_line = false;
+    }
+
+    Robot::room_end_types end_type = robot.room_has_reached_end();
+    if (end_type != Robot::ROOM_HAS_NOT_REACHED_END)
+    {
+        if (end_type == Robot::ROOM_HAS_REACHED_SILVER_LINE)
+        {
+            robot.move(-20, -20);
+            delay(200);
+            cuart.silver_line = false;
+        }
+        else if (end_type == Robot::ROOM_HAS_REACHED_GREEN_LINE)
+        {
+            robot.move(20, 20);
+            delay(1000);
+            robot.move(0, 0);
+            cuart.green_line = false;
+            robot.cur_drive_mode = Robot::ROBOT_DRIVE_MODE_LINE;
+            delay(1000);
+            robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+            return;
+        }
+        turn_90_while_next_to_wall();
+    }
+    
+    if (robot.tof_side->getMeasurementError() == tof::TOF_ERROR_NONE)
+        follow_wall_last_tof_value = tof_dis;
+}
+#pragma endregion
