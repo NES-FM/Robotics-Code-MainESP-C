@@ -64,7 +64,7 @@ class Claw
         const uint8_t servo_close_open_second_step = 110;
         const uint8_t servo_close_closed_first_step = 40;
         const uint8_t servo_close_closed_second_step = 43;
-        const uint8_t servo_close_mid = 85;//80;
+        const uint8_t servo_close_mid = 80;
 
         const uint8_t servo_up_down = 0;
         const uint8_t servo_up_side = 90;
