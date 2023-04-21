@@ -9,7 +9,6 @@
 #include "../../include/room_stuff.h"
 #include "analog_sensor.h"
 #include "dip.h"
-#include "taster.h"
 #include "cuart.h"
 #include "moving_in_room.h"
 #include "robot.h"

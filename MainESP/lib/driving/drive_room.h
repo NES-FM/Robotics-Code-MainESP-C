@@ -352,7 +352,7 @@ void drive_room()
                 robot.claw->throw_blue_cube();
                 delay(1000);
                 robot.claw->hold_blue_cube();
-                robot.room_prefs->putBool("blue", true);
+                // robot.room_prefs->putBool("blue", true);
             }
 
             // TODO: Only continue searching if balls left -> //TODO: Find Exit

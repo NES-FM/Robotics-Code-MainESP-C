@@ -23,7 +23,7 @@ void Robot::init()
     // logln("After accel");
     // compass->init();
 
-    room_prefs->begin("room", false);
+    // room_prefs->begin("room", false);
 }
 
 uint32_t last_compass_millis = 0;
@@ -46,15 +46,15 @@ void Robot::tick()
         this->parse_command(logger_tick_return);
     }
 
-    if (taster->get_state(taster_class::reset_nvs))
-    {
-        logln("reset");
-        room_prefs->putBool("silver_1", false);
-        room_prefs->putBool("silver_2", false);
-        room_prefs->putBool("black", false);
-        room_prefs->putBool("blue", false);
-        logln("reset done");
-    }
+    // if (taster->get_state(taster_class::reset_nvs))
+    // {
+    //     logln("reset");
+    //     room_prefs->putBool("silver_1", false);
+    //     room_prefs->putBool("silver_2", false);
+    //     room_prefs->putBool("black", false);
+    //     room_prefs->putBool("blue", false);
+    //     logln("reset done");
+    // }
 }
 
 void Robot::print_balls()
@@ -561,9 +561,9 @@ void Robot::startRoom()
 
 Robot::room_end_types Robot::room_has_reached_end()
 {
-    if (taster->get_state(taster->front_right))
+    if (io_ext->get_taster_state(io_ext->front_right))
         return room_end_types::ROOM_HAS_REACHED_TASTER_RIGHT;
-    else if (taster->get_state(taster->front_left))
+    else if (io_ext->get_taster_state(io_ext->front_left))
         return room_end_types::ROOM_HAS_REACHED_TASTER_LEFT;
     else if (cuart_ref->silver_line)
         return room_end_types::ROOM_HAS_REACHED_SILVER_LINE;

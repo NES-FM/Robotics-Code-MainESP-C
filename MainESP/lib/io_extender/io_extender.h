@@ -8,6 +8,7 @@
 // Values to get of io_extender:
 // Accel Roll Degrees
 // tof_claw (Distance + Error)
+// taster
 
 class io_extender
 {
@@ -40,6 +41,15 @@ class io_extender
         String claw_getMeasurementErrorString();
         uint16_t claw_getMeasurement();
 
+        // Taster
+        enum taster_name {
+            front_left,
+            front_right,
+            back_left,
+            back_right
+        };
+        bool get_taster_state(taster_name name);
+
     private:
         // Accel
         float accel_roll_degrees = 0.0;
@@ -47,4 +57,7 @@ class io_extender
         // Tof claw
         tof_error_types _claw_tof_error = TOF_ERROR_NONE;
         uint16_t _claw_tof_distance = 0;
+
+        // Taster States
+        bool _fl_state, _fr_state, _bl_state, _br_state;
 };

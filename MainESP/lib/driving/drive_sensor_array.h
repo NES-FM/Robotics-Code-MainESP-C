@@ -449,7 +449,7 @@ void drive_sensor_array()
         }
     }
 
-    if (robot.taster->get_state(robot.taster->front_left) || robot.taster->get_state(robot.taster->front_right))
+    if (robot.io_ext->get_taster_state(robot.io_ext->front_left) || robot.io_ext->get_taster_state(robot.io_ext->front_right))
     {
         #ifdef EXTENSIVE_DEBUG
         logln("Ausweichen!");

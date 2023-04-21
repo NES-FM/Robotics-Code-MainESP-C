@@ -223,12 +223,14 @@ void debug_disp::draw_taster(int x, int y, int w, int h)
 {
     oled->drawRect(x, y, w, h, SSD1306_WHITE);
     
-    if (_robot->taster->get_state(_robot->taster->front_left))
+    if (_robot->io_ext->get_taster_state(_robot->io_ext->front_left))
         oled->fillRect(x+1, y+1, (w/2)-1, h/4, SSD1306_WHITE);
-    if (_robot->taster->get_state(_robot->taster->front_right))
+    if (_robot->io_ext->get_taster_state(_robot->io_ext->front_right))
         oled->fillRect(x+(w/2), y+1, (w/2)-1, h/4, SSD1306_WHITE);
-    if (_robot->taster->get_state(_robot->taster->reset_nvs))
-        oled->fillRect(x+1, y+(h/2), w-1, h/4, SSD1306_WHITE);
+    if (_robot->io_ext->get_taster_state(_robot->io_ext->back_left))
+        oled->fillRect(x+1, y+(h/2), (w/2)-1, h/4, SSD1306_WHITE);
+    if (_robot->io_ext->get_taster_state(_robot->io_ext->back_right))
+        oled->fillRect(x+(w/2), y+(h/2), (w/2)-1, h/4, SSD1306_WHITE);
 }
 
 void debug_disp::draw_room_tof(int x, int y)

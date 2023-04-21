@@ -6,7 +6,6 @@
 #include "motor.h"
 #include "analog_sensor.h"
 #include "dip.h"
-#include "taster.h"
 #include "../../include/servo_angles.h"
 #include "../../include/drive_speeds.h"
 #include "../../include/i2c_addresses.h"
@@ -41,8 +40,7 @@ class Robot
 
         DIP* dip = new DIP();
         buzz* main_buzzer = new buzz(PIN_BUZZ1, 128, dip);
-        taster_class* taster = new taster_class();
-
+        
         motor* motor_left = new motor();
         motor* motor_right = new motor();
 
@@ -156,7 +154,7 @@ class Robot
         const float millimeters_per_millisecond_40_speed = 0.1770833333;
         const float degrees_per_millisecond_20_speed = 360 / 4050;
 
-        Preferences* room_prefs = new Preferences();
+        // Preferences* room_prefs = new Preferences();
 
     private:
         void parse_command(String command);

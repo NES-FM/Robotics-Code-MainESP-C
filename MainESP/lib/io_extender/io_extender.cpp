@@ -50,3 +50,17 @@ String io_extender::claw_getMeasurementErrorString()
     }
     return F("Unknown error");
 }
+
+bool io_extender::get_taster_state(taster_name name)
+{
+    if (name == front_left)
+        return _fl_state;
+    else if (name == front_right)
+        return _fr_state;
+    else if (name == back_left)
+        return _bl_state;
+    else if (name == back_right)
+        return _br_state;
+
+    return false;
+}
