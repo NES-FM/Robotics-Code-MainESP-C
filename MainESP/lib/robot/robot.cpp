@@ -19,9 +19,9 @@ void Robot::init()
     motor_left->init(1);
     motor_right->init(2);
 
-    accel_sensor->init();
-    logln("After accel");
-    compass->init();
+    // accel_sensor->init();
+    // logln("After accel");
+    // compass->init();
 
     room_prefs->begin("room", false);
 }
@@ -216,13 +216,11 @@ String Robot::get_command(String sensor, String subsensor)
     else if (sensor == "accel")
     {
         if (subsensor == "")
-            sprintf(out, "%f", accel_sensor->get_roll_degrees());
+            sprintf(out, "%f", io_ext->get_roll_degrees());
         else
             sprintf(out, "subsensor not found");
         // ToDo: Other Axis + Ramp modes
     }
-    else if (sensor == "compass")
-        sprintf(out, "%f", compass->get_angle());
     else if (sensor == "tof")
     {
         if (subsensor == "")
@@ -231,7 +229,7 @@ String Robot::get_command(String sensor, String subsensor)
         }
         else if (subsensor == "claw")
         {
-            uint16_t measurement = claw->get_ball_distance();
+            uint16_t measurement = io_ext->claw_getMeasurement();
             sprintf(out, "%d", measurement);
         }
         else
@@ -285,22 +283,22 @@ String Robot::move_command(String first_arg, String second_arg, String third_arg
     return out;
 }
 
-String Robot::rotate_command(String degrees)
-{
-    if (!is_control_on_user)
-    {
-        return "User is not in control! Type \"control on\"";
-    }
+// String Robot::rotate_command(String degrees)
+// {
+//     if (!is_control_on_user)
+//     {
+//         return "User is not in control! Type \"control on\"";
+//     }
 
-    is_control_on_user = false;
-    this->room_rotate_relative_degrees(degrees.toFloat());
-    move(0, 0);
-    is_control_on_user = true;
+//     is_control_on_user = false;
+//     this->room_rotate_relative_degrees(degrees.toFloat());
+//     move(0, 0);
+//     is_control_on_user = true;
 
-    char out[64];
-    sprintf(out, "Succesfully rotated %f degrees", degrees.toFloat());
-    return out;
-}
+//     char out[64];
+//     sprintf(out, "Succesfully rotated %f degrees", degrees.toFloat());
+//     return out;
+// }
 
 String Robot::control_command(String on_off)
 {
@@ -485,20 +483,14 @@ void Robot::parse_command(String command)
         out = this->get_command(first_arg, second_arg);
     else if (top_level_command == "move")
         out = this->move_command(first_arg, second_arg, third_arg);
-    else if (top_level_command == "rotate")
-        out = this->rotate_command(first_arg);
+    // else if (top_level_command == "rotate")
+    //     out = this->rotate_command(first_arg);
     else if (top_level_command == "control")
         out = this->control_command(first_arg);
     else if (top_level_command == "set")
         out = this->set_command(first_arg, second_arg, third_arg);
     else if (top_level_command == "balls")
         out = this->balls_command(first_arg);
-    else if (top_level_command == "calibrate_compass")
-    {
-        log_inline_begin(); log_inline("Calibrating compass:");
-        this->compass->calibrate();
-        out = "Done!";
-    }
     else if (top_level_command == "serial_lidar_mode")
     {
         serial_lidar_mode = !serial_lidar_mode;
@@ -560,7 +552,7 @@ void Robot::startRoom()
         cuart_ref->silver_line = false;
         cuart_ref->green_line = false;
 
-        setRoomBeginningAngle();
+        // setRoomBeginningAngle();
 
         cur_room_state = ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER;
         prev_room_state = ROOM_STATE_DEFAULT;
@@ -580,54 +572,54 @@ Robot::room_end_types Robot::room_has_reached_end()
     return room_end_types::ROOM_HAS_NOT_REACHED_END;
 }
 
-void Robot::room_rotate_to_degrees(float degrees, bool rotate_right)
-{
-    if (rotate_right) // rotate right
-    {
-        move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
-    }
-    else // rotate left
-    {
-        move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
-    }
+// void Robot::room_rotate_to_degrees(float degrees, bool rotate_right)
+// {
+//     if (rotate_right) // rotate right
+//     {
+//         move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+//     }
+//     else // rotate left
+//     {
+//         move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+//     }
 
-    while(abs(compass->get_angle() - degrees) > 10)
-    {
-        delay(5);
-    }
-}
+//     while(abs(compass->get_angle() - degrees) > 10)
+//     {
+//         delay(5);
+//     }
+// }
 
-void Robot::room_rotate_relative_degrees(float degrees)
-{
-    // move(0, 0);
+// void Robot::room_rotate_relative_degrees(float degrees)
+// {
+//     // move(0, 0);
 
-    // float starting_point = compass->get_angle();
+//     // float starting_point = compass->get_angle();
 
-    // int num_values = 1;
+//     // int num_values = 1;
     
-    // for (int i = 0; i < 200; i += 10)
-    // {
-    //     starting_point += compass->get_angle();
-    //     num_values += 1;
-    //     delay(10);
-    // }
+//     // for (int i = 0; i < 200; i += 10)
+//     // {
+//     //     starting_point += compass->get_angle();
+//     //     num_values += 1;
+//     //     delay(10);
+//     // }
 
-    // starting_point = (starting_point / num_values);
+//     // starting_point = (starting_point / num_values);
 
-    // float target_degrees = compass->keep_in_360_range(starting_point + degrees);
+//     // float target_degrees = compass->keep_in_360_range(starting_point + degrees);
 
-    // logln("Rotating relative degrees: %f from start %f and target %f", degrees, starting_point, target_degrees);
+//     // logln("Rotating relative degrees: %f from start %f and target %f", degrees, starting_point, target_degrees);
 
-    // room_rotate_to_degrees(target_degrees, degrees > 0); // Rotate right if degrees > 0
+//     // room_rotate_to_degrees(target_degrees, degrees > 0); // Rotate right if degrees > 0
 
-    if (degrees > 0) // rotate right
-    {
-        move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
-    }
-    else // rotate left
-    {
-        move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
-    }
+//     if (degrees > 0) // rotate right
+//     {
+//         move(DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+//     }
+//     else // rotate left
+//     {
+//         move(-DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+//     }
 
-    delay((abs(degrees) / 360) * robot_millis_per_360_at_30_speed);
-}
+//     delay((abs(degrees) / 360) * robot_millis_per_360_at_30_speed);
+// }

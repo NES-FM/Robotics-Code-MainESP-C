@@ -165,7 +165,7 @@ void drive_sensor_array()
     }
 
     // Line is interesting (could be 90 degree, could be T, could be X, etc...)
-    if (cuart.array_total > 8 && !driving_interesting_bias_both && robot.accel_sensor->getCurrentRampState() != robot.accel_sensor->down && robot.accel_sensor->getCurrentRampState() != robot.accel_sensor->up)
+    if (cuart.array_total > 8 && !driving_interesting_bias_both && robot.io_ext->getCurrentRampState() != robot.io_ext->down && robot.io_ext->getCurrentRampState() != robot.io_ext->up)
     {
         #ifdef EXTENSIVE_DEBUG
         logln("Line is interesting with: array_total: %d, left_sensor: %d, mid_sensor: %d, right_sensor: %d", cuart.array_total, cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor);
@@ -462,7 +462,7 @@ void drive_sensor_array()
         logln("L: %d, M: %d, R: %d, I: %s, Bias: L: %s, R: %s, B: %s", cuart.array_left_sensor, cuart.array_mid_sensor, cuart.array_right_sensor, driving_interesting_situation ? "T" : "F", driving_interesting_bias_left ? "T" : "F", driving_interesting_bias_right ? "T" : "F", driving_interesting_bias_both ? "T" : "F");
     }
 
-    if (robot.accel_sensor->getCurrentRampState() == robot.accel_sensor->down || robot.accel_sensor->getCurrentRampState() == robot.accel_sensor->up)
+    if (robot.io_ext->getCurrentRampState() == robot.io_ext->down || robot.io_ext->getCurrentRampState() == robot.io_ext->up)
     {
         driving_interesting_situation = false;
         driving_interesting_bias_both = false;

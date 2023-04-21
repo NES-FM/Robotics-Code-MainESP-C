@@ -17,8 +17,8 @@ float find_corner_again_target_angle = 0;
 Robot::point start_pos_of_moving_to_ball;
 target_timer find_corner_again_timeout;
 
-void adjust_moving_to_balls_target(uint32_t delta_time);
-void rotate_to_angle(float target, bool turn_right);
+// void adjust_moving_to_balls_target(uint32_t delta_time);
+// void rotate_to_angle(float target, bool turn_right);
 void clear_queue();
 void clear_possible_corners();
 
@@ -55,7 +55,7 @@ void drive_room()
         }
         uint32_t delta_time = millis() - last_millis;
         last_millis = millis();
-        adjust_moving_to_balls_target(delta_time);
+        // adjust_moving_to_balls_target(delta_time);
 
         if (!moving_in_room_queue.empty())
         {
@@ -373,69 +373,69 @@ void drive_room()
     }
 }
 
-void adjust_moving_to_balls_target(uint32_t delta_time)
-{
-    int motor_left_speed = robot.motor_left->motor_speed;
-    int motor_right_speed = robot.motor_right->motor_speed;
+// void adjust_moving_to_balls_target(uint32_t delta_time)
+// {
+//     int motor_left_speed = robot.motor_left->motor_speed;
+//     int motor_right_speed = robot.motor_right->motor_speed;
 
-    if (motor_left_speed == 0 && motor_right_speed == 0)
-        return; // Nothing to adjust
+//     if (motor_left_speed == 0 && motor_right_speed == 0)
+//         return; // Nothing to adjust
     
-    if (motor_left_speed == -motor_right_speed)
-        return; // Rotating while standing still
+//     if (motor_left_speed == -motor_right_speed)
+//         return; // Rotating while standing still
 
-    if (motor_left_speed != motor_right_speed) // If motors not on same speed, make a rough estimate using average.
-    { // Note: This becomes less accurate the more the speeds diverge
-        int average_speed = (motor_left_speed + motor_right_speed) / 2;
-        motor_left_speed = average_speed;
-        motor_right_speed = average_speed;
-    }
+//     if (motor_left_speed != motor_right_speed) // If motors not on same speed, make a rough estimate using average.
+//     { // Note: This becomes less accurate the more the speeds diverge
+//         int average_speed = (motor_left_speed + motor_right_speed) / 2;
+//         motor_left_speed = average_speed;
+//         motor_right_speed = average_speed;
+//     }
 
-    float speed_scale = abs((float)motor_left_speed) / 40.0; // Adjust for not driving with 40 speed
-    float delta_distance = (double)delta_time * robot.millimeters_per_millisecond_40_speed * speed_scale;
+//     float speed_scale = abs((float)motor_left_speed) / 40.0; // Adjust for not driving with 40 speed
+//     float delta_distance = (double)delta_time * robot.millimeters_per_millisecond_40_speed * speed_scale;
 
-    // convert angle to radians
-    float angle_rad = robot.angle * M_PI / 180.0;
+//     // convert angle to radians
+//     float angle_rad = robot.angle * M_PI / 180.0;
 
-    if (motor_left_speed > 0) // If moving forward, move the ball backwards
-    {
-        // calculate the opposite angle by adding 180 degrees
-        angle_rad = angle_rad + M_PI;
-    }
+//     if (motor_left_speed > 0) // If moving forward, move the ball backwards
+//     {
+//         // calculate the opposite angle by adding 180 degrees
+//         angle_rad = angle_rad + M_PI;
+//     }
 
-    float s = sin(angle_rad);
-    float c = cos(angle_rad);
+//     float s = sin(angle_rad);
+//     float c = cos(angle_rad);
 
-    // calculate new x and y coordinates
-    // robot.moving_to_balls_target.pos.x_mm = robot.moving_to_balls_target.pos.x_mm + delta_distance * c;
-    // robot.moving_to_balls_target.pos.y_mm = robot.moving_to_balls_target.pos.y_mm + delta_distance * s;
+//     // calculate new x and y coordinates
+//     // robot.moving_to_balls_target.pos.x_mm = robot.moving_to_balls_target.pos.x_mm + delta_distance * c;
+//     // robot.moving_to_balls_target.pos.y_mm = robot.moving_to_balls_target.pos.y_mm + delta_distance * s;
 
-    start_pos_of_moving_to_ball.x_mm = start_pos_of_moving_to_ball.x_mm + delta_distance * c;
-    start_pos_of_moving_to_ball.y_mm = start_pos_of_moving_to_ball.y_mm + delta_distance * s;
+//     start_pos_of_moving_to_ball.x_mm = start_pos_of_moving_to_ball.x_mm + delta_distance * c;
+//     start_pos_of_moving_to_ball.y_mm = start_pos_of_moving_to_ball.y_mm + delta_distance * s;
 
-    // robot.most_likely_corner->center_pos.x_mm = robot.most_likely_corner->center_pos.x_mm + delta_distance * c;
-    // robot.most_likely_corner->center_pos.y_mm = robot.most_likely_corner->center_pos.y_mm + delta_distance * s;
-    // robot.most_likely_corner->first_pos.x_mm = robot.most_likely_corner->first_pos.x_mm + delta_distance * c;
-    // robot.most_likely_corner->first_pos.y_mm = robot.most_likely_corner->first_pos.y_mm + delta_distance * s;
-    // robot.most_likely_corner->last_pos.x_mm = robot.most_likely_corner->last_pos.x_mm + delta_distance * c;
-    // robot.most_likely_corner->last_pos.y_mm = robot.most_likely_corner->last_pos.y_mm + delta_distance * s;
-}
+//     // robot.most_likely_corner->center_pos.x_mm = robot.most_likely_corner->center_pos.x_mm + delta_distance * c;
+//     // robot.most_likely_corner->center_pos.y_mm = robot.most_likely_corner->center_pos.y_mm + delta_distance * s;
+//     // robot.most_likely_corner->first_pos.x_mm = robot.most_likely_corner->first_pos.x_mm + delta_distance * c;
+//     // robot.most_likely_corner->first_pos.y_mm = robot.most_likely_corner->first_pos.y_mm + delta_distance * s;
+//     // robot.most_likely_corner->last_pos.x_mm = robot.most_likely_corner->last_pos.x_mm + delta_distance * c;
+//     // robot.most_likely_corner->last_pos.y_mm = robot.most_likely_corner->last_pos.y_mm + delta_distance * s;
+// }
  
-void rotate_to_angle(float target, bool turn_right)
-{
-    if (turn_right)
-        robot.move(10, -10);
-    else
-        robot.move(-10, 10);
+// void rotate_to_angle(float target, bool turn_right)
+// {
+//     if (turn_right)
+//         robot.move(10, -10);
+//     else
+//         robot.move(-10, 10);
 
-    while(abs(robot.angle - target) > ROTATE_TO_ANGLE_TOLERANCE)
-    {
-        delay(5);
-        display.tick();
-        robot.tick();
-        logln("Rotate to Angle. Cur: %.3f Target:%.3f", robot.angle, target);
-    }
-}
+//     while(abs(robot.angle - target) > ROTATE_TO_ANGLE_TOLERANCE)
+//     {
+//         delay(5);
+//         display.tick();
+//         robot.tick();
+//         logln("Rotate to Angle. Cur: %.3f Target:%.3f", robot.angle, target);
+//     }
+// }
 
 void clear_possible_corners()
 {

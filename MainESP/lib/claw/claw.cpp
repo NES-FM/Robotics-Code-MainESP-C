@@ -321,21 +321,6 @@ void Claw::enable_close_servo()
     claw_close_servo->attach(PIN_SERVO1);
 }
 
-uint16_t Claw::get_ball_distance()
-{
-    // uint16_t dis = tof_claw->getMeasurement();
-
-    // if (tof_claw->getMeasurementError() == tof::TOF_ERROR_MAX_DISTANCE)
-    //     dis = 65535;
-    // else if (tof_claw->getMeasurementError() == tof::TOF_ERROR_MIN_DISTANCE)
-    //     dis = 0;
-    // else if (tof_claw->getMeasurementError() != tof::TOF_ERROR_NONE)
-    //     dis = 65534;
-        
-    // return dis;
-    return 65535;
-}
-
 void Claw::hold_blue_cube()
 {
     _set_raw_servo_blue_cube_state(servo_blue_cube_holding);

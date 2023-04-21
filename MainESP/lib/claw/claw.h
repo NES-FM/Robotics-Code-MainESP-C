@@ -6,7 +6,6 @@
 #include "../../include/pin_definitions.h"
 #include "logger.h"
 #include <Preferences.h>
-#include "tof.h"
 
 class Claw
 {
@@ -26,16 +25,9 @@ class Claw
         void set_state(State state, bool force = false);
         State get_state();
 
-        void enableTof(bool enabled) {tof_claw->enable(enabled);}
-        void setTofContinuous(bool continuous) {tof_claw->setContinuous(continuous, 0);}
-
-        uint16_t get_ball_distance();
-
         void _set_raw_servo_up_state(int degrees) {claw_up_servo->write(degrees);}
         void _set_raw_servo_close_state(int degrees) {claw_close_servo->write(degrees);}
         void _set_raw_servo_blue_cube_state(int degrees) {blue_cube_servo->write(degrees);}
-
-        tof* tof_claw = new tof(TOF_SENSOR_VL6180X, 0, -87, 180);//, EXT_P3);
 
         void hold_blue_cube();
         void throw_blue_cube();

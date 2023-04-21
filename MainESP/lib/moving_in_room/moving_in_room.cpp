@@ -19,7 +19,7 @@ bool moving_in_room_follow_ball::tick(uint32_t delta_time)
                 BCUART_class::ball received_ball = _bcuart->received_balls[i];
                 irl_pos.x_mm = -received_ball.x_offset*10; // *10, because x_offset is in cm, while irl_pos is in mm  // - because negative x_offset means right of robot, if robot is pointing forward
                 irl_pos.y_mm = -received_ball.distance*10 - (0.5*_robot->height); // - because the robot detects balls towards the back  // - (0.5*height) because b.distance counts starting from the back edge of the robot
-                irl_pos = Robot::rotate_point_around_origin(irl_pos, _robot->angle);
+                // irl_pos = Robot::rotate_point_around_origin(irl_pos, _robot->angle);
 
                 float dist = abs(_robot->moving_to_balls_target.distance - received_ball.distance);
                 if (dist < closest_distance)
@@ -69,7 +69,7 @@ bool moving_in_room_follow_ball::tick(uint32_t delta_time)
 
     // TODO: Either never going into balls too close mode or Ball sensor is not working (latter is propably true)
 
-    uint16_t ball_sensor_distance = _robot->claw->get_ball_distance();
+    uint16_t ball_sensor_distance = _robot->io_ext->claw_getMeasurement();
     logln("Ball Sensor Distance: %d", ball_sensor_distance);
     if (ball_sensor_distance < 18)
     {
@@ -93,7 +93,7 @@ bool moving_in_room_follow_corner::tick(uint32_t delta_time)
             Robot::point irl_pos;
             irl_pos.x_mm = -recieved_corner.x_offset*10; // *10, because x_offset is in cm, while irl_pos is in mm  // - because negative x_offset means right of robot, if robot is pointing forward
             irl_pos.y_mm = -recieved_corner.distance*10 - (0.5*_robot->height); // - because the robot detects corner towards the back  // - (0.5*height) because b.distance counts starting from the back edge of the robot
-            irl_pos = Robot::rotate_point_around_origin(irl_pos, _robot->angle);
+            // irl_pos = Robot::rotate_point_around_origin(irl_pos, _robot->angle);
 
             float closest_corner_x_offset = -recieved_corner.x_offset;
             float closest_corner_y_offset = recieved_corner.distance;
@@ -143,30 +143,30 @@ bool moving_in_room_follow_corner::tick(uint32_t delta_time)
     return false;
 }
 
-bool moving_in_room_rotate_to_deg::tick(uint32_t delta_time)
-{
-    _robot->move(motor_left_speed, motor_right_speed);
-    logln("Rotate to deg tick (Cur: %f Target: %f) with speed %d %d", _robot->angle, target_angle, motor_left_speed, motor_right_speed);
-    bool ret = (abs(_robot->angle - target_angle) < ROTATE_TO_ANGLE_TOLERANCE);
-    if ((ROTATE_TO_ANGLE_TOLERANCE - target_angle) > 0)
-        ret = ret || _robot->angle > 360 - (ROTATE_TO_ANGLE_TOLERANCE - target_angle);
-    return ret; // Angle Reached
-}
+// bool moving_in_room_rotate_to_deg::tick(uint32_t delta_time)
+// {
+//     _robot->move(motor_left_speed, motor_right_speed);
+//     logln("Rotate to deg tick (Cur: %f Target: %f) with speed %d %d", _robot->angle, target_angle, motor_left_speed, motor_right_speed);
+//     bool ret = (abs(_robot->angle - target_angle) < ROTATE_TO_ANGLE_TOLERANCE);
+//     if ((ROTATE_TO_ANGLE_TOLERANCE - target_angle) > 0)
+//         ret = ret || _robot->angle > 360 - (ROTATE_TO_ANGLE_TOLERANCE - target_angle);
+//     return ret; // Angle Reached
+// }
 
-bool moving_in_room_rotate_relative_degrees::tick(uint32_t delta_time)
-{
-    if (first_time)
-    {
-        first_time = false;
-        rotate_to_deg = new moving_in_room_rotate_to_deg();
-        rotate_to_deg->_robot = _robot;
-        rotate_to_deg->motor_left_speed = motor_left_speed;
-        rotate_to_deg->motor_right_speed = motor_right_speed;
-        rotate_to_deg->target_angle = compass_bmm::keep_in_360_range(_robot->angle + target_relative_angle);
-    }
+// bool moving_in_room_rotate_relative_degrees::tick(uint32_t delta_time)
+// {
+//     if (first_time)
+//     {
+//         first_time = false;
+//         rotate_to_deg = new moving_in_room_rotate_to_deg();
+//         rotate_to_deg->_robot = _robot;
+//         rotate_to_deg->motor_left_speed = motor_left_speed;
+//         rotate_to_deg->motor_right_speed = motor_right_speed;
+//         rotate_to_deg->target_angle = compass_bmm::keep_in_360_range(_robot->angle + target_relative_angle);
+//     }
 
-    return rotate_to_deg->tick(delta_time);
-}
+//     return rotate_to_deg->tick(delta_time);
+// }
 
 bool moving_in_room_distance_by_time::tick(uint32_t delta_time)
 {

@@ -7,8 +7,6 @@
 #include "../../include/i2c_addresses.h"
 #include "../../include/cuart_line_types.h"
 #include "../../include/room_stuff.h"
-#include "compass.h"
-#include "accel.h"
 #include "analog_sensor.h"
 #include "dip.h"
 #include "taster.h"
@@ -77,8 +75,8 @@ class debug_disp {
         void draw_green_dots(int x, int y, int width, int height);
         void draw_ltype(int x, int y);
         void draw_motor_values(int x, int y);
-        void draw_comp_accel(int x, int y);
-        void draw_compass(int x, int y);
+        // void draw_comp_accel(int x, int y);
+        // void draw_compass(int x, int y);
         void draw_disabled_i2c_devices(int x, int y);
         void draw_voltage(int x, int y);
         void draw_voltage_smol(int x, int y);
@@ -87,11 +85,11 @@ class debug_disp {
         void draw_taster(int x, int y, int w, int h);
 
         void draw_room_tof(int x, int y);
-        void draw_robot_in_room_coordinates();
-        void draw_balls_in_room_coordinates();
-        void draw_corners_in_room_coordinates();
-        void draw_move_in_room_steps();
-        void draw_room_space_line(Robot::point point_1, Robot::point point_2);
+        // void draw_robot_in_room_coordinates();
+        // void draw_balls_in_room_coordinates();
+        // void draw_corners_in_room_coordinates();
+        // void draw_move_in_room_steps();
+        // void draw_room_space_line(Robot::point point_1, Robot::point point_2);
 
         float room_conversion_factor;
 

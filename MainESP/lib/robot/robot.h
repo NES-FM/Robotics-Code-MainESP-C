@@ -4,8 +4,6 @@
 #define ROBOT_H
 
 #include "motor.h"
-#include "accel.h"
-#include "compass.h"
 #include "analog_sensor.h"
 #include "dip.h"
 #include "taster.h"
@@ -15,11 +13,9 @@
 #include "../../include/room_stuff.h"
 #include "buzz.h"
 #include "io_extender.h"
-#include "lc02.h"
 #include "cuart.h"
 #include "bcuart.h"
 #include "claw.h"
-#include "tof.h"
 #include <Preferences.h>
 
 #include "logger.h"
@@ -46,16 +42,13 @@ class Robot
         DIP* dip = new DIP();
         buzz* main_buzzer = new buzz(PIN_BUZZ1, 128, dip);
         taster_class* taster = new taster_class();
-        
-        accel* accel_sensor = new accel();
-        compass_bmm* compass = new compass_bmm();
 
         motor* motor_left = new motor();
         motor* motor_right = new motor();
 
         Claw* claw = new Claw();
 
-        // lc02* lc02_right = new lc02(90, -76, 90);
+        io_extender* io_ext = new io_extender();
 
         analog_sensor* bat_voltage = new analog_sensor(PIN_BATPROBE, true);
 
@@ -74,7 +67,7 @@ class Robot
         };
         point Origin;
 
-        float angle = 0.0f;
+        // float angle = 0.0f;
 
         static point rotate_point(point point_to_rotate, point pivot, float angle_degrees);
         static point rotate_point_around_origin(point point_to_rotate, float angle_degrees);
@@ -94,8 +87,8 @@ class Robot
         bool is_control_on_user = false;
 
         // Room
-        float room_beginning_angle = 0.0f;
-        void setRoomBeginningAngle(float offset = 0.0f) { room_beginning_angle = compass->keep_in_360_range(compass->get_angle() + offset); }
+        // float room_beginning_angle = 0.0f;
+        // void setRoomBeginningAngle(float offset = 0.0f) { room_beginning_angle = compass->keep_in_360_range(compass->get_angle() + offset); }
 
         void startRoom();
 
@@ -136,8 +129,8 @@ class Robot
 
         bool serial_lidar_mode = false;
 
-        void room_rotate_to_degrees(float degrees, bool rotate_right);
-        void room_rotate_relative_degrees(float degrees);
+        // void room_rotate_to_degrees(float degrees, bool rotate_right);
+        // void room_rotate_relative_degrees(float degrees);
 
         unsigned long room_time_measure_start_time = 0u;
         void room_time_measure_start() { room_time_measure_start_time = millis(); }
@@ -170,7 +163,7 @@ class Robot
         String help_command();
         String get_command(String sensor, String subsensor);
         String move_command(String left, String right, String third_arg);
-        String rotate_command(String degrees);
+        // String rotate_command(String degrees);
         String control_command(String on_off);
         String set_command(String first_arg, String second_arg, String third_arg);
         String comamnd_template(String arg);

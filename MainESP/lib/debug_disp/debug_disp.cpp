@@ -141,25 +141,25 @@ void debug_disp::draw_motor_values(int x, int y)
     oled->printf("%+03d %+03d", _robot->motor_left->motor_speed, _robot->motor_right->motor_speed);
 }
 
-void debug_disp::draw_comp_accel(int x, int y)
-{
-    oled->setCursor(x, y);
-    oled->setTextSize(1);
-    oled->setTextColor(SSD1306_WHITE);
+// void debug_disp::draw_comp_accel(int x, int y)
+// {
+//     oled->setCursor(x, y);
+//     oled->setTextSize(1);
+//     oled->setTextColor(SSD1306_WHITE);
 
-    oled->printf("%5.1f", _robot->accel_sensor->get_roll_degrees());
+//     oled->printf("%5.1f", _robot->accel_sensor->get_roll_degrees());
 
-    this->draw_compass(x, y+8);
-}
+//     this->draw_compass(x, y+8);
+// }
 
-void debug_disp::draw_compass(int x, int y)
-{
-    oled->setCursor(x, y);
-    oled->setTextColor(SSD1306_WHITE);
-    oled->setTextSize(1);
+// void debug_disp::draw_compass(int x, int y)
+// {
+//     oled->setCursor(x, y);
+//     oled->setTextColor(SSD1306_WHITE);
+//     oled->setTextSize(1);
 
-    oled->printf(" %03d", int(_robot->compass->get_angle()));//int(_compass->getRelativeAngle()));
-}
+//     oled->printf(" %03d", int(_robot->compass->get_angle()));//int(_compass->getRelativeAngle()));
+// }
 
 void debug_disp::draw_cuart(int x, int y)
 {
@@ -239,7 +239,7 @@ void debug_disp::draw_room_tof(int x, int y)
     uint32_t start_time_sub = millis();
     #endif
     
-    int closerange_val = int(constrain(_robot->claw->get_ball_distance(), 0, 200)/10);
+    int closerange_val = int(constrain(_robot->io_ext->claw_getMeasurement(), 0, 200)/10);
     #ifdef TIMEIT
     logln("draw_room_tof(): closerange_val took %dms", millis()-start_time_sub);
     start_time_sub = millis();
@@ -254,174 +254,174 @@ void debug_disp::draw_room_tof(int x, int y)
     // oled->printf("C:%02d, S:%03d", closerange_val, side_val);
 }
 
-void debug_disp::draw_robot_in_room_coordinates()
-{
-    Robot::point UL;
-    UL.x_mm = -0.5 * _robot->width;
-    UL.y_mm = 0.5 * _robot->height;
-    UL = Robot::rotate_point_around_origin(UL, _robot->angle);
+// void debug_disp::draw_robot_in_room_coordinates()
+// {
+//     Robot::point UL;
+//     UL.x_mm = -0.5 * _robot->width;
+//     UL.y_mm = 0.5 * _robot->height;
+//     UL = Robot::rotate_point_around_origin(UL, _robot->angle);
 
-    Robot::point UR;
-    UR.x_mm = 0.5 * _robot->width;
-    UR.y_mm = 0.5 * _robot->height;
-    UR = Robot::rotate_point_around_origin(UR, _robot->angle);
+//     Robot::point UR;
+//     UR.x_mm = 0.5 * _robot->width;
+//     UR.y_mm = 0.5 * _robot->height;
+//     UR = Robot::rotate_point_around_origin(UR, _robot->angle);
 
-    Robot::point DL;
-    DL.x_mm = -0.5 * _robot->width;
-    DL.y_mm = -0.5 * _robot->height;
-    DL = Robot::rotate_point_around_origin(DL, _robot->angle);
+//     Robot::point DL;
+//     DL.x_mm = -0.5 * _robot->width;
+//     DL.y_mm = -0.5 * _robot->height;
+//     DL = Robot::rotate_point_around_origin(DL, _robot->angle);
 
-    Robot::point DR;
-    DR.x_mm = 0.5 * _robot->width;
-    DR.y_mm = -0.5 * _robot->height;
-    DR = Robot::rotate_point_around_origin(DR, _robot->angle);
+//     Robot::point DR;
+//     DR.x_mm = 0.5 * _robot->width;
+//     DR.y_mm = -0.5 * _robot->height;
+//     DR = Robot::rotate_point_around_origin(DR, _robot->angle);
 
-    Robot::point UM;
-    UM.x_mm = (UL.x_mm + UR.x_mm) / 2;
-    UM.y_mm = (UL.y_mm + UR.y_mm) / 2;
+//     Robot::point UM;
+//     UM.x_mm = (UL.x_mm + UR.x_mm) / 2;
+//     UM.y_mm = (UL.y_mm + UR.y_mm) / 2;
 
-    draw_room_space_line(UL, UR);
-    draw_room_space_line(UR, DR);
-    draw_room_space_line(DR, DL);
-    draw_room_space_line(DL, UL);
-    draw_room_space_line(UM, DL);
-    draw_room_space_line(UM, DR);
-}
+//     draw_room_space_line(UL, UR);
+//     draw_room_space_line(UR, DR);
+//     draw_room_space_line(DR, DL);
+//     draw_room_space_line(DL, UL);
+//     draw_room_space_line(UM, DL);
+//     draw_room_space_line(UM, DR);
+// }
 
-void debug_disp::draw_balls_in_room_coordinates()
-{
-    // if (_robot->cur_room_state == _robot->ROOM_STATE_ROTATE_TO_FIND_BALLS)
-    // {
-    //     for (int i = 0; i < _robot->num_detected_balls; i++)
-    //     {
-    //         Robot::ball b = _robot->detected_balls[i];
-    //         screen_point ball_point_screen;
-    //         ball_point_screen.x = SCREEN_MID_X + round(float(b.pos.x_mm) / room_conversion_factor);
-    //         ball_point_screen.y = SCREEN_MID_Y - round(float(b.pos.y_mm) / room_conversion_factor);
+// void debug_disp::draw_balls_in_room_coordinates()
+// {
+//     // if (_robot->cur_room_state == _robot->ROOM_STATE_ROTATE_TO_FIND_BALLS)
+//     // {
+//     //     for (int i = 0; i < _robot->num_detected_balls; i++)
+//     //     {
+//     //         Robot::ball b = _robot->detected_balls[i];
+//     //         screen_point ball_point_screen;
+//     //         ball_point_screen.x = SCREEN_MID_X + round(float(b.pos.x_mm) / room_conversion_factor);
+//     //         ball_point_screen.y = SCREEN_MID_Y - round(float(b.pos.y_mm) / room_conversion_factor);
 
-    //         if (b.black)
-    //             oled->fillCircle(ball_point_screen.x, ball_point_screen.y, int(25.0 / room_conversion_factor), SSD1306_WHITE);
-    //         else
-    //             oled->drawCircle(ball_point_screen.x, ball_point_screen.y, int(25.0 / room_conversion_factor), SSD1306_WHITE);
-    //     }
-    // }
-    // else if (_robot->cur_room_state == _robot->ROOM_STATE_MOVE_IN_ROOM)
-    // {
-    //     Robot::ball b = _robot->moving_to_balls_target;
-    //     screen_point ball_point_screen;
-    //     ball_point_screen.x = SCREEN_MID_X + round(float(b.pos.x_mm) / room_conversion_factor);
-    //     ball_point_screen.y = SCREEN_MID_Y - round(float(b.pos.y_mm) / room_conversion_factor);
+//     //         if (b.black)
+//     //             oled->fillCircle(ball_point_screen.x, ball_point_screen.y, int(25.0 / room_conversion_factor), SSD1306_WHITE);
+//     //         else
+//     //             oled->drawCircle(ball_point_screen.x, ball_point_screen.y, int(25.0 / room_conversion_factor), SSD1306_WHITE);
+//     //     }
+//     // }
+//     // else if (_robot->cur_room_state == _robot->ROOM_STATE_MOVE_IN_ROOM)
+//     // {
+//     //     Robot::ball b = _robot->moving_to_balls_target;
+//     //     screen_point ball_point_screen;
+//     //     ball_point_screen.x = SCREEN_MID_X + round(float(b.pos.x_mm) / room_conversion_factor);
+//     //     ball_point_screen.y = SCREEN_MID_Y - round(float(b.pos.y_mm) / room_conversion_factor);
 
-    //     if (b.black)
-    //         oled->fillCircle(ball_point_screen.x, ball_point_screen.y, int(25.0 / room_conversion_factor), SSD1306_WHITE);
-    //     else
-    //         oled->drawCircle(ball_point_screen.x, ball_point_screen.y, int(25.0 / room_conversion_factor), SSD1306_WHITE);
+//     //     if (b.black)
+//     //         oled->fillCircle(ball_point_screen.x, ball_point_screen.y, int(25.0 / room_conversion_factor), SSD1306_WHITE);
+//     //     else
+//     //         oled->drawCircle(ball_point_screen.x, ball_point_screen.y, int(25.0 / room_conversion_factor), SSD1306_WHITE);
 
-    //     draw_move_in_room_steps();
-    // }
-}
+//     //     draw_move_in_room_steps();
+//     // }
+// }
 
-void debug_disp::draw_corners_in_room_coordinates()
-{
-    // if (_robot->cur_room_state == _robot->ROOM_STATE_ROTATE_TO_FIND_BALLS)
-    // {
-    //     for (Robot::corner* c : _robot->possible_corners)
-    //     {
-    //         screen_point first_point_screen;
-    //         first_point_screen.x = SCREEN_MID_X + round(float(c->first_pos.x_mm) / room_conversion_factor);
-    //         first_point_screen.y = SCREEN_MID_Y - round(float(c->first_pos.y_mm) / room_conversion_factor);
-    //         screen_point last_point_screen;
-    //         last_point_screen.x = SCREEN_MID_X + round(float(c->last_pos.x_mm) / room_conversion_factor);
-    //         last_point_screen.y = SCREEN_MID_Y - round(float(c->last_pos.y_mm) / room_conversion_factor);
-    //         screen_point third_point;
-    //         if (c->first_pos.x_mm > 0)
-    //             third_point.x = max(last_point_screen.x, first_point_screen.x);
-    //         else // If left of y-Axis, then min (because -500 < -200, when we want -500)
-    //             third_point.x = min(last_point_screen.x, first_point_screen.x);
+// void debug_disp::draw_corners_in_room_coordinates()
+// {
+//     // if (_robot->cur_room_state == _robot->ROOM_STATE_ROTATE_TO_FIND_BALLS)
+//     // {
+//     //     for (Robot::corner* c : _robot->possible_corners)
+//     //     {
+//     //         screen_point first_point_screen;
+//     //         first_point_screen.x = SCREEN_MID_X + round(float(c->first_pos.x_mm) / room_conversion_factor);
+//     //         first_point_screen.y = SCREEN_MID_Y - round(float(c->first_pos.y_mm) / room_conversion_factor);
+//     //         screen_point last_point_screen;
+//     //         last_point_screen.x = SCREEN_MID_X + round(float(c->last_pos.x_mm) / room_conversion_factor);
+//     //         last_point_screen.y = SCREEN_MID_Y - round(float(c->last_pos.y_mm) / room_conversion_factor);
+//     //         screen_point third_point;
+//     //         if (c->first_pos.x_mm > 0)
+//     //             third_point.x = max(last_point_screen.x, first_point_screen.x);
+//     //         else // If left of y-Axis, then min (because -500 < -200, when we want -500)
+//     //             third_point.x = min(last_point_screen.x, first_point_screen.x);
 
-    //         if (c->first_pos.y_mm > 0)
-    //             third_point.y = max(last_point_screen.y, first_point_screen.y);
-    //         else
-    //             third_point.y = min(last_point_screen.y, first_point_screen.y);
+//     //         if (c->first_pos.y_mm > 0)
+//     //             third_point.y = max(last_point_screen.y, first_point_screen.y);
+//     //         else
+//     //             third_point.y = min(last_point_screen.y, first_point_screen.y);
 
-    //         oled->fillTriangle(first_point_screen.x, first_point_screen.y, last_point_screen.x, last_point_screen.y, third_point.x, third_point.y, SSD1306_WHITE);
-    //     }
-    // }
-    // else if (_robot->cur_room_state == _robot->ROOM_STATE_MOVE_IN_ROOM)
-    // {
-    //     Robot::corner* c = _robot->most_likely_corner;
-    //     screen_point first_point_screen;
-    //     first_point_screen.x = SCREEN_MID_X + round(float(c->first_pos.x_mm) / room_conversion_factor);
-    //     first_point_screen.y = SCREEN_MID_Y - round(float(c->first_pos.y_mm) / room_conversion_factor);
-    //     screen_point last_point_screen;
-    //     last_point_screen.x = SCREEN_MID_X + round(float(c->last_pos.x_mm) / room_conversion_factor);
-    //     last_point_screen.y = SCREEN_MID_Y - round(float(c->last_pos.y_mm) / room_conversion_factor);
-    //     screen_point third_point;
-    //     if (c->first_pos.x_mm > 0)
-    //         third_point.x = max(last_point_screen.x, first_point_screen.x);
-    //     else // If left of y-Axis, then min (because -500 < -200, when we want -500)
-    //         third_point.x = min(last_point_screen.x, first_point_screen.x);
+//     //         oled->fillTriangle(first_point_screen.x, first_point_screen.y, last_point_screen.x, last_point_screen.y, third_point.x, third_point.y, SSD1306_WHITE);
+//     //     }
+//     // }
+//     // else if (_robot->cur_room_state == _robot->ROOM_STATE_MOVE_IN_ROOM)
+//     // {
+//     //     Robot::corner* c = _robot->most_likely_corner;
+//     //     screen_point first_point_screen;
+//     //     first_point_screen.x = SCREEN_MID_X + round(float(c->first_pos.x_mm) / room_conversion_factor);
+//     //     first_point_screen.y = SCREEN_MID_Y - round(float(c->first_pos.y_mm) / room_conversion_factor);
+//     //     screen_point last_point_screen;
+//     //     last_point_screen.x = SCREEN_MID_X + round(float(c->last_pos.x_mm) / room_conversion_factor);
+//     //     last_point_screen.y = SCREEN_MID_Y - round(float(c->last_pos.y_mm) / room_conversion_factor);
+//     //     screen_point third_point;
+//     //     if (c->first_pos.x_mm > 0)
+//     //         third_point.x = max(last_point_screen.x, first_point_screen.x);
+//     //     else // If left of y-Axis, then min (because -500 < -200, when we want -500)
+//     //         third_point.x = min(last_point_screen.x, first_point_screen.x);
 
-    //     if (c->first_pos.y_mm > 0)
-    //         third_point.y = max(last_point_screen.y, first_point_screen.y);
-    //     else
-    //         third_point.y = min(last_point_screen.y, first_point_screen.y);
+//     //     if (c->first_pos.y_mm > 0)
+//     //         third_point.y = max(last_point_screen.y, first_point_screen.y);
+//     //     else
+//     //         third_point.y = min(last_point_screen.y, first_point_screen.y);
 
-    //     oled->fillTriangle(first_point_screen.x, first_point_screen.y, last_point_screen.x, last_point_screen.y, third_point.x, third_point.y, SSD1306_WHITE);
-    // }
-}
+//     //     oled->fillTriangle(first_point_screen.x, first_point_screen.y, last_point_screen.x, last_point_screen.y, third_point.x, third_point.y, SSD1306_WHITE);
+//     // }
+// }
 
-void debug_disp::draw_move_in_room_steps()
-{
-    // float simulated_robot_angle = _robot->angle;
-    // Robot::point simulated_robot_pos = _robot->Origin;
-    // for (auto step : moving_in_room_queue)
-    // {
-    //     if (moving_in_room_follow_ball* obj = static_cast<moving_in_room_follow_ball*>(step)) // Follow Ball with Cam mode
-    //     {
-    //         draw_room_space_line(simulated_robot_pos, _robot->moving_to_balls_target.pos);
-    //     }
-    //     else if (moving_in_room_rotate_to_deg* obj = static_cast<moving_in_room_rotate_to_deg*>(step)) // Rotate to Target Angle Mode
-    //     {
-    //         simulated_robot_angle = obj->target_angle;
-    //     }
-    //     else if (moving_in_room_distance_by_time* obj = static_cast<moving_in_room_distance_by_time*>(step)) // Move straight Distance (time) mode
-    //     {
-    //         if (obj->motor_left_speed == obj->motor_right_speed && obj->motor_left_speed != 0)
-    //         {
-    //             float speed_scale = abs((float)obj->motor_left_speed) / 40.0; // Adjust for not driving with 40 speed
-    //             float delta_distance = (double)obj->time_left * _robot->millimeters_per_millisecond_40_speed * speed_scale;
+// void debug_disp::draw_move_in_room_steps()
+// {
+//     // float simulated_robot_angle = _robot->angle;
+//     // Robot::point simulated_robot_pos = _robot->Origin;
+//     // for (auto step : moving_in_room_queue)
+//     // {
+//     //     if (moving_in_room_follow_ball* obj = static_cast<moving_in_room_follow_ball*>(step)) // Follow Ball with Cam mode
+//     //     {
+//     //         draw_room_space_line(simulated_robot_pos, _robot->moving_to_balls_target.pos);
+//     //     }
+//     //     else if (moving_in_room_rotate_to_deg* obj = static_cast<moving_in_room_rotate_to_deg*>(step)) // Rotate to Target Angle Mode
+//     //     {
+//     //         simulated_robot_angle = obj->target_angle;
+//     //     }
+//     //     else if (moving_in_room_distance_by_time* obj = static_cast<moving_in_room_distance_by_time*>(step)) // Move straight Distance (time) mode
+//     //     {
+//     //         if (obj->motor_left_speed == obj->motor_right_speed && obj->motor_left_speed != 0)
+//     //         {
+//     //             float speed_scale = abs((float)obj->motor_left_speed) / 40.0; // Adjust for not driving with 40 speed
+//     //             float delta_distance = (double)obj->time_left * _robot->millimeters_per_millisecond_40_speed * speed_scale;
 
-    //             // convert angle to radians
-    //             float angle_rad = simulated_robot_angle * M_PI / 180.0;
+//     //             // convert angle to radians
+//     //             float angle_rad = simulated_robot_angle * M_PI / 180.0;
 
-    //             if (obj->motor_left_speed < 0) // If moving backwards, move the robot backwards
-    //             {
-    //                 // calculate the opposite angle by adding 180 degrees
-    //                 angle_rad = angle_rad + M_PI;
-    //             }
+//     //             if (obj->motor_left_speed < 0) // If moving backwards, move the robot backwards
+//     //             {
+//     //                 // calculate the opposite angle by adding 180 degrees
+//     //                 angle_rad = angle_rad + M_PI;
+//     //             }
 
-    //             // calculate new x and y coordinates + Draw line
-    //             Robot::point old_pos = simulated_robot_pos;
-    //             simulated_robot_pos.x_mm = simulated_robot_pos.x_mm + delta_distance * cos(angle_rad);
-    //             simulated_robot_pos.y_mm = simulated_robot_pos.y_mm + delta_distance * sin(angle_rad);
-    //             draw_room_space_line(old_pos, simulated_robot_pos);
-    //         }
-    //     }
-    // }
-}
+//     //             // calculate new x and y coordinates + Draw line
+//     //             Robot::point old_pos = simulated_robot_pos;
+//     //             simulated_robot_pos.x_mm = simulated_robot_pos.x_mm + delta_distance * cos(angle_rad);
+//     //             simulated_robot_pos.y_mm = simulated_robot_pos.y_mm + delta_distance * sin(angle_rad);
+//     //             draw_room_space_line(old_pos, simulated_robot_pos);
+//     //         }
+//     //     }
+//     // }
+// }
 
-void debug_disp::draw_room_space_line(Robot::point point_1, Robot::point point_2)
-{
-    screen_point point_1_screen;
-    point_1_screen.x = SCREEN_MID_X + round(float(point_1.x_mm) / room_conversion_factor); // Translate to Screen space
-    point_1_screen.y = SCREEN_MID_Y - round(float(point_1.y_mm) / room_conversion_factor);
-    screen_point point_2_screen;
-    point_2_screen.x = SCREEN_MID_X + round(float(point_2.x_mm) / room_conversion_factor); // Translate to Screen space
-    point_2_screen.y = SCREEN_MID_Y - round(float(point_2.y_mm) / room_conversion_factor);
+// void debug_disp::draw_room_space_line(Robot::point point_1, Robot::point point_2)
+// {
+//     screen_point point_1_screen;
+//     point_1_screen.x = SCREEN_MID_X + round(float(point_1.x_mm) / room_conversion_factor); // Translate to Screen space
+//     point_1_screen.y = SCREEN_MID_Y - round(float(point_1.y_mm) / room_conversion_factor);
+//     screen_point point_2_screen;
+//     point_2_screen.x = SCREEN_MID_X + round(float(point_2.x_mm) / room_conversion_factor); // Translate to Screen space
+//     point_2_screen.y = SCREEN_MID_Y - round(float(point_2.y_mm) / room_conversion_factor);
 
-    oled->drawLine(point_1_screen.x, point_1_screen.y, point_2_screen.x, point_2_screen.y, SSD1306_WHITE);
-}
+//     oled->drawLine(point_1_screen.x, point_1_screen.y, point_2_screen.x, point_2_screen.y, SSD1306_WHITE);
+// }
 
 void debug_disp::tick()
 {
@@ -450,7 +450,7 @@ void debug_disp::tick()
                 this->draw_motor_values(0, 24); // W: 108px
 
                 // Accelerometer and Compass 
-                this->draw_comp_accel(45, 48);
+                // this->draw_comp_accel(45, 48);
 
                 // Disabled I2C Devices
                 this->draw_disabled_i2c_devices(0, 40);
@@ -469,25 +469,25 @@ void debug_disp::tick()
                 #ifdef TIMEIT
                 uint32_t start_time = millis();
                 #endif
-                this->draw_robot_in_room_coordinates();
+                // this->draw_robot_in_room_coordinates();
                 #ifdef TIMEIT
                 logln("display.tick(): draw_robot_in_room_coordinates() took %dms", millis()-start_time);
                 start_time = millis();
                 #endif
 
-                this->draw_balls_in_room_coordinates();
+                // this->draw_balls_in_room_coordinates();
                 #ifdef TIMEIT
                 logln("display.tick(): draw_balls_in_room_coordinates() took %dms", millis()-start_time);
                 start_time = millis();
                 #endif
 
-                this->draw_corners_in_room_coordinates();
+                // this->draw_corners_in_room_coordinates();
                 #ifdef TIMEIT
                 logln("display.tick(): draw_corners_in_room_coordinates() took %dms", millis()-start_time);
                 start_time = millis();
                 #endif
 
-                this->draw_compass(100, 46);
+                // this->draw_compass(100, 46);
                 #ifdef TIMEIT
                 logln("display.tick(): draw_compass() took %dms", millis()-start_time);
                 start_time = millis();
