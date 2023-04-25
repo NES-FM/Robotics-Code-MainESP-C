@@ -74,6 +74,7 @@ class debug_disp {
         void draw_green_dots(int x, int y, int width, int height);
         void draw_ltype(int x, int y);
         void draw_motor_values(int x, int y);
+        void draw_accel(int x, int y);
         // void draw_comp_accel(int x, int y);
         // void draw_compass(int x, int y);
         void draw_disabled_i2c_devices(int x, int y);

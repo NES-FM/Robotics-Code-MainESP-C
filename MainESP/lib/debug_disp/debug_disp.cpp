@@ -19,7 +19,7 @@ void debug_disp::init(CUART_class* c, Robot* r, bool* int_sit, bool* int_bi_left
     }
     if (_display_i2c_enabled)
     {
-        // oled->setRotation(2);
+        oled->setRotation(2);
         oled->setTextWrap(false);
         oled->clearDisplay();
         oled->display();
@@ -152,6 +152,15 @@ void debug_disp::draw_motor_values(int x, int y)
 //     this->draw_compass(x, y+8);
 // }
 
+void debug_disp::draw_accel(int x, int y)
+{
+    oled->setCursor(x, y);
+    oled->setTextSize(1);
+    oled->setTextColor(SSD1306_WHITE);
+
+    oled->printf("%5.1f", _robot->io_ext->get_roll_degrees());
+}
+
 // void debug_disp::draw_compass(int x, int y)
 // {
 //     oled->setCursor(x, y);
@@ -228,9 +237,9 @@ void debug_disp::draw_taster(int x, int y, int w, int h)
     if (_robot->io_ext->get_taster_state(_robot->io_ext->front_right))
         oled->fillRect(x+(w/2), y+1, (w/2)-1, h/4, SSD1306_WHITE);
     if (_robot->io_ext->get_taster_state(_robot->io_ext->back_left))
-        oled->fillRect(x+1, y+(h/2), (w/2)-1, h/4, SSD1306_WHITE);
+        oled->fillRect(x+1, y+(0.7*h), (w/2)-1, h/4, SSD1306_WHITE);
     if (_robot->io_ext->get_taster_state(_robot->io_ext->back_right))
-        oled->fillRect(x+(w/2), y+(h/2), (w/2)-1, h/4, SSD1306_WHITE);
+        oled->fillRect(x+(w/2), y+(0.7*h), (w/2)-1, h/4, SSD1306_WHITE);
 }
 
 void debug_disp::draw_room_tof(int x, int y)
@@ -453,6 +462,7 @@ void debug_disp::tick()
 
                 // Accelerometer and Compass 
                 // this->draw_comp_accel(45, 48);
+                this->draw_accel(45, 48);
 
                 // Disabled I2C Devices
                 this->draw_disabled_i2c_devices(0, 40);

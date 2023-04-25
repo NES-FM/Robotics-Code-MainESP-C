@@ -19,6 +19,8 @@ uint16_t io_extender::claw_getMeasurement()
 {
     if (_claw_tof_error == TOF_ERROR_NONE)
         return _claw_tof_distance;
+    else if (_claw_tof_error == TOF_ERROR_MIN_DISTANCE)
+        return 0;
     
     return UINT16_MAX;
 }
@@ -64,3 +66,30 @@ bool io_extender::get_taster_state(taster_name name)
 
     return false;
 }
+
+void io_extender::tick()
+{
+    if (_enabled)
+    {
+        #ifdef USE_WIRE_AS_COMM
+        Wire.requestFrom((uint8_t)I2C_ADDRESS_IO_EXTENDER, (uint8_t)sizeof(receive_struct), (uint8_t)1);
+        Wire.readBytes( (byte*) &rxData, sizeof(receive_struct));
+        #endif
+
+        accel_roll_degrees = rxData.accel_value;
+
+        _claw_tof_distance = rxData.claw_tof_value;
+        _claw_tof_error = (tof_error_types)rxData.claw_tof_error;
+
+        interpret_taster_states(rxData.taster_values);
+    }
+}
+
+void io_extender::interpret_taster_states(uint8_t value)
+{
+    _fl_state = (value >> 3) & 0x01;
+    _fr_state = (value >> 2) & 0x01;
+    _bl_state = (value >> 1) & 0x01;
+    _br_state = value & 0x01;
+}
+

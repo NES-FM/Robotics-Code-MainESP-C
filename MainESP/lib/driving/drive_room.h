@@ -343,7 +343,16 @@ void drive_room()
             robot.claw->set_state(Claw::BOTTOM_OPEN);
             delay(100);
             robot.move(-20, -20);
-            delay(1500); // TODO: Taster hinten
+
+            robot.io_ext->tick();
+            while(!(robot.io_ext->get_taster_state(io_extender::back_left) || robot.io_ext->get_taster_state(io_extender::back_right)))
+            {
+                robot.io_ext->tick();
+                display.tick();
+                delay(10);
+            }
+
+            delay(200);
             robot.move(0, 0);
 
             // Put down blue Cube if still in claw

@@ -5,6 +5,9 @@
 #include <Wire.h>
 #include "logger.h"
 
+#define USE_WIRE_AS_COMM
+//#define USE_UART_AS_COMM
+
 // Values to get of io_extender:
 // Accel Roll Degrees
 // tof_claw (Distance + Error)
@@ -14,6 +17,8 @@ class io_extender
 {
     public:
         io_extender();
+
+        void enable(bool enabled) { _enabled = enabled; };
 
         // Accel
         enum ramp_types {
@@ -50,6 +55,19 @@ class io_extender
         };
         bool get_taster_state(taster_name name);
 
+        #pragma pack(1)
+        struct receive_struct
+        {
+            float accel_value;
+            
+            uint16_t claw_tof_value;
+            uint8_t claw_tof_error;
+
+            uint8_t taster_values;
+        };
+        #pragma pack()
+        void tick();
+
     private:
         // Accel
         float accel_roll_degrees = 0.0;
@@ -59,5 +77,10 @@ class io_extender
         uint16_t _claw_tof_distance = 0;
 
         // Taster States
-        bool _fl_state, _fr_state, _bl_state, _br_state;
+        bool _fl_state = false, _fr_state = false, _bl_state = false, _br_state = false;
+        void interpret_taster_states(uint8_t value);
+
+        receive_struct rxData;
+
+        bool _enabled = false;
 };

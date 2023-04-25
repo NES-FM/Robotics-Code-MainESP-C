@@ -30,6 +30,8 @@ uint32_t last_compass_millis = 0;
 
 void Robot::tick()
 {
+    io_ext->tick();
+    
     // logln("Tick");
     if (cur_drive_mode == ROBOT_DRIVE_MODE_LINE)
     {
