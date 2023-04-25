@@ -30,7 +30,6 @@ uint16_t follow_wall_last_tof_value = 0;
 Robot::ball temp_ball;
 Robot::ball temp_black_ball;
 target_timer last_time_was_ball_timer;
-bool has_seen_black_ball_before = false;
 
 Robot::corner temp_corner;
 target_timer last_time_was_corner_timer;
@@ -168,10 +167,10 @@ void drive_room()
             temp_black_ball.num_hits = 0;
             temp_black_ball.black = false;
 
-            has_seen_black_ball_before = false;
+            robot.has_seen_black_ball_before = false;
         }
         
-        if (bcuart.num_balls_in_array > 0)  // TODO: Black Ball
+        if (bcuart.num_balls_in_array > 0)
         {
             logln("Ball in array");
             int min_idx = -1;
@@ -256,12 +255,12 @@ void drive_room()
                 temp_black_ball.black = true;
             }
 
-            if (((float)temp_ball.num_hits * temp_ball.conf > 4) || (has_seen_black_ball_before && (float)temp_black_ball.num_hits * temp_black_ball.conf > 4))
+            if (((float)temp_ball.num_hits * temp_ball.conf > 4) || (robot.has_seen_black_ball_before && (float)temp_black_ball.num_hits * temp_black_ball.conf > 4))
             {
                 robot.move(0, 0);
                 robot.claw->set_state(Claw::BOTTOM_MID);
 
-                if (has_seen_black_ball_before && (float)temp_black_ball.num_hits * temp_black_ball.conf > 4)
+                if (robot.has_seen_black_ball_before && (float)temp_black_ball.num_hits * temp_black_ball.conf > 4)
                     temp_ball = temp_black_ball;
 
                 robot.moving_to_balls_target = temp_ball;
@@ -307,7 +306,7 @@ void drive_room()
             if ((float)temp_black_ball.num_hits * temp_black_ball.conf > 4)
             {
                 logln("There was a black ball that is now gone -> has_seen_black_ball");
-                has_seen_black_ball_before = true;
+                robot.has_seen_black_ball_before = true;
             }
 
             temp_black_ball.conf = 0.0;
@@ -434,87 +433,62 @@ void drive_room()
                 // robot.room_prefs->putBool("blue", true);
             }
 
-            // TODO: Only continue searching if balls left -> //TODO: Find Exit
-            moving_in_room_distance_by_time* move_back_to_center = new moving_in_room_distance_by_time();
-            move_back_to_center->_robot = &robot;
-            move_back_to_center->motor_left_speed = 20;
-            move_back_to_center->motor_right_speed = 20;
-            move_back_to_center->calculate_time_by_distance(300);
-            moving_in_room_queue.push_back(move_back_to_center);
+            if (robot.moving_to_balls_target.black)
+            {
+                robot.cur_room_state = Robot::ROOM_STATE_SEARCHING_EXIT;
+            }
+            else
+            {
+                moving_in_room_distance_by_time* move_back_to_center = new moving_in_room_distance_by_time();
+                move_back_to_center->_robot = &robot;
+                move_back_to_center->motor_left_speed = 20;
+                move_back_to_center->motor_right_speed = 20;
+                move_back_to_center->calculate_time_by_distance(300);
+                moving_in_room_queue.push_back(move_back_to_center);
 
-            moving_in_room_goto_room_state* goto_next_step = new moving_in_room_goto_room_state();
-            goto_next_step->_robot = &robot;
-            goto_next_step->target_room_state = Robot::ROOM_STATE_ROTATE_TO_FIND_BALLS;
-            moving_in_room_queue.push_back(goto_next_step);
+                moving_in_room_goto_room_state* goto_next_step = new moving_in_room_goto_room_state();
+                goto_next_step->_robot = &robot;
+                goto_next_step->target_room_state = Robot::ROOM_STATE_ROTATE_TO_FIND_BALLS;
+                moving_in_room_queue.push_back(goto_next_step);
 
-            robot.cur_room_state = Robot::ROOM_STATE_MOVE_IN_ROOM;
+                robot.cur_room_state = Robot::ROOM_STATE_MOVE_IN_ROOM;
+            }
+        }
+    }
+    else if (robot.cur_room_state == robot.ROOM_STATE_SEARCHING_EXIT)
+    {
+        if (robot.prev_room_state != robot.cur_room_state)
+        {
+            robot.prev_room_state = robot.cur_room_state;
+            robot.move(20, 20);
+            delay(100);
+            robot.move(40, 20);
+        }
+
+        if (robot.room_has_reached_end() != Robot::ROOM_HAS_NOT_REACHED_END)
+        {
+            if (robot.room_has_reached_end() == Robot::ROOM_HAS_REACHED_GREEN_LINE)
+            {
+                robot.move(20, -20);
+                delay(100);
+
+                robot.move(0, 0); // TODO: Remove
+                delay(2000);
+
+                robot.cur_drive_mode = Robot::ROBOT_DRIVE_MODE_LINE;
+                return;
+            }
+
+            robot.move(-10, -30);
+            delay(300);
+            robot.move(-20, 20);
+            delay(500);
+            robot.move(40, 20);
+
+            cuart.silver_line = false;
         }
     }
 }
-
-// void adjust_moving_to_balls_target(uint32_t delta_time)
-// {
-//     int motor_left_speed = robot.motor_left->motor_speed;
-//     int motor_right_speed = robot.motor_right->motor_speed;
-
-//     if (motor_left_speed == 0 && motor_right_speed == 0)
-//         return; // Nothing to adjust
-    
-//     if (motor_left_speed == -motor_right_speed)
-//         return; // Rotating while standing still
-
-//     if (motor_left_speed != motor_right_speed) // If motors not on same speed, make a rough estimate using average.
-//     { // Note: This becomes less accurate the more the speeds diverge
-//         int average_speed = (motor_left_speed + motor_right_speed) / 2;
-//         motor_left_speed = average_speed;
-//         motor_right_speed = average_speed;
-//     }
-
-//     float speed_scale = abs((float)motor_left_speed) / 40.0; // Adjust for not driving with 40 speed
-//     float delta_distance = (double)delta_time * robot.millimeters_per_millisecond_40_speed * speed_scale;
-
-//     // convert angle to radians
-//     float angle_rad = robot.angle * M_PI / 180.0;
-
-//     if (motor_left_speed > 0) // If moving forward, move the ball backwards
-//     {
-//         // calculate the opposite angle by adding 180 degrees
-//         angle_rad = angle_rad + M_PI;
-//     }
-
-//     float s = sin(angle_rad);
-//     float c = cos(angle_rad);
-
-//     // calculate new x and y coordinates
-//     // robot.moving_to_balls_target.pos.x_mm = robot.moving_to_balls_target.pos.x_mm + delta_distance * c;
-//     // robot.moving_to_balls_target.pos.y_mm = robot.moving_to_balls_target.pos.y_mm + delta_distance * s;
-
-//     start_pos_of_moving_to_ball.x_mm = start_pos_of_moving_to_ball.x_mm + delta_distance * c;
-//     start_pos_of_moving_to_ball.y_mm = start_pos_of_moving_to_ball.y_mm + delta_distance * s;
-
-//     // robot.most_likely_corner->center_pos.x_mm = robot.most_likely_corner->center_pos.x_mm + delta_distance * c;
-//     // robot.most_likely_corner->center_pos.y_mm = robot.most_likely_corner->center_pos.y_mm + delta_distance * s;
-//     // robot.most_likely_corner->first_pos.x_mm = robot.most_likely_corner->first_pos.x_mm + delta_distance * c;
-//     // robot.most_likely_corner->first_pos.y_mm = robot.most_likely_corner->first_pos.y_mm + delta_distance * s;
-//     // robot.most_likely_corner->last_pos.x_mm = robot.most_likely_corner->last_pos.x_mm + delta_distance * c;
-//     // robot.most_likely_corner->last_pos.y_mm = robot.most_likely_corner->last_pos.y_mm + delta_distance * s;
-// }
- 
-// void rotate_to_angle(float target, bool turn_right)
-// {
-//     if (turn_right)
-//         robot.move(10, -10);
-//     else
-//         robot.move(-10, 10);
-
-//     while(abs(robot.angle - target) > ROTATE_TO_ANGLE_TOLERANCE)
-//     {
-//         delay(5);
-//         display.tick();
-//         robot.tick();
-//         logln("Rotate to Angle. Cur: %.3f Target:%.3f", robot.angle, target);
-//     }
-// }
 
 void clear_possible_corners()
 {

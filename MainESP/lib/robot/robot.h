@@ -149,6 +149,8 @@ class Robot
         room_states cur_room_state;
         room_states prev_room_state;
 
+        bool has_seen_black_ball_before = false;
+
         // tof* tof_side = new tof(TOF_SENSOR_VL53l1X, 90, 10, 90, EXT_P1);
 
         const float millimeters_per_millisecond_40_speed = 0.1770833333;

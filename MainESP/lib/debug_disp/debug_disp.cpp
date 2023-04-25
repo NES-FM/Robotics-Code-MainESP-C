@@ -282,13 +282,14 @@ void debug_disp::draw_room_state(int x, int y)
             oled->print("MOVE");
             break;
         case Robot::ROOM_STATE_ROTATE_TO_FIND_BALLS:
-            oled->print("BALLS");
+            oled->println("BALLS");
+            oled->print(_robot->has_seen_black_ball_before ? "BLACK SEEN" : "");
             break;
         case Robot::ROOM_STATE_PUT_BALL_IN_CORNER_STEP_1:
-            oled->print("CORNER 1");
+            oled->print("CORNER");
             break;
         case Robot::ROOM_STATE_PUT_BALL_IN_CORNER_STEP_2:
-            oled->print("CORNER 2");
+            oled->print("AFTER CORNER");
             break;
         case Robot::ROOM_STATE_SEARCHING_EXIT:
             oled->print("EXIT");

@@ -10,9 +10,11 @@ bool moving_in_room_follow_ball::tick(uint32_t delta_time)
         if (_bcuart->num_balls_in_array > 0)
         {
             // Parse all received balls to find most likely to be the same as target and get x_offset
-            float closest_distance = 99999.9;
+            // float closest_distance = 99999.9;
             float closest_ball_x_offset = 0.0;
             float closest_ball_y_offset = 0.0;
+            float highest_conf = 0.0;
+
             Robot::point irl_pos;
             for (int i = 0; i < _bcuart->num_balls_in_array; i++)
             {
@@ -21,10 +23,11 @@ bool moving_in_room_follow_ball::tick(uint32_t delta_time)
                 irl_pos.y_mm = -received_ball.distance*10 - (0.5*_robot->height); // - because the robot detects balls towards the back  // - (0.5*height) because b.distance counts starting from the back edge of the robot
                 // irl_pos = Robot::rotate_point_around_origin(irl_pos, _robot->angle);
 
-                float dist = abs(_robot->moving_to_balls_target.distance - received_ball.distance); // TODO: Use conf instead of distance
-                if (dist < closest_distance)
+                // float dist = abs(_robot->moving_to_balls_target.distance - received_ball.distance);
+                if (received_ball.black == _robot->moving_to_balls_target.black && received_ball.conf > highest_conf)//dist < closest_distance)
                 {
-                    closest_distance = dist;
+                    // closest_distance = dist;
+                    highest_conf = received_ball.conf;
                     closest_ball_x_offset = -received_ball.x_offset;
                     closest_ball_y_offset = received_ball.distance;
                 }
@@ -33,7 +36,7 @@ bool moving_in_room_follow_ball::tick(uint32_t delta_time)
 
             float robot_to_ball_dis = closest_ball_y_offset;
 
-            logln("Following Ball with x_off: %f, y_off: %f, distance to predicted: %f, Robot to ball dis: %f", closest_ball_x_offset, closest_ball_y_offset, closest_distance, robot_to_ball_dis);
+            logln("Following Ball with x_off: %f, y_off: %f, highest conf: %f, Robot to ball dis: %f", closest_ball_x_offset, closest_ball_y_offset, highest_conf, robot_to_ball_dis);
 
             if (closest_ball_y_offset <= 12) // Ball is too close to be detected
             {

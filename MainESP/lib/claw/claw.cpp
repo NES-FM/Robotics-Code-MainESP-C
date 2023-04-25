@@ -311,13 +311,17 @@ void Claw::claw_to_up_pos()
 
 void Claw::disable_close_servo()
 {
-    claw_close_servo->detach();
-    digitalWrite(PIN_SERVO1, HIGH);
+    if (claw_close_servo->attached())
+    {
+        claw_close_servo->detach();
+        digitalWrite(PIN_SERVO1, HIGH);
+    }
 }
 
 void Claw::enable_close_servo()
 {
-    claw_close_servo->attach(PIN_SERVO1);
+    if (!claw_close_servo->attached())
+        claw_close_servo->attach(PIN_SERVO1);
 }
 
 void Claw::hold_blue_cube()
