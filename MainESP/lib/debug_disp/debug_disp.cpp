@@ -262,8 +262,43 @@ void debug_disp::draw_room_tof(int x, int y)
     start_time_sub = millis();
     #endif
 
-    // oled->printf("C:%02d, S:%03d", closerange_val, side_val);
+    oled->printf("C:%02d", closerange_val);
 }
+
+void debug_disp::draw_room_state(int x, int y)
+{
+    oled->setCursor(x, y);
+    oled->setTextSize(2);
+
+    switch (_robot->cur_room_state)
+    {
+        case Robot::ROOM_STATE_DEFAULT:
+            oled->print("DEFAULT");
+            break;
+        case Robot::ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER:
+            oled->print("BEGIN");
+            break;
+        case Robot::ROOM_STATE_MOVE_IN_ROOM:
+            oled->print("MOVE");
+            break;
+        case Robot::ROOM_STATE_ROTATE_TO_FIND_BALLS:
+            oled->print("BALLS");
+            break;
+        case Robot::ROOM_STATE_PUT_BALL_IN_CORNER_STEP_1:
+            oled->print("CORNER 1");
+            break;
+        case Robot::ROOM_STATE_PUT_BALL_IN_CORNER_STEP_2:
+            oled->print("CORNER 2");
+            break;
+        case Robot::ROOM_STATE_SEARCHING_EXIT:
+            oled->print("EXIT");
+            break;
+        default:
+            oled->print("UNKNOWN");
+            break;
+    };
+}
+
 
 // void debug_disp::draw_robot_in_room_coordinates()
 // {
@@ -517,6 +552,7 @@ void debug_disp::tick()
                 start_time = millis();
                 #endif
                 // this->draw_motor_values(0, 24); // W: 108px
+                draw_room_state(5, 15);
             }
             
             // Flashing Pixel in lower right corner

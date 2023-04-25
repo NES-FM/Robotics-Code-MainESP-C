@@ -143,7 +143,7 @@ void drive_room()
 
             robot.move(0, 0);
             delay(2000);
-            robot.cur_room_state = Robot::ROOM_STATE_PUT_BALL_IN_CORNER_STEP_1; // TODO: Change this to enable searching for balls again
+            robot.cur_room_state = Robot::ROOM_STATE_ROTATE_TO_FIND_BALLS;
         }
     }
     else if (robot.cur_room_state == robot.ROOM_STATE_ROTATE_TO_FIND_BALLS)
@@ -201,7 +201,7 @@ void drive_room()
                 temp_ball.black = bcuart.received_balls[max_idx].black;
             }
 
-            if ((float)temp_ball.num_hits * temp_ball.conf > 4) // TODO: Find correct value here
+            if ((float)temp_ball.num_hits * temp_ball.conf > 4)
             {
                 robot.move(0, 0);
                 robot.claw->set_state(Claw::BOTTOM_MID);
@@ -253,7 +253,7 @@ void drive_room()
     {
         if (robot.prev_room_state != robot.ROOM_STATE_PUT_BALL_IN_CORNER_STEP_1)
         {
-            robot.move(-5, 5);
+            robot.move(5, -5);
             robot.prev_room_state = robot.cur_room_state;
             clear_queue();
             robot.claw->set_state(Claw::SIDE_CLOSED);

@@ -67,8 +67,6 @@ bool moving_in_room_follow_ball::tick(uint32_t delta_time)
         _robot->move(motor_left_speed, motor_right_speed);   
     }
 
-    // TODO: Either never going into balls too close mode or Ball sensor is not working (latter is propably true)
-
     uint16_t ball_sensor_distance = _robot->io_ext->claw_getMeasurement();
     logln("Ball Sensor Distance: %d", ball_sensor_distance);
     if (ball_sensor_distance < 18)
