@@ -40,7 +40,6 @@ void Claw::set_state(State target_state, bool force)
             {
                 _set_raw_servo_close_state(servo_close_open);
                 claw_to_down_pos();
-                disable_close_servo();
             }
             else if (target_state == BOTTOM_MID)
             {

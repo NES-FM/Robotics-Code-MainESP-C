@@ -28,7 +28,9 @@ int find_wall_right_distance_avg = -1;
 uint16_t follow_wall_last_tof_value = 0;
 
 Robot::ball temp_ball;
+Robot::ball temp_black_ball;
 target_timer last_time_was_ball_timer;
+bool has_seen_black_ball_before = false;
 
 Robot::corner temp_corner;
 target_timer last_time_was_corner_timer;
@@ -141,8 +143,8 @@ void drive_room()
 
             // robot.cur_room_state = Robot::ROOM_STATE_MOVE_IN_ROOM;
 
-            robot.move(0, 0);
-            delay(2000);
+            // robot.move(0, 0);
+            // delay(2000);
             robot.cur_room_state = Robot::ROOM_STATE_ROTATE_TO_FIND_BALLS;
         }
     }
@@ -160,51 +162,107 @@ void drive_room()
             temp_ball.distance = 0;
             temp_ball.num_hits = 0;
             temp_ball.black = false;
+
+            temp_black_ball.conf = 0.0;
+            temp_black_ball.distance = 0;
+            temp_black_ball.num_hits = 0;
+            temp_black_ball.black = false;
+
+            has_seen_black_ball_before = false;
         }
         
         if (bcuart.num_balls_in_array > 0)  // TODO: Black Ball
         {
             logln("Ball in array");
-            if (temp_ball.distance != 0)
+            int min_idx = -1;
+            float min_dis = 99999.9f;
+            int max_idx = -1;
+            float max_conf = 0;
+
+            int min_idx_black = -1;
+            float min_dis_black = 99999.9f;
+            int max_idx_black = -1;
+            float max_conf_black = 0;
+
+            for (int i = 0; i < bcuart.num_balls_in_array; ++i) 
             {
-                logln("Same Ball");
-                int min_idx = 0;
-                float min_dis = 99999.9f;
-                for (int i = 1; i < bcuart.num_balls_in_array; ++i) {
-                    if (abs(bcuart.received_balls[i].distance - temp_ball.distance) < min_dis) {
-                        min_dis = abs(bcuart.received_balls[i].distance - temp_ball.distance);
-                        min_idx = i;
+                if (bcuart.received_balls[i].black)
+                {
+                    if (temp_black_ball.distance != 0)
+                    {
+                        if (abs(bcuart.received_balls[i].distance - temp_black_ball.distance) < min_dis_black) 
+                        {
+                            min_dis_black = abs(bcuart.received_balls[i].distance - temp_black_ball.distance);
+                            min_idx_black = i;
+                        }
+                    }
+                    else
+                    {
+                        if (bcuart.received_balls[i].conf > max_conf_black) 
+                        {
+                            max_conf_black = bcuart.received_balls[i].conf;
+                            max_idx_black = i;
+                        }
                     }
                 }
-
-                temp_ball.conf = max(bcuart.received_balls[min_idx].conf, temp_ball.conf);
-                temp_ball.distance = bcuart.received_balls[min_idx].distance;
-                temp_ball.num_hits += 1;
-                temp_ball.black = bcuart.received_balls[min_idx].black;
-
-                logln("... at %.3f distance with %d hits and %.3f conf", temp_ball.distance, temp_ball.num_hits, temp_ball.conf);
+                else
+                {
+                    if (temp_ball.distance != 0)
+                    {
+                        if (abs(bcuart.received_balls[i].distance - temp_ball.distance) < min_dis) 
+                        {
+                            min_dis = abs(bcuart.received_balls[i].distance - temp_ball.distance);
+                            min_idx = i;
+                        }
+                    }
+                    else
+                    {
+                        if (bcuart.received_balls[i].conf > max_conf) 
+                        {
+                            max_conf = bcuart.received_balls[i].conf;
+                            max_idx = i;
+                        }
+                    }
+                }
             }
-            else
-            {
-                logln("New Ball");
 
-                int max_idx = 0;
-                for (int i = 1; i < bcuart.num_balls_in_array; ++i) {
-                    if (bcuart.received_balls[i].conf > bcuart.received_balls[max_idx].conf) {
-                        max_idx = i;
-                    }
-                }
-                
+            if (max_idx != -1)
+            {
                 temp_ball.conf = bcuart.received_balls[max_idx].conf;
                 temp_ball.distance = bcuart.received_balls[max_idx].distance;
                 temp_ball.num_hits = 1;
-                temp_ball.black = bcuart.received_balls[max_idx].black;
+                temp_ball.black = false;
+            }
+            else if (min_idx != -1)
+            {
+                temp_ball.conf = max(bcuart.received_balls[min_idx].conf, temp_ball.conf);
+                temp_ball.distance = bcuart.received_balls[min_idx].distance;
+                temp_ball.num_hits += 1;
+                temp_ball.black = false;
             }
 
-            if ((float)temp_ball.num_hits * temp_ball.conf > 4)
+            if (max_idx_black != -1)
+            {
+                temp_black_ball.conf = bcuart.received_balls[max_idx_black].conf;
+                temp_black_ball.distance = bcuart.received_balls[max_idx_black].distance;
+                temp_black_ball.num_hits = 1;
+                temp_black_ball.black = true;
+            }
+            else if (min_idx_black != -1)
+            {
+                temp_black_ball.conf = max(bcuart.received_balls[min_idx_black].conf, temp_black_ball.conf);
+                temp_black_ball.distance = bcuart.received_balls[min_idx_black].distance;
+                temp_black_ball.num_hits += 1;
+                temp_black_ball.black = true;
+            }
+
+            if (((float)temp_ball.num_hits * temp_ball.conf > 4) || (has_seen_black_ball_before && (float)temp_black_ball.num_hits * temp_black_ball.conf > 4))
             {
                 robot.move(0, 0);
                 robot.claw->set_state(Claw::BOTTOM_MID);
+
+                if (has_seen_black_ball_before && (float)temp_black_ball.num_hits * temp_black_ball.conf > 4)
+                    temp_ball = temp_black_ball;
 
                 robot.moving_to_balls_target = temp_ball;
 
@@ -223,7 +281,7 @@ void drive_room()
                 move_back_to_center->_robot = &robot;
                 move_back_to_center->motor_left_speed = 20;
                 move_back_to_center->motor_right_speed = 20;
-                move_back_to_center->calculate_time_by_distance(min(temp_ball.distance, 800.0f));
+                move_back_to_center->calculate_time_by_distance(min(temp_ball.distance*10 - 150, 800.0f));
                 moving_in_room_queue.push_back(move_back_to_center);
 
                 moving_in_room_goto_room_state* goto_next_step = new moving_in_room_goto_room_state();
@@ -245,6 +303,17 @@ void drive_room()
             temp_ball.distance = 0;
             temp_ball.num_hits = 0;
             temp_ball.black = false;
+
+            if ((float)temp_black_ball.num_hits * temp_black_ball.conf > 4)
+            {
+                logln("There was a black ball that is now gone -> has_seen_black_ball");
+                has_seen_black_ball_before = true;
+            }
+
+            temp_black_ball.conf = 0.0;
+            temp_black_ball.distance = 0;
+            temp_black_ball.num_hits = 0;
+            temp_black_ball.black = false;
 
             last_time_was_ball_timer.reset();
         }
@@ -338,7 +407,7 @@ void drive_room()
 
             // Move back to Corner to be straight
             robot.move(20, 20);
-            delay(800);
+            delay(1000);
             robot.move(0, 0);
             robot.claw->set_state(Claw::BOTTOM_OPEN);
             delay(100);
@@ -359,8 +428,9 @@ void drive_room()
             if (true) //TODO: Remember if blue cube has been put down (!robot.room_prefs->getBool("blue", false)))
             {
                 robot.claw->throw_blue_cube();
-                delay(1000);
+                delay(300);
                 robot.claw->hold_blue_cube();
+                delay(200);
                 // robot.room_prefs->putBool("blue", true);
             }
 
@@ -369,7 +439,7 @@ void drive_room()
             move_back_to_center->_robot = &robot;
             move_back_to_center->motor_left_speed = 20;
             move_back_to_center->motor_right_speed = 20;
-            move_back_to_center->calculate_time_by_distance(350);
+            move_back_to_center->calculate_time_by_distance(300);
             moving_in_room_queue.push_back(move_back_to_center);
 
             moving_in_room_goto_room_state* goto_next_step = new moving_in_room_goto_room_state();

@@ -544,8 +544,8 @@ void Robot::parse_command(String command)
 
 void Robot::startRoom()
 {
-    move(0, 0);
-    delay(1000);
+    // move(0, 0);
+    // delay(1000);
 
     if (cuart_ref->array_total < 5)
     {

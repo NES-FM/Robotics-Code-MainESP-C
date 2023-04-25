@@ -21,7 +21,7 @@ bool moving_in_room_follow_ball::tick(uint32_t delta_time)
                 irl_pos.y_mm = -received_ball.distance*10 - (0.5*_robot->height); // - because the robot detects balls towards the back  // - (0.5*height) because b.distance counts starting from the back edge of the robot
                 // irl_pos = Robot::rotate_point_around_origin(irl_pos, _robot->angle);
 
-                float dist = abs(_robot->moving_to_balls_target.distance - received_ball.distance);
+                float dist = abs(_robot->moving_to_balls_target.distance - received_ball.distance); // TODO: Use conf instead of distance
                 if (dist < closest_distance)
                 {
                     closest_distance = dist;
