@@ -34,6 +34,8 @@ target_timer last_time_was_ball_timer;
 Robot::corner temp_corner;
 target_timer last_time_was_corner_timer;
 
+target_timer search_exit_timer;
+
 uint32_t last_millis;
 void drive_room()
 {
@@ -276,18 +278,31 @@ void drive_room()
                 pick_up_ball->_robot = &robot;
                 moving_in_room_queue.push_back(pick_up_ball);
 
-                moving_in_room_distance_by_time* move_back_to_center = new moving_in_room_distance_by_time();
-                move_back_to_center->_robot = &robot;
-                move_back_to_center->motor_left_speed = 20;
-                move_back_to_center->motor_right_speed = 20;
-                move_back_to_center->calculate_time_by_distance(min(temp_ball.distance*10 - 150, 800.0f));
-                moving_in_room_queue.push_back(move_back_to_center);
+                moving_in_room_distance_by_time* move_back_to_center_part1 = new moving_in_room_distance_by_time();
+                move_back_to_center_part1->_robot = &robot;
+                move_back_to_center_part1->motor_left_speed = 20;
+                move_back_to_center_part1->motor_right_speed = 20;
+                move_back_to_center_part1->calculate_time_by_distance(100);
+                moving_in_room_queue.push_back(move_back_to_center_part1);
+
+                moving_in_room_set_claw* set_claw_side = new moving_in_room_set_claw();
+                set_claw_side->_robot = &robot;
+                set_claw_side->claw_state = Claw::SIDE_CLOSED;
+                moving_in_room_queue.push_back(set_claw_side);
+
+                moving_in_room_distance_by_time* move_back_to_center_part2 = new moving_in_room_distance_by_time();
+                move_back_to_center_part2->_robot = &robot;
+                move_back_to_center_part2->motor_left_speed = 20;
+                move_back_to_center_part2->motor_right_speed = 20;
+                move_back_to_center_part2->calculate_time_by_distance(min(temp_ball.distance*10 - 250, 400.0f));  // - 150
+                moving_in_room_queue.push_back(move_back_to_center_part2);
 
                 moving_in_room_goto_room_state* goto_next_step = new moving_in_room_goto_room_state();
                 goto_next_step->_robot = &robot;
                 goto_next_step->target_room_state = Robot::ROOM_STATE_PUT_BALL_IN_CORNER_STEP_1;
                 moving_in_room_queue.push_back(goto_next_step);
 
+                robot.move(-5, 5);
                 robot.cur_room_state = robot.ROOM_STATE_MOVE_IN_ROOM;
             }
             
@@ -380,6 +395,7 @@ void drive_room()
                 moving_in_room_queue.push_back(goto_state);
                 log_inline("Step 3: goto_room_state\r\n");
 
+                robot.move(5, -5);
                 robot.cur_room_state = Robot::ROOM_STATE_MOVE_IN_ROOM;
             }
             
@@ -424,12 +440,16 @@ void drive_room()
             robot.move(0, 0);
 
             // Put down blue Cube if still in claw
-            if (true) //TODO: Remember if blue cube has been put down (!robot.room_prefs->getBool("blue", false)))
+            if (robot.claw->has_blue_cube) //TODO: Remember if blue cube has been put down (!robot.room_prefs->getBool("blue", false)))
             {
                 robot.claw->throw_blue_cube();
-                delay(300);
+                delay(800);
                 robot.claw->hold_blue_cube();
                 delay(200);
+                robot.claw->throw_blue_cube();
+                delay(500);
+                robot.claw->hold_blue_cube();
+                robot.claw->has_blue_cube = false;
                 // robot.room_prefs->putBool("blue", true);
             }
 
@@ -462,30 +482,44 @@ void drive_room()
             robot.prev_room_state = robot.cur_room_state;
             robot.move(20, 20);
             delay(100);
+            robot.move(20, -20);
+            delay(500);
             robot.move(40, 20);
+
+            cuart.green_line = false;
+            cuart.silver_line = false;
+
+            search_exit_timer.set_target(4000);
+            search_exit_timer.reset();
         }
 
-        if (robot.room_has_reached_end() != Robot::ROOM_HAS_NOT_REACHED_END)
+        if (robot.room_has_reached_end() != Robot::ROOM_HAS_NOT_REACHED_END || search_exit_timer.has_reached_target())
         {
             if (robot.room_has_reached_end() == Robot::ROOM_HAS_REACHED_GREEN_LINE)
             {
                 robot.move(20, -20);
                 delay(100);
-
-                robot.move(0, 0); // TODO: Remove
-                delay(2000);
+                robot.move(20, 20);
+                delay(500);
+                robot.move(0, 0);
 
                 robot.cur_drive_mode = Robot::ROBOT_DRIVE_MODE_LINE;
                 return;
             }
+            else if (robot.room_has_reached_end() == Robot::ROOM_HAS_REACHED_SILVER_LINE)
+            {
+                robot.move(-20, -20);
+                delay(400);
+                cuart.silver_line = false;
+            }
 
-            robot.move(-10, -30);
-            delay(300);
+            // robot.move(-10, -40);
+            // delay(500);
             robot.move(-20, 20);
-            delay(500);
-            robot.move(40, 20);
+            delay(800);
+            robot.move(40, 10);
 
-            cuart.silver_line = false;
+            search_exit_timer.reset();
         }
     }
 }

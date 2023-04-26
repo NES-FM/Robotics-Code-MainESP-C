@@ -72,7 +72,7 @@ bool moving_in_room_follow_ball::tick(uint32_t delta_time)
 
     uint16_t ball_sensor_distance = _robot->io_ext->claw_getMeasurement();
     logln("Ball Sensor Distance: %d", ball_sensor_distance);
-    if (ball_sensor_distance < 18)
+    if (ball_sensor_distance < 16) // 18
     {
         logln("Ball is close enough -> end");
         delay(200);
@@ -107,7 +107,7 @@ bool moving_in_room_follow_corner::tick(uint32_t delta_time)
 
             if (recieved_corner.screen_w > 200 || closest_corner_y_offset <= 20) // Corner is too close to be detected
             {
-                logln("\r\n\r\nGoing into corner too close mode\r\n");
+                logln("\r\n\r\nGoing into corner too close mode with screen_w=%d and y_offset=%.3f\r\n", recieved_corner.screen_w, closest_corner_y_offset);
                 moving_to_corner_corner_too_close = true;
             }
 

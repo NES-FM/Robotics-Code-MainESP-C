@@ -11,7 +11,7 @@ void Claw::init()
     _last_state = (State)claw_prefs->getUChar("last_state", TOP_OPEN);
 
     enable_close_servo();
-    claw_up_servo->attach(PIN_SERVO2, -1, 0, 180, 530, 2450); // default: pin, -1, 0, 544, 2400
+    claw_up_servo->attach(PIN_SERVO2, -1, 0, 180, 520, 2450); // default: pin, -1, 0, 544, 2400
     blue_cube_servo->attach(PIN_SERVO3);
     hold_blue_cube();
     

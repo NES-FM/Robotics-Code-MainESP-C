@@ -31,6 +31,8 @@ class Claw
 
         void hold_blue_cube();
         void throw_blue_cube();
+        
+        bool has_blue_cube = true;
 
     private:
         State _last_state;
