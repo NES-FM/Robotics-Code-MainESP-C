@@ -71,17 +71,33 @@ void io_extender::tick()
 {
     if (_enabled)
     {
-        #ifdef USE_WIRE_AS_COMM
-        Wire.requestFrom((uint8_t)I2C_ADDRESS_IO_EXTENDER, (uint8_t)sizeof(receive_struct), (uint8_t)1);
-        Wire.readBytes( (byte*) &rxData, sizeof(receive_struct));
-        #endif
+        if (millis() - _tick_last_millis >= IO_EXT_REFRESH_TIME)
+        {
+            _tick_last_millis = millis();
+            #ifdef USE_WIRE_AS_COMM
+            Wire.requestFrom((uint8_t)I2C_ADDRESS_IO_EXTENDER, (uint8_t)sizeof(receive_struct), (uint8_t)1);
+            Wire.readBytes( (byte*) &rxData, sizeof(receive_struct));
+            #endif
 
-        accel_roll_degrees = rxData.accel_value;
+            accel_roll_degrees = rxData.accel_value;
 
-        _claw_tof_distance = rxData.claw_tof_value;
-        _claw_tof_error = (tof_error_types)rxData.claw_tof_error;
+            _claw_tof_distance = rxData.claw_tof_value;
+            _claw_tof_error = (tof_error_types)rxData.claw_tof_error;
 
-        interpret_taster_states(rxData.taster_values);
+            interpret_taster_states(rxData.taster_values);
+        }
+    }
+    else
+    {
+        if (millis() - _tick_last_millis >= IO_EXT_REFRESH_TIME)
+        {
+            _tick_last_millis = millis();
+            Wire.beginTransmission(I2C_ADDRESS_IO_EXTENDER);
+            uint8_t error = Wire.endTransmission();
+
+            if (error == 0 || error == 4)
+                this->enable(true);
+        }
     }
 }
 

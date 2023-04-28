@@ -472,6 +472,8 @@ void debug_disp::draw_room_state(int x, int y)
 
 void debug_disp::tick()
 {
+    _robot->io_ext->tick(); // This is me being lazy because disp.tick is called in every while loop where io_ext.tick needs to be called too
+
     if (_display_i2c_enabled)
     {
         if (millis() - _tick_last_millis >= DISPLAY_REFRESH_TIME)

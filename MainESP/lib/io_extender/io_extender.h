@@ -8,6 +8,9 @@
 #define USE_WIRE_AS_COMM
 //#define USE_UART_AS_COMM
 
+#define IO_EXT_REFRESH_TIME 10
+#define IO_EXT_NOT_ENABLED_RECONNECT_TIME 1000
+
 // Values to get of io_extender:
 // Accel Roll Degrees
 // tof_claw (Distance + Error)
@@ -83,4 +86,6 @@ class io_extender
         receive_struct rxData;
 
         bool _enabled = false;
+
+        unsigned long _tick_last_millis = 0;
 };

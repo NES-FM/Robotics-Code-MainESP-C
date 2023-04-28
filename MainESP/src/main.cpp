@@ -58,6 +58,8 @@ void setup()
     robot.motor_right->enable(check_device_enabled(I2C_ADDRESSS_MOTOR_CONTROLLER, "motor_right", "MR"));
 
     display.enable(check_device_enabled(I2C_ADDRESS_DISPLAY, "display", "DI"));
+
+    delay(500); // Disgusting fix because io-ext is sometimes not initialized quick enough after reboot
     robot.io_ext->enable(check_device_enabled(I2C_ADDRESS_IO_EXTENDER, "io-extender", "IO"));
 
     // robot.compass->enable(check_device_enabled(I2C_ADDRESS_COMPASS_BMM, "compass", "CO"));
