@@ -87,7 +87,14 @@ void check_backwards()
     
     white_timer.set_target(2000);
     white_timer.reset();
-    robot.move(-old_left_speed, -old_right_speed);
+
+    int net_speed = old_left_speed + old_right_speed;
+
+    if (net_speed > 1) // Only if robot was moving forward
+        robot.move(-old_left_speed, -old_right_speed);
+    else
+        robot.move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
+        
     while(cuart.array_total <= 2 && !white_timer.has_reached_target())
     {
         display.tick();
