@@ -90,7 +90,7 @@ void check_backwards()
 
     int net_speed = old_left_speed + old_right_speed;
 
-    if (net_speed > 1) // Only if robot was moving forward
+    if (net_speed > 10) // Only if robot was moving forward
         robot.move(-old_left_speed, -old_right_speed);
     else
         robot.move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);

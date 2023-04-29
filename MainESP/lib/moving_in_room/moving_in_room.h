@@ -3,6 +3,8 @@
 #include "robot.h"
 #include "bcuart.h"
 
+#include "target_timer.h"
+
 #define ROTATE_TO_ANGLE_TOLERANCE 4
 #define ROTATE_TO_ANGLE_SLOW_DOWN_TOLERANCE 10
 
@@ -23,6 +25,7 @@ class moving_in_room_follow_ball : public moving_in_room_step
         BCUART_class* _bcuart;
     private:
         bool moving_to_balls_ball_too_close = false;
+        target_timer* tof_failsave = new target_timer(10000);
 };
 
 class moving_in_room_follow_corner : public moving_in_room_step

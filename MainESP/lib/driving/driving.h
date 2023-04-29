@@ -8,6 +8,8 @@
 
 target_timer resend_motor_timer(100);
 
+target_timer ignore_taster_timer;
+
 #define DEBUG_MOTOR_VALUES 0
 
 TickType_t watchdog_delay = pdMS_TO_TICKS(5);

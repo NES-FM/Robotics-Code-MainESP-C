@@ -42,6 +42,7 @@ bool moving_in_room_follow_ball::tick(uint32_t delta_time)
             {
                 logln("\r\n\r\nGoing into balls too close mode\r\n");
                 moving_to_balls_ball_too_close = true;
+                tof_failsave->reset();
             }
 
             _robot->moving_to_balls_target.distance = closest_ball_y_offset;
@@ -67,12 +68,15 @@ bool moving_in_room_follow_ball::tick(uint32_t delta_time)
     }
     else
     {
-        _robot->move(motor_left_speed, motor_right_speed);   
+        _robot->move(motor_left_speed, motor_right_speed);
+
+        if (tof_failsave->has_reached_target())
+            return true;
     }
 
     uint16_t ball_sensor_distance = _robot->io_ext->claw_getMeasurement();
     logln("Ball Sensor Distance: %d", ball_sensor_distance);
-    if (ball_sensor_distance < 16) // 18
+    if (ball_sensor_distance < 20) // 18
     {
         logln("Ball is close enough -> end");
         delay(200);

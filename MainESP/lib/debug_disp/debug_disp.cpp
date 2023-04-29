@@ -498,9 +498,11 @@ void debug_disp::tick()
                 // Motor Values
                 this->draw_motor_values(0, 24); // W: 108px
 
-                // Accelerometer and Compass 
+                // Accelerometer (and Compass)
                 // this->draw_comp_accel(45, 48);
                 this->draw_accel(45, 48);
+
+                this->draw_room_tof(33, 56);
 
                 // Disabled I2C Devices
                 this->draw_disabled_i2c_devices(0, 40);

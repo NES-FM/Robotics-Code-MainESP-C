@@ -15,9 +15,22 @@ void Claw::init()
     blue_cube_servo->attach(PIN_SERVO3);
     hold_blue_cube();
     
-    if (_last_state == BOTTOM_OPEN)
+    // if (_last_state == BOTTOM_OPEN)
+    // {
+    //     _set_raw_servo_up_state(servo_up_down);
+    //     delay(safety_delay);
+    //     _set_raw_servo_close_state(servo_close_open);
+    //     delay(500);
+    //     disable_close_servo();
+    // }
+    // else
+    // {
+    //     this->set_state(Claw::BOTTOM_OPEN);
+    // }
+
+    if (_last_state == TOP_OPEN)
     {
-        _set_raw_servo_up_state(servo_up_down);
+        _set_raw_servo_up_state(servo_up_up);
         delay(safety_delay);
         _set_raw_servo_close_state(servo_close_open);
         delay(500);
@@ -25,7 +38,7 @@ void Claw::init()
     }
     else
     {
-        this->set_state(Claw::BOTTOM_OPEN);
+        this->set_state(Claw::TOP_OPEN);
     }
 }
 
@@ -207,6 +220,7 @@ Claw::State Claw::get_state()
 
 void Claw::open_claw()
 {
+    enable_close_servo();
     logln("Opening claw...");
     uint8_t angle = 0;
     uint8_t start_angle = claw_close_servo->read();
@@ -241,6 +255,7 @@ void Claw::claw_bottom_mid()
 
 void Claw::close_claw()
 {
+    enable_close_servo();
     logln("Closing claw...");
     uint8_t angle = 0;
     uint8_t start_angle = claw_close_servo->read();

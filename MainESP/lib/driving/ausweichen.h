@@ -1,5 +1,7 @@
 #pragma once
 
+target_timer ausweichen_failsave(30000);
+
 void ausweichen()
 {
     robot.move(-DRIVE_SPEED_NORMAL, -DRIVE_SPEED_NORMAL);
@@ -12,10 +14,18 @@ void ausweichen()
         display.tick();
         delay(10);
     }
+    ausweichen_failsave.reset();
     while(cuart.array_total < 5)
     {
         display.tick();
         vTaskDelay(watchdog_delay);
+        if (ausweichen_failsave.has_reached_target())
+        {
+            robot.move(-20, -20);
+            delay(2000);
+            robot.startRoom();
+            return;
+        }
     }
     robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
     while(!cuart.sensor_array[0])

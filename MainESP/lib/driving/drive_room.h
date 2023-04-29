@@ -36,6 +36,10 @@ target_timer last_time_was_corner_timer;
 
 target_timer search_exit_timer;
 
+target_timer hall_failsave(10000);
+
+bool is_first_ball = true;
+
 uint32_t last_millis;
 void drive_room()
 {
@@ -83,9 +87,13 @@ void drive_room()
             logln("Find Wall");
             robot.prev_room_state = robot.ROOM_STATE_FIND_WALL_DRIVE_TO_CENTER;
 
+            robot.move(0, 0);
+            robot.claw->set_state(Claw::BOTTOM_OPEN);
+            delay(800);
+
             // robot.move(-DRIVE_SPEED_RAUM, -DRIVE_SPEED_RAUM);
             // delay(500);
-            find_wall_timer.set_target(500);
+            find_wall_timer.set_target(1000);
             find_wall_timer.reset();
             robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
         }
@@ -278,24 +286,34 @@ void drive_room()
                 pick_up_ball->_robot = &robot;
                 moving_in_room_queue.push_back(pick_up_ball);
 
-                moving_in_room_distance_by_time* move_back_to_center_part1 = new moving_in_room_distance_by_time();
-                move_back_to_center_part1->_robot = &robot;
-                move_back_to_center_part1->motor_left_speed = 20;
-                move_back_to_center_part1->motor_right_speed = 20;
-                move_back_to_center_part1->calculate_time_by_distance(100);
-                moving_in_room_queue.push_back(move_back_to_center_part1);
+                if (temp_ball.distance > 15)
+                {
+                    moving_in_room_distance_by_time* move_back_to_center_part1 = new moving_in_room_distance_by_time();
+                    move_back_to_center_part1->_robot = &robot;
+                    move_back_to_center_part1->motor_left_speed = 20;
+                    move_back_to_center_part1->motor_right_speed = 20;
+                    move_back_to_center_part1->calculate_time_by_distance(100);
+                    moving_in_room_queue.push_back(move_back_to_center_part1);
+                }
 
                 moving_in_room_set_claw* set_claw_side = new moving_in_room_set_claw();
                 set_claw_side->_robot = &robot;
                 set_claw_side->claw_state = Claw::SIDE_CLOSED;
                 moving_in_room_queue.push_back(set_claw_side);
 
-                moving_in_room_distance_by_time* move_back_to_center_part2 = new moving_in_room_distance_by_time();
-                move_back_to_center_part2->_robot = &robot;
-                move_back_to_center_part2->motor_left_speed = 20;
-                move_back_to_center_part2->motor_right_speed = 20;
-                move_back_to_center_part2->calculate_time_by_distance(min(temp_ball.distance*10 - 250, 400.0f));  // - 150
-                moving_in_room_queue.push_back(move_back_to_center_part2);
+                if (!is_first_ball)
+                {
+                    moving_in_room_distance_by_time* move_back_to_center_part2 = new moving_in_room_distance_by_time();
+                    move_back_to_center_part2->_robot = &robot;
+                    move_back_to_center_part2->motor_left_speed = 20;
+                    move_back_to_center_part2->motor_right_speed = 20;
+                    move_back_to_center_part2->calculate_time_by_distance(min(temp_ball.distance*10 - 250, 400.0f));  // - 150
+                    moving_in_room_queue.push_back(move_back_to_center_part2);
+                }
+                else
+                {
+                    is_first_ball = false;
+                }
 
                 moving_in_room_goto_room_state* goto_next_step = new moving_in_room_goto_room_state();
                 goto_next_step->_robot = &robot;
@@ -428,8 +446,10 @@ void drive_room()
             delay(100);
             robot.move(-20, -20);
 
+            hall_failsave.reset();
+
             robot.io_ext->tick();
-            while(!(robot.io_ext->get_taster_state(io_extender::back_left) || robot.io_ext->get_taster_state(io_extender::back_right)))
+            while(!(robot.io_ext->get_taster_state(io_extender::back_left) || robot.io_ext->get_taster_state(io_extender::back_right)) && !hall_failsave.has_reached_target()) // move until either hall of failsave
             {
                 robot.io_ext->tick();
                 display.tick();
@@ -483,8 +503,8 @@ void drive_room()
             robot.move(20, 20);
             delay(100);
             robot.move(20, -20);
-            delay(500);
-            robot.move(40, 20);
+            delay(800);
+            robot.move(35, 5);
 
             cuart.green_line = false;
             cuart.silver_line = false;
@@ -493,9 +513,9 @@ void drive_room()
             search_exit_timer.reset();
         }
 
-        if (robot.room_has_reached_end() != Robot::ROOM_HAS_NOT_REACHED_END || search_exit_timer.has_reached_target())
+        if (robot.room_has_reached_end() != Robot::ROOM_HAS_NOT_REACHED_END || search_exit_timer.has_reached_target() || cuart.array_total > 5)
         {
-            if (robot.room_has_reached_end() == Robot::ROOM_HAS_REACHED_GREEN_LINE)
+            if (robot.room_has_reached_end() == Robot::ROOM_HAS_REACHED_GREEN_LINE || (cuart.array_total > 5 && !cuart.silver_line))
             {
                 robot.move(20, -20);
                 delay(100);
@@ -503,21 +523,37 @@ void drive_room()
                 delay(500);
                 robot.move(0, 0);
 
-                robot.cur_drive_mode = Robot::ROBOT_DRIVE_MODE_LINE;
-                return;
+                if (cuart.green_dots[0] || cuart.green_dots[1] || cuart.green_dots[2] || cuart.green_dots[3])
+                {
+                    ignore_taster_timer.set_target(2000);
+                    ignore_taster_timer.reset();
+
+                    find_line();
+                    robot.cur_drive_mode = Robot::ROBOT_DRIVE_MODE_LINE;
+                    return;
+                }
+                else
+                {
+                    robot.move(-20, -20);
+                    delay(1500);
+                    robot.move(-20, 20);
+                    delay(300);
+                }
             }
             else if (robot.room_has_reached_end() == Robot::ROOM_HAS_REACHED_SILVER_LINE)
             {
                 robot.move(-20, -20);
-                delay(400);
-                cuart.silver_line = false;
+                delay(1500);
+                robot.move(-20, 20);
+                delay(300);
             }
 
+            cuart.silver_line = false;
             // robot.move(-10, -40);
             // delay(500);
             robot.move(-20, 20);
-            delay(800);
-            robot.move(40, 10);
+            delay(600);
+            robot.move(35, 5);
 
             search_exit_timer.reset();
         }

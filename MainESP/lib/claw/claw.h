@@ -34,6 +34,8 @@ class Claw
         
         bool has_blue_cube = true;
 
+        void disable_close_servo();
+        void enable_close_servo();
     private:
         State _last_state;
         Servo* claw_up_servo = new Servo();
@@ -45,8 +47,6 @@ class Claw
         void claw_to_side_pos();
         void claw_to_up_pos();
         void close_claw();
-        void disable_close_servo();
-        void enable_close_servo();
 
         int safety_delay = 100;
 

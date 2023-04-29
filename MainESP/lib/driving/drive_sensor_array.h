@@ -124,6 +124,24 @@ void drive_sensor_array()
     logln("Start!");
     #endif
 
+    if (!robot.io_ext->getCurrentRampState(io_extender::up) && cuart.silver_line && !(cuart.green_dots[0] || cuart.green_dots[1] || cuart.green_dots[2] || cuart.green_dots[3]))
+    {
+        cuart.silver_line = false;
+        robot.move(20, 20);
+        delay(500);
+        if (cuart.array_total < 3)
+        {
+            robot.move(20, 20);
+            delay(1000);
+            robot.startRoom();
+        }
+        else
+        {
+            robot.move(-20, -20);
+            delay(500);
+        }
+    }
+
     // Line is left...
     if (!driving_interesting_situation && cuart.array_left_sensor >= 1 && cuart.array_right_sensor == 0/* && cuart.array_mid_sensor <= 2*/)
     {
@@ -449,7 +467,7 @@ void drive_sensor_array()
         }
     }
 
-    if (robot.io_ext->get_taster_state(robot.io_ext->front_left) || robot.io_ext->get_taster_state(robot.io_ext->front_right))
+    if (ignore_taster_timer.has_reached_target() && (robot.io_ext->get_taster_state(robot.io_ext->front_left) && robot.io_ext->get_taster_state(robot.io_ext->front_right)))
     {
         #ifdef EXTENSIVE_DEBUG
         logln("Ausweichen!");
@@ -469,6 +487,11 @@ void drive_sensor_array()
         driving_interesting_bias_left = false;
         driving_interesting_bias_right = false;
         robot.move(DRIVE_SPEED_NORMAL, DRIVE_SPEED_NORMAL);
+        // robot.claw->set_state(Claw::BOTTOM_OPEN, true);
+    }
+    else
+    {
+        // robot.claw->disable_close_servo();
     }
 
     if (cuart.silver_line)
