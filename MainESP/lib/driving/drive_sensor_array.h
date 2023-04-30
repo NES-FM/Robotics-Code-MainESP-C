@@ -124,7 +124,7 @@ void drive_sensor_array()
     logln("Start!");
     #endif
 
-    if (!robot.io_ext->getCurrentRampState(io_extender::up) && cuart.silver_line && !(cuart.green_dots[0] || cuart.green_dots[1] || cuart.green_dots[2] || cuart.green_dots[3]))
+    if (robot.io_ext->getCurrentRampState() != io_extender::up && cuart.silver_line && !(cuart.green_dots[0] || cuart.green_dots[1] || cuart.green_dots[2] || cuart.green_dots[3]))
     {
         cuart.silver_line = false;
         robot.move(20, 20);
@@ -134,6 +134,7 @@ void drive_sensor_array()
             robot.move(20, 20);
             delay(1000);
             robot.startRoom();
+            return;
         }
         else
         {
